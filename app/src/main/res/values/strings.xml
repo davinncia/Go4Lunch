@@ -1,0 +1,17 @@
+<resources>
+
+    <string name="app_name">Go4LunchJava</string>
+
+    <!-- Says it already exist ??
+    <string name="default_web_client_id">409703708395-27s8b7caag0hmc68m4dqj8tu1d2ll4lt.apps.googleusercontent.com</string>
+!-->
+
+    <string name="facebook_app_id">2465497706899284</string>
+    <string name="fb_login_protocol_scheme">fb2465497706899284</string>
+
+    <!-- BOTTOM NAVIGATION VIEW -->
+    <string name="bottom_navigation_menu_map">Map View</string>
+    <string name="bottom_navigation_menu_list">List View</string>
+    <string name="bottom_navigation_menu_wormates">Workmates</string>
+
+</resources>
