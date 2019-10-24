@@ -17,6 +17,10 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 
 dependencies {
@@ -29,6 +33,9 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
     implementation 'com.google.android.material:material:1.0.0'
     implementation "androidx.drawerlayout:drawerlayout:1.0.0"
+
+    //Map
+    implementation "com.google.android.gms:play-services-maps:17.0.0"
 
     //FireBase
     implementation 'com.google.firebase:firebase-analytics:17.2.0'
@@ -43,6 +50,7 @@ dependencies {
     implementation 'com.facebook.android:facebook-login:5.8.0'
 
     //Tests
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     testImplementation 'junit:junit:4.12'
     testImplementation "androidx.arch.core:core-testing:$lifecycle_version"  //Lifecycle Test
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
