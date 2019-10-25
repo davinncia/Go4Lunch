@@ -16,8 +16,7 @@
     <string name="bottom_navigation_menu_list">List View</string>
     <string name="bottom_navigation_menu_workmates">Workmates</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="location_null_message">Couldn\'t reach a location :/.\nMake sure to activate GPS and data.</string>
 
 
 </resources>

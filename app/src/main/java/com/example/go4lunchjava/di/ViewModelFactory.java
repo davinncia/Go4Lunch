@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.go4lunchjava.auth.LogInCheckViewModel;
+import com.example.go4lunchjava.map.MapViewModel;
 
 public class ViewModelFactory extends ViewModelProvider.NewInstanceFactory {
 
@@ -21,6 +22,8 @@ public class ViewModelFactory extends ViewModelProvider.NewInstanceFactory {
     public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
         if (modelClass.isAssignableFrom(LogInCheckViewModel.class)) {
             return (T) new LogInCheckViewModel(mApplication);
+        } else if (modelClass.isAssignableFrom(MapViewModel.class)){
+            return (T) new MapViewModel(mApplication);
         }
         throw new IllegalArgumentException("Unknown ViewModel class");
     }
