@@ -93,6 +93,11 @@ public class MapFragment extends Fragment {
         mMapView.getMapAsync(googleMap -> {
             mMap = googleMap;
 
+            mMap.setOnCameraMoveListener(() -> {
+                mMapViewModel.setCameraMoved(true);
+                mMap.setOnCameraMoveListener(null);
+            });
+
             mMapViewModel.hasMapAvailability(true);
         });
 
@@ -102,11 +107,9 @@ public class MapFragment extends Fragment {
     private void fabClick(View view){
 
         if (hasLocation){
+            mMapViewModel.setCameraMoved(false);
             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(mLatLng, ZOOM));
         } else {
-            //TODO: Force location
-            //mMapView.onResume();
-            //mMapViewModel.hasMapAvailability(true); //Force location
             Snackbar.make(view, getResources().getString(R.string.location_null_message), Snackbar.LENGTH_SHORT).show();
         }
     }
@@ -121,6 +124,8 @@ public class MapFragment extends Fragment {
     public void onPause() {
         super.onPause();
         mMapView.onPause();
+
+        mMapViewModel.hasMapAvailability(false);
     }
 
     @Override
@@ -159,6 +164,11 @@ public class MapFragment extends Fragment {
             mMapViewModel.hasLocationPermission(false);
             Toast.makeText(getContext(), "Location not available.", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    //PLACES API TEST
+    private void testPlacesApi(){
+       
     }
 
 }

@@ -23,11 +23,14 @@ public class MapViewModel extends ViewModel {
     private MutableLiveData<Boolean> mapAvailable = new MutableLiveData<>();
     private MutableLiveData<Boolean> locationPermission = new MutableLiveData<>();
 
+    private boolean cameraMoved = false;
+
     public MapViewModel(Application application) {
         mLocationRepository = new LocationRepository(application);
 
         mapAvailable.setValue(false);
         locationPermission.setValue(false);
+
 
         mLocationMediatorLiveData.addSource(mLocationRepository.latLngLiveData, this::updateDeviceLocation);
         // Return to last known location on resume
@@ -38,9 +41,11 @@ public class MapViewModel extends ViewModel {
 
 
     private void updateDeviceLocation(LatLng latLng){
-        Log.d("debuglog", "GetDeviceLocation");
-        if (mapAvailable.getValue() && locationPermission.getValue()) {
+        if (mapAvailable.getValue() && locationPermission.getValue() && !cameraMoved){
+            mLocationRepository.startLocationUpdates(true);
             mLocationMediatorLiveData.setValue(latLng);
+        } else {
+            mLocationRepository.startLocationUpdates(false);
         }
     }
 
@@ -50,5 +55,9 @@ public class MapViewModel extends ViewModel {
 
     public void hasLocationPermission(boolean granted){
         locationPermission.setValue(granted);
+    }
+
+    public void setCameraMoved(boolean moved){
+        this.cameraMoved = moved;
     }
 }
