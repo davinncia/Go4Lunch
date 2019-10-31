@@ -14,7 +14,7 @@ public class ViewModelFactory extends ViewModelProvider.NewInstanceFactory {
     private Application mApplication;
 
     public ViewModelFactory(Application application){
-        this.mApplication = application;
+        mApplication = application;
     }
 
     @NonNull

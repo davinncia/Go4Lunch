@@ -1,6 +1,7 @@
 package com.example.go4lunchjava.repository;
 
 import android.app.Application;
+import android.os.Looper;
 import android.util.Log;
 
 import androidx.lifecycle.LiveData;
@@ -15,40 +16,57 @@ import com.google.android.gms.maps.model.LatLng;
 
 public class LocationRepository {
 
+
+    private static LocationRepository sInstance;
     private Application mApplication;
+
     private MutableLiveData<LatLng> latLngMutableLiveData = new MutableLiveData<>();
-    public LiveData<LatLng> latLngLiveData = latLngMutableLiveData;
+    private LiveData<LatLng> latLngLiveData = latLngMutableLiveData;
 
     private FusedLocationProviderClient fusedLocationProviderClient;
+
     private LocationCallback locationCallback = new LocationCallback() {
         @Override
         public void onLocationResult(LocationResult locationResult) {
             if (locationResult != null) {
                 latLngMutableLiveData.setValue(new LatLng(locationResult.getLastLocation().getLatitude(),
                         locationResult.getLastLocation().getLongitude()));
+                Log.d("debuglog", "LocationCallback");
             }
         }
     };
 
-    public LocationRepository(Application application){
-        this.mApplication = application;
 
+    private LocationRepository(Application application){
+        this.mApplication = application;
         fusedLocationProviderClient  = LocationServices.getFusedLocationProviderClient(mApplication);
+    }
+
+    //Singleton Pattern
+    public static LocationRepository getInstance(Application application){
+        if (sInstance == null){
+            sInstance = new LocationRepository(application);
+        }
+        return sInstance;
     }
 
     public void startLocationUpdates(boolean enabled){
         if (enabled) {
             LocationRequest locationRequest = new LocationRequest();
-            locationRequest.setInterval(10).setFastestInterval(2).setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+            locationRequest
+                    .setSmallestDisplacement(10) //meters
+                    .setInterval(10000) //Updates every 10 seconds
+                    .setFastestInterval(10000)
+                    .setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
             fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, null); // ?
         } else {
             fusedLocationProviderClient.removeLocationUpdates(locationCallback);
         }
     }
 
-
-
-
+    public LiveData<LatLng> getLatLngLiveData() {
+        return latLngLiveData;
+    }
 
     /*
     USING GET FUSED LOCATION PROVIDER

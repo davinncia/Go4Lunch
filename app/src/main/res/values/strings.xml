@@ -18,6 +18,7 @@
     <string name="bottom_navigation_menu_workmates">Workmates</string>
 
     <string name="location_null_message">Couldn\'t reach a location :/.\nMake sure to activate GPS and data.</string>
+    <string name="restaurant_search">Looking in the area...</string>
 
 
 </resources>

@@ -1,4 +1,4 @@
-package com.example.go4lunchjava;
+package com.example.go4lunchjava.restaurants;
 
 
 import android.os.Bundle;
@@ -9,7 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.example.go4lunchjava.places_api.PlacesApiRepository;
+import com.example.go4lunchjava.R;
 
 
 public class RestaurantListFragment extends Fragment {
