@@ -17,6 +17,10 @@
     <string name="bottom_navigation_menu_list">List View</string>
     <string name="bottom_navigation_menu_workmates">Workmates</string>
 
+    <!-- NAVIGATION DRAWER -->
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
     <string name="location_null_message">Couldn\'t reach a location :/.\nMake sure to activate GPS and data.</string>
     <string name="restaurant_search">Looking in the area...</string>
 
