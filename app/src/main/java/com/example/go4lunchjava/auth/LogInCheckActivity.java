@@ -18,7 +18,6 @@ public class LogInCheckActivity extends AppCompatActivity {
         //Sign Out
         //FirebaseAuth.getInstance().signOut();
 
-        //TODO: Factory instance well created ?
         ViewModelFactory viewModelFactory = new ViewModelFactory(getApplication());
         LogInCheckViewModel logInVIewModel = ViewModelProviders.of(this, viewModelFactory).get(LogInCheckViewModel.class);
         logInVIewModel.mIntentLiveData.observe(this, new Observer<Intent>() {

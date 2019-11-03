@@ -5,6 +5,8 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 public class NearBySearchResult {
 
     @SerializedName("geometry")
@@ -19,12 +21,19 @@ public class NearBySearchResult {
     @SerializedName("name")
     @Expose
     public String name;
+    @SerializedName("opening_hours")
+    @Expose
+    public OpeningHours openingHours;
     @SerializedName("photos")
     @Expose
     public List<Photo> photos = null;
     @SerializedName("place_id")
     @Expose
     public String placeId;
+    @SerializedName("rating")
+    @Expose
+    @Nullable
+    public Float rating;
     @SerializedName("reference")
     @Expose
     public String reference;

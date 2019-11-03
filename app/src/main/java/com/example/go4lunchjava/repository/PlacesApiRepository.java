@@ -1,5 +1,6 @@
-package com.example.go4lunchjava.places_api;
+package com.example.go4lunchjava.repository;
 
+import com.example.go4lunchjava.places_api.PlacesApiService;
 import com.example.go4lunchjava.places_api.pojo.NearBySearchResponse;
 import com.google.android.gms.maps.model.LatLng;
 

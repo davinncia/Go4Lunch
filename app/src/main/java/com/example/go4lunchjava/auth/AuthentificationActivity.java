@@ -65,7 +65,7 @@ public class AuthentificationActivity extends AppCompatActivity {
 
         // Configure Google Sign In
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getResources().getString(R.string.default_web_client_id)) //TODO: Bug with strings file??
+                .requestIdToken(getResources().getString(R.string.default_web_client_id)) //Bug with strings file??
                 .requestEmail()
                 .requestProfile()
                 .build();

@@ -9,7 +9,7 @@ import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-import com.example.go4lunchjava.places_api.PlacesApiRepository;
+import com.example.go4lunchjava.repository.PlacesApiRepository;
 import com.example.go4lunchjava.places_api.pojo.NearBySearchResponse;
 import com.example.go4lunchjava.places_api.pojo.NearBySearchResult;
 import com.example.go4lunchjava.repository.LocationRepository;
@@ -133,18 +133,18 @@ public class MapViewModel extends ViewModel {
     }
 
     void fetchNearByPlaces(LatLng latLng){
-        GetNearAsyncTask asyncTask = new GetNearAsyncTask(MapViewModel.this, mPlacesApiRepository, latLng);
+        GetNearByPlacesAsyncTask asyncTask = new GetNearByPlacesAsyncTask(MapViewModel.this, mPlacesApiRepository, latLng);
         asyncTask.execute();
     }
 
-    //DEBUG
-    private static class GetNearAsyncTask extends AsyncTask<Void, Void, NearBySearchResponse> {
+
+    private static class GetNearByPlacesAsyncTask extends AsyncTask<Void, Void, NearBySearchResponse> {
 
         private final WeakReference<MapViewModel> mMapViewModelReference; //WeakReference in case ViewModel instance is gone while async task -> garbage collector
         private PlacesApiRepository mPlacesApiRepository;
         private LatLng mLatLng;
 
-        GetNearAsyncTask(MapViewModel mapViewModel, PlacesApiRepository placesApiRepository, LatLng latLng) {
+        GetNearByPlacesAsyncTask(MapViewModel mapViewModel, PlacesApiRepository placesApiRepository, LatLng latLng) {
 
             this.mMapViewModelReference = new WeakReference<>(mapViewModel);
             this.mPlacesApiRepository = placesApiRepository;
