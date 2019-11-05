@@ -5,7 +5,7 @@ import com.google.gson.annotations.SerializedName;
 
 public class Location {
 
-    //TODO: all variables in private ?
+    //TODO: all variables in private
 
     @SerializedName("lat")
     @Expose

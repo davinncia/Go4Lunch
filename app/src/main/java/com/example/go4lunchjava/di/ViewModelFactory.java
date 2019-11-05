@@ -8,12 +8,13 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.example.go4lunchjava.auth.LogInCheckViewModel;
 import com.example.go4lunchjava.map.MapViewModel;
-import com.example.go4lunchjava.restaurants.RestaurantViewModel;
+import com.example.go4lunchjava.restaurant_list.RestaurantViewModel;
 
 public class ViewModelFactory extends ViewModelProvider.NewInstanceFactory {
 
     private Application mApplication;
 
+    //TODO: singleton pattern
     public ViewModelFactory(Application application){
         mApplication = application;
     }
@@ -26,7 +27,7 @@ public class ViewModelFactory extends ViewModelProvider.NewInstanceFactory {
         } else if (modelClass.isAssignableFrom(MapViewModel.class)){
             return (T) new MapViewModel(mApplication);
         } else if (modelClass.isAssignableFrom(RestaurantViewModel.class)){
-            return (T) new RestaurantViewModel();
+            return (T) new RestaurantViewModel(mApplication);
         }
         throw new IllegalArgumentException("Unknown ViewModel class");
     }

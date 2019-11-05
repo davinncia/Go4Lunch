@@ -47,7 +47,7 @@ public class MapFragment extends Fragment {
         // Required empty constructor
     }
 
-    //TODO NINO: Singleton pattern ?
+
     public static MapFragment newInstance(){
         return new MapFragment();
     }
@@ -88,7 +88,8 @@ public class MapFragment extends Fragment {
                 });
 
         mMapViewModel.mPoiListLiveData.observe(this, poiList -> {
-            Log.d("debuglog", "Poi marked");
+            Log.d("debuglog", "Map View Update");
+            mMap.clear();
             for (Poi poi : poiList){
                 LatLng poiLatLng = new LatLng(poi.getLat(), poi.getLon());
                 mMap.addMarker(new MarkerOptions().position(poiLatLng).title(poi.getName()));

@@ -1,7 +1,6 @@
 package com.example.go4lunchjava.repository;
 
 import android.app.Application;
-import android.os.Looper;
 import android.util.Log;
 
 import androidx.lifecycle.LiveData;

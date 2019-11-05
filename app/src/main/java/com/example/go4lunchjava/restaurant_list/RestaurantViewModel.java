@@ -1,6 +1,8 @@
-package com.example.go4lunchjava.restaurants;
+package com.example.go4lunchjava.restaurant_list;
 
+import android.app.Application;
 import android.location.Location;
+import android.os.AsyncTask;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -8,20 +10,16 @@ import androidx.lifecycle.ViewModel;
 
 import com.example.go4lunchjava.places_api.pojo.NearBySearchResponse;
 import com.example.go4lunchjava.places_api.pojo.NearBySearchResult;
+import com.example.go4lunchjava.repository.LocationRepository;
+import com.example.go4lunchjava.repository.PlacesApiRepository;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.gson.Gson;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class RestaurantViewModel extends ViewModel {
-
-    //DEBUG
-    private LatLng currentLatLng = new LatLng(40.7463956,-73.9852992);
 
     public static final String DUMMY_RESULT = "{\n" +
             "   \"html_attributions\" : [],\n" +
@@ -296,79 +294,121 @@ public class RestaurantViewModel extends ViewModel {
             "   \"status\" : \"OK\"\n" +
             "}";
 
+    private LocationRepository mLocationRepository;
+    private PlacesApiRepository mPlacesApiRepository;
+
+    private LatLng mCurrentLatLng;
+
     private MutableLiveData<List<RestaurantItem>> mRestaurantsMutableLiveData = new MutableLiveData<>();
+    public LiveData<List<RestaurantItem>> restaurantsLiveData = mRestaurantsMutableLiveData;
 
-    public RestaurantViewModel(){
+    public RestaurantViewModel(Application application){
 
-        //TODO NINO: Peut-on récupérer la request du map view model ou faut-il nécessairement en effectuer une nouvelle ?
-        getRestaurantsLiveData();
+        mLocationRepository = LocationRepository.getInstance(application);
+        mPlacesApiRepository = PlacesApiRepository.getInstance();
+
+        if (mLocationRepository.getLatLngLiveData() != null){
+            mCurrentLatLng = mLocationRepository.getLatLngLiveData().getValue();
+        }
+
+        fetchMapSelectedPlaces();
     }
 
-    LiveData<List<RestaurantItem>> getRestaurantsLiveData(){
+    private void updateRestaurants(NearBySearchResponse response){
 
-       // List<RestaurantItem> restaurants = new ArrayList<>();
-       // restaurants.add(new RestaurantItem("Chen"));
-       // restaurants.add(new RestaurantItem("Thai"));
-       // restaurants.add(new RestaurantItem("Burger"));
-       // restaurants.add(new RestaurantItem("Pâtes"));
-       // restaurants.add(new RestaurantItem("Salades"));
-
-        mRestaurantsMutableLiveData.setValue(getRestaurants());
-
-        return mRestaurantsMutableLiveData;
-    }
-
-    private List<RestaurantItem> getRestaurants(){
-
-        NearBySearchResponse response = mNearBySearchResponse();
-        if (response == null) return null;
-
+        if (response == null) return;
 
         List<RestaurantItem> restaurants = new ArrayList<>();
         for (NearBySearchResult result : response.results){
-
+            //NAME
             String name = result.name;
 
+            //ID
+            String placeId = result.placeId;
+
+            //ADDRESS
             String address = result.vicinity;
 
+            //OPENING HOURS
             String hours = "Opening hours not communicated";
             if (result.openingHours != null){
                 if (result.openingHours.openNow)hours = "Open now";
                 else hours = "Closed";
             }
 
+            //PICTURE
             String photoReference = "";
             if (result.photos != null && result.photos.size() > 0) {
                  photoReference = result.photos.get(0).photoReference;
             }
 
+            //DISTANCE
             float[] distanceResult = new float[1];
-            Location.distanceBetween(result.geometry.location.lat, result.geometry.location.lng,
-                    currentLatLng.latitude, currentLatLng.longitude, distanceResult);
-            String distance = Math.round(distanceResult[0]) + "m";
+            String distanceString = "";
+            if (mCurrentLatLng != null) {
+                Location.distanceBetween(result.geometry.location.lat, result.geometry.location.lng,
+                        mCurrentLatLng.latitude, mCurrentLatLng.longitude, distanceResult);
 
-            float rating = -1; //Negative value won't be take into account
+                if (distanceResult[0] < 1000){
+                   distanceString = Math.round(distanceResult[0]) + "m";
+                } else if (distanceResult[0] >= 1000 && distanceResult[0] < 100000){
+                    distanceResult[0] /= 1000;
+                    distanceString = String.format(Locale.ENGLISH, "%.1f", distanceResult[0]) + "km";
+                } else if (distanceResult[0] >= 100000){
+                    distanceString = ">100km";
+                }
+            }
+
+            //RATING
+            float rating = -1; //Negative value won't be taken into account
             if (result.rating != null) rating = result.rating;
 
             restaurants.add(new RestaurantItem(
                     name,
+                    placeId,
                     address,
                     hours,
                     photoReference,
-                    distance,
+                    distanceString,
                     rating
                     ));
 
         }
-        return restaurants;
+
+        mRestaurantsMutableLiveData.setValue(restaurants); //This will trigger the view
     }
 
-    //DEBUG
-    private NearBySearchResponse mNearBySearchResponse(){
+    private void fetchMapSelectedPlaces(){
 
-        Gson gson = new Gson();
+        GetNearByPlacesAsyncTask asyncTask = new GetNearByPlacesAsyncTask(RestaurantViewModel.this, mPlacesApiRepository);
+        asyncTask.execute();
 
-        NearBySearchResponse response = gson.fromJson(DUMMY_RESULT, NearBySearchResponse.class);
-        return response;
+    }
+
+    private static class GetNearByPlacesAsyncTask extends AsyncTask<Void, Void, NearBySearchResponse>{
+
+        private WeakReference<RestaurantViewModel> mViewModelReference; //In case view model get destroyed
+        private PlacesApiRepository mPlacesApiRepository;
+        //private LatLng mLatLng;
+
+        public GetNearByPlacesAsyncTask(RestaurantViewModel restaurantViewModel, PlacesApiRepository placesApiRepository){
+            mViewModelReference = new WeakReference<>(restaurantViewModel);
+            mPlacesApiRepository = placesApiRepository;
+            //mLatLng = latLng;
+        }
+
+        @Override
+        protected NearBySearchResponse doInBackground(Void... voids) {
+
+            //TODO: if no back up request, can be done in main thread
+            return mPlacesApiRepository.getMapPlacesResponse();
+        }
+
+        @Override
+        protected void onPostExecute(NearBySearchResponse nearBySearchResponse) {
+            super.onPostExecute(nearBySearchResponse);
+
+            mViewModelReference.get().updateRestaurants(nearBySearchResponse);
+        }
     }
 }

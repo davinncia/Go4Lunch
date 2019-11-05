@@ -1,24 +1,29 @@
 package com.example.go4lunchjava;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageView;
 import android.widget.Toast;
-
-import androidx.appcompat.widget.Toolbar;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 
+import com.bumptech.glide.Glide;
+import com.example.go4lunchjava.auth.AuthentificationActivity;
 import com.example.go4lunchjava.map.MapFragment;
-import com.example.go4lunchjava.restaurants.RestaurantListFragment;
+import com.example.go4lunchjava.restaurant_list.RestaurantListFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
-
-import java.util.Objects;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -27,6 +32,10 @@ public class MainActivity extends AppCompatActivity {
     private NavigationView navigationView;
     private ActionBarDrawerToggle toggle;
 
+    //FireBase
+    private FirebaseAuth mAuth = FirebaseAuth.getInstance();
+    private FirebaseUser mUser = mAuth.getCurrentUser();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -34,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
 
         configureNavigationDrawer();
 
-        getSupportFragmentManager().beginTransaction().replace(R.id.frame_layout_container_main, RestaurantListFragment.newInstance()).commit();
+        getSupportFragmentManager().beginTransaction().replace(R.id.frame_layout_container_main, MapFragment.newInstance()).commit();
 
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_nav_bar_main);
         bottomNavigationView.setOnNavigationItemReselectedListener(item -> { }); //Do nothing if already selected
@@ -71,12 +80,12 @@ public class MainActivity extends AppCompatActivity {
         navigationView = findViewById(R.id.nav_view_main);
         Toolbar toolbar = findViewById(R.id.main_toolbar);
 
+        populateDrawerHeader();
+
         setSupportActionBar(toolbar);
         toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
-
-        //Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
 
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
@@ -89,7 +98,7 @@ public class MainActivity extends AppCompatActivity {
                         Toast.makeText(MainActivity.this, "Settings", Toast.LENGTH_SHORT).show();
                         break;
                     case R.id.main_drawer_logout:
-                        Toast.makeText(MainActivity.this, "Log out", Toast.LENGTH_SHORT).show();
+                        logOutUser();
                         break;
                     default:
                         break;
@@ -98,6 +107,7 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
+
     }
 
     @Override
@@ -106,17 +116,30 @@ public class MainActivity extends AppCompatActivity {
             drawerLayout.closeDrawer(GravityCompat.START);
         } else {
             super.onBackPressed();
+            //TODO: bug on back pressed
+            Toast.makeText(this, "Back Pressed", Toast.LENGTH_SHORT).show();
         }
     }
 
-    /*
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    private void populateDrawerHeader(){
 
-        if(toggle.onOptionsItemSelected(item))
-            return true; //Opening drawer
+        View headerView = navigationView.getHeaderView(0);
+        ImageView avatarView = headerView.findViewById(R.id.iv_avatar_nav_drawer_header);
 
-        return super.onOptionsItemSelected(item);
+        Uri userPhotoUri = mUser.getPhotoUrl();
+
+        if (userPhotoUri != null){
+            Glide.with(this)
+                    .load(userPhotoUri)
+                    .centerCrop()
+                    .into(avatarView);
+        }
     }
- */
+
+    //TODO NINO: In a specific ViewModel ?
+    private void logOutUser(){
+        mAuth.signOut();
+        startActivity(new Intent(this, AuthentificationActivity.class));
+    }
+
 }

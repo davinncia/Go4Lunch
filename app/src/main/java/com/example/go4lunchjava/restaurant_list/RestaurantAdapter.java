@@ -1,5 +1,6 @@
-package com.example.go4lunchjava.restaurants;
+package com.example.go4lunchjava.restaurant_list;
 
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,7 +42,11 @@ public class RestaurantAdapter extends RecyclerView.Adapter<RestaurantAdapter.Re
 
         holder.restaurantNameView.setText(restaurant.getName());
         holder.address.setText(restaurant.getAddress());
+
         holder.openingHoursView.setText(restaurant.isOpen());
+        if (restaurant.isOpen().equals("Closed")) holder.openingHoursView.setTextColor(Color.RED);
+        else holder.openingHoursView.setTextColor(Color.DKGRAY);
+
         holder.distanceView.setText(restaurant.getDistance());
 
         //Might be to much intelligence for an adapter

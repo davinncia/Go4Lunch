@@ -1,26 +1,25 @@
-package com.example.go4lunchjava.restaurants;
-
-import javax.annotation.Nullable;
+package com.example.go4lunchjava.restaurant_list;
 
 public class RestaurantItem {
 
     //Unique id ?
     private String mName;
+    private String mPlaceId;
     private String mDistance;
     private String mType;
     private String mAddress;
     private String mIsOpen;
-    @Nullable
     private float mRating;
     private int mWorkmates;
     private String mPictureReference;
 
 
-    public RestaurantItem(String name, String address, String openingHours, String pitureReference, String distance, float rating) {
+    public RestaurantItem(String name, String placeId, String address, String openingHours, String pictureReference, String distance, float rating) {
         mName = name;
+        mPlaceId = placeId;
         mAddress = address;
         mIsOpen = openingHours;
-        mPictureReference = pitureReference;
+        mPictureReference = pictureReference;
         mDistance = distance;
         mRating = rating;
     }
@@ -54,5 +53,9 @@ public class RestaurantItem {
     public int getRating(){
         //Converting to notation on 3 instead of 5
         return Math.round(mRating * 3 / 5);
+    }
+
+    public String getPlaceId() {
+        return mPlaceId;
     }
 }

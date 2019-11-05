@@ -59,7 +59,6 @@ public class MapViewModel extends ViewModel {
 
 
         mPoiListMediatorLiveData.addSource(mapAvailable, available -> {
-            Log.d("debuglog", "Map available triggering");
             if (available && mLocationLiveData.getValue() != null) { //Location not yet found on opening...
                 MapViewModel.this.fetchNearByPlaces(mLocationLiveData.getValue());
             }
@@ -88,7 +87,7 @@ public class MapViewModel extends ViewModel {
 
                 if (!cameraMoved) {
                     mLocationMediatorLiveData.setValue(latLng); //Update location only if camera is not moving
-                    Log.d("debuglog", "updateDeviceLocation");
+                    Log.d("debuglog", "Update Device Location");
                 }
 
             } else {
@@ -102,9 +101,7 @@ public class MapViewModel extends ViewModel {
 
     private void getPoi(NearBySearchResponse nearBySearchResponse) {
 
-        Log.d("debuglog", "Get Poi");
         if (nearBySearchResponse == null) return;
-        Log.d("debuglog", "NearBySearchResponse");
         List<Poi> poiList = new ArrayList<>();
         for (NearBySearchResult result : nearBySearchResponse.results) {
             poiList.add(new Poi(result.name, result.geometry.location.lat, result.geometry.location.lng));

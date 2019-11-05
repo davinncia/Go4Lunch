@@ -12,7 +12,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".auth.LogInCheckActivity"
+        <activity android:name=".restaurant_details.RestaurantDetails"></activity>
+        <activity
+            android:name=".auth.LogInCheckActivity"
             android:theme="@style/SignInTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -22,7 +24,7 @@
         </activity>
         <activity
             android:name=".auth.AuthentificationActivity"
-            android:theme="@style/SignInTheme"/>
+            android:theme="@style/SignInTheme" />
         <activity android:name=".MainActivity" />
         <activity
             android:name="com.facebook.FacebookActivity"
@@ -44,10 +46,9 @@
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"
             android:value="@string/facebook_app_id" />
-
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="@string/google_map_api"/>
+            android:value="@string/google_map_api" />
     </application>
 
 </manifest>
