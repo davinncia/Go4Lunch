@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:background="@color/colorPrimary"
+        app:layout_constraintBottom_toTopOf="@+id/iv_favorite_details"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" >
+
+        <TextView
+            android:id="@+id/tv_name_restaurant_details"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="21sp"
+            android:textColor="@android:color/white"
+            tools:text="Le Zinc"/>
+
+        <ImageView
+            android:id="@+id/iv_rating_details"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            tools:src="@drawable/ic_star_two"
+            android:layout_toEndOf="@id/tv_name_restaurant_details"/>
+
+        <TextView
+            android:id="@+id/tv_address_restaurant_details"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:maxLines="2"
+            android:textColor="@android:color/white"
+            tools:text="L'addresse du restofjhvbidfvsd
+            dkjsdnbkjnsdkbjfnsdfjbnskdjfnbskjdnfbkdjnv."
+            android:layout_below="@+id/tv_name_restaurant_details"/>
+
+    </RelativeLayout>
+
+    <ImageView
+        android:id="@+id/iv_phone_details"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:src="@drawable/ic_phone"
+        app:layout_constraintHorizontal_chainStyle="spread"
+        app:layout_constraintBottom_toTopOf="@+id/tv_phone_details"
+        app:layout_constraintEnd_toStartOf="@+id/iv_favorite_details"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <ImageView
+        android:id="@+id/iv_favorite_details"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:src="@drawable/ic_favorite"
+        app:layout_constraintHorizontal_chainStyle="spread"
+        app:layout_constraintEnd_toStartOf="@+id/iv_web_details"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/iv_phone_details"
+        app:layout_constraintTop_toTopOf="@+id/iv_phone_details" />
+
+    <ImageView
+        android:id="@+id/iv_web_details"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:src="@drawable/ic_web"
+        app:layout_constraintHorizontal_chainStyle="spread"
+        app:layout_constraintBottom_toTopOf="@+id/tv_web_details"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/iv_favorite_details" />
+
+    <TextView
+        android:id="@+id/tv_phone_details"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="@string/call"
+        android:textColor="@color/colorPrimary"
+        android:textSize="21sp"
+        app:layout_constraintHorizontal_chainStyle="spread"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/tv_favorite_details"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/tv_favorite_details"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="@string/like"
+        android:textColor="@color/colorPrimary"
+        android:textSize="21sp"
+        app:layout_constraintHorizontal_chainStyle="spread"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/tv_web_details"
+        app:layout_constraintStart_toEndOf="@+id/tv_phone_details" />
+
+    <TextView
+        android:id="@+id/tv_web_details"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="@string/website"
+        android:textColor="@color/colorPrimary"
+        android:textSize="21sp"
+        app:layout_constraintHorizontal_chainStyle="spread"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/tv_favorite_details" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

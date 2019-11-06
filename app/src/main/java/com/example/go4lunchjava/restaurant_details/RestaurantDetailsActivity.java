@@ -9,12 +9,13 @@ import android.widget.TextView;
 
 import com.example.go4lunchjava.R;
 
-public class RestaurantDetails extends AppCompatActivity {
+public class RestaurantDetailsActivity extends AppCompatActivity {
 
     public static final String RESTAURANT_ID_KEY = "restaurant_id";
+    private String mPlaceId;
 
     public static Intent newIntent(Context context, String restaurantId){
-        Intent intent = new Intent(context, RestaurantDetails.class);
+        Intent intent = new Intent(context, RestaurantDetailsActivity.class);
         intent.putExtra(RESTAURANT_ID_KEY, restaurantId);
         return intent;
     }
@@ -24,10 +25,9 @@ public class RestaurantDetails extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_restaurant_details);
 
-        String restaurantId = getIntent().getStringExtra(RESTAURANT_ID_KEY);
+        //mPlaceId = getIntent().getStringExtra(RESTAURANT_ID_KEY);
 
-        TextView idTv = findViewById(R.id.tv_restaurant_id);
 
-        idTv.setText(restaurantId);
+        //TODO: send the id to view model
     }
 }

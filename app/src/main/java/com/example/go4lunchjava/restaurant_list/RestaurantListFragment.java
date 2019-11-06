@@ -17,7 +17,7 @@ import android.widget.Toast;
 
 import com.example.go4lunchjava.R;
 import com.example.go4lunchjava.di.ViewModelFactory;
-import com.example.go4lunchjava.restaurant_details.RestaurantDetails;
+import com.example.go4lunchjava.restaurant_details.RestaurantDetailsActivity;
 
 import java.util.Objects;
 
@@ -86,7 +86,7 @@ public class RestaurantListFragment extends Fragment implements RestaurantAdapte
     @Override
     public void onRestaurantClick(RestaurantItem restaurant) {
 
-        startActivity(RestaurantDetails.newIntent(this.getContext(), restaurant.getPlaceId()));
+        startActivity(RestaurantDetailsActivity.newIntent(this.getContext(), restaurant.getPlaceId()));
         Toast.makeText(getContext(), restaurant.getName(), Toast.LENGTH_SHORT).show();
     }
 }
