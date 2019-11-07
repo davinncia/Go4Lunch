@@ -18,6 +18,7 @@
             android:id="@+id/tv_name_restaurant_details"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:maxLength="22"
             android:textSize="21sp"
             android:textColor="@android:color/white"
             tools:text="Le Zinc"/>

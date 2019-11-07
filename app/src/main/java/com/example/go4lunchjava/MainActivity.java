@@ -42,9 +42,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        startActivity(new Intent(this, RestaurantDetailsActivity.class));
+        //startActivity(new Intent(this, RestaurantDetailsActivity.class));
 
-        /*
         configureNavigationDrawer();
 
         getSupportFragmentManager().beginTransaction().replace(R.id.frame_layout_container_main, MapFragment.newInstance()).commit();
@@ -52,8 +51,7 @@ public class MainActivity extends AppCompatActivity {
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_nav_bar_main);
         bottomNavigationView.setOnNavigationItemReselectedListener(item -> { }); //Do nothing if already selected
         bottomNavigationView.setOnNavigationItemSelectedListener(item -> updateFragment(item.getItemId()));
-
-         */
+        
 
     }
 

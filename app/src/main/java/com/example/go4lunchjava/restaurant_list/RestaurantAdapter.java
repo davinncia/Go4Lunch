@@ -49,10 +49,7 @@ public class RestaurantAdapter extends RecyclerView.Adapter<RestaurantAdapter.Re
 
         holder.distanceView.setText(restaurant.getDistance());
 
-        //Might be to much intelligence for an adapter
-        if (restaurant.getRating() > 2) holder.starsView.setImageResource(R.drawable.ic_star_three);
-        else if (restaurant.getRating() > 1) holder.starsView.setImageResource(R.drawable.ic_star_two);
-        else if (restaurant.getRating() > 0 && restaurant.getRating() < 1) holder.starsView.setImageResource(R.drawable.ic_star);
+        holder.starsView.setImageResource(restaurant.getRatingResource());
 
         Glide.with(holder.pictureView.getContext())
                 .load(restaurant.getPictureUrl())

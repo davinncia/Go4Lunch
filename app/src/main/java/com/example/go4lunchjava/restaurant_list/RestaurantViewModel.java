@@ -12,6 +12,7 @@ import com.example.go4lunchjava.places_api.pojo.NearBySearchResponse;
 import com.example.go4lunchjava.places_api.pojo.NearBySearchResult;
 import com.example.go4lunchjava.repository.LocationRepository;
 import com.example.go4lunchjava.repository.PlacesApiRepository;
+import com.example.go4lunchjava.utils.RestaurantDataFormat;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.lang.ref.WeakReference;
@@ -337,12 +338,13 @@ public class RestaurantViewModel extends ViewModel {
             }
 
             //PICTURE
-            String photoReference = "";
+            String pictureUri = "";
             if (result.photos != null && result.photos.size() > 0) {
-                 photoReference = result.photos.get(0).photoReference;
+                 pictureUri = RestaurantDataFormat.getPictureUri(result.photos.get(0).photoReference);
             }
 
             //DISTANCE
+            //TODO: in utils
             float[] distanceResult = new float[1];
             String distanceString = "";
             if (mCurrentLatLng != null) {
@@ -360,17 +362,16 @@ public class RestaurantViewModel extends ViewModel {
             }
 
             //RATING
-            float rating = -1; //Negative value won't be taken into account
-            if (result.rating != null) rating = result.rating;
+            int ratingResource = RestaurantDataFormat.getRatingResource(result.rating);
 
             restaurants.add(new RestaurantItem(
                     name,
                     placeId,
                     address,
                     hours,
-                    photoReference,
+                    pictureUri,
                     distanceString,
-                    rating
+                    ratingResource
                     ));
 
         }

@@ -1,19 +1,33 @@
 package com.example.go4lunchjava.restaurant_details.pojo_api;
 
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+
 public class RestaurantDetailsResult {
 
+    @SerializedName("website")
+    @Expose
     private String website;
 
+    @SerializedName("name")
+    @Expose
     private String name;
 
-    private String rating;
+    @SerializedName("rating")
+    @Expose
+    private float rating;
 
+    @SerializedName("vincinity")
+    @Expose
     private String vicinity;
 
+    @SerializedName("photos")
+    @Expose
     private RestaurantDetailsPhotos[] photos;
 
+    @SerializedName("international_phone_number")
+    @Expose
     private String international_phone_number;
-
 
     public String getWebsite() {
         return website;
@@ -23,7 +37,7 @@ public class RestaurantDetailsResult {
         return name;
     }
 
-    public String getRating() {
+    public Float getRating() {
         return rating;
     }
 

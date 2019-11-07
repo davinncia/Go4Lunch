@@ -28,9 +28,18 @@
             android:id="@+id/toolbar_details"
             android:layout_width="match_parent"
             android:layout_height="250dp"
-            android:background="@drawable/background_bitmap"
             android:theme="@style/ThemeOverlay.AppCompat.Light"
-            app:layout_scrollFlags="scroll" />
+            app:layout_scrollFlags="scroll"
+            app:contentInsetStart="0dp">
+
+            <ImageView
+                android:id="@+id/iv_restaurant_details"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/background_sign_in"
+                android:scaleType="centerCrop"/>
+
+        </androidx.appcompat.widget.Toolbar>
 
         <!--
         <androidx.constraintlayout.widget.ConstraintLayout

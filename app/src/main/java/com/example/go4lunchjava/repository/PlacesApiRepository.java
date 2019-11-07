@@ -4,11 +4,13 @@ import android.util.Log;
 
 import com.example.go4lunchjava.places_api.PlacesApiService;
 import com.example.go4lunchjava.places_api.pojo.NearBySearchResponse;
+import com.example.go4lunchjava.restaurant_details.pojo_api.RestaurantDetailsResponse;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.io.IOException;
 import java.util.HashMap;
 
+import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -55,6 +57,9 @@ public class PlacesApiRepository {
         return retrofit;
     }
 
+    ////////////////////
+    ///////NEAR BY//////
+    ////////////////////
     public NearBySearchResponse getNearBySearchResponse(LatLng latLng){
 
         double latitude = Math.floor(latLng.latitude * 10_000) / 10_000;
@@ -95,6 +100,23 @@ public class PlacesApiRepository {
 
         return mapPlacesResponse;
     }
+
+    ////////////////////
+    ///////DETAILS//////
+    ////////////////////
+    public RestaurantDetailsResponse getRestaurantDetailsResponse(String placeId){
+
+        RestaurantDetailsResponse response = null;
+
+        try {
+            response = service.detailsSearch(placeId).execute().body();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return response;
+
+    }
+
 
 
     /*

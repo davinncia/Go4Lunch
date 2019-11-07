@@ -9,19 +9,19 @@ public class RestaurantItem {
     private String mType;
     private String mAddress;
     private String mIsOpen;
-    private float mRating;
+    private int mRatingResource;
     private int mWorkmates;
-    private String mPictureReference;
+    private String mPictureUri;
 
 
-    public RestaurantItem(String name, String placeId, String address, String openingHours, String pictureReference, String distance, float rating) {
+    public RestaurantItem(String name, String placeId, String address, String openingHours, String pictureUri, String distance, int ratingResource) {
         mName = name;
         mPlaceId = placeId;
         mAddress = address;
         mIsOpen = openingHours;
-        mPictureReference = pictureReference;
+        mPictureUri = pictureUri;
         mDistance = distance;
-        mRating = rating;
+        mRatingResource = ratingResource;
     }
 
     public String getName() {
@@ -36,23 +36,14 @@ public class RestaurantItem {
         return mIsOpen;
     }
 
-    public String getPictureUrl() {
-        if (mPictureReference == null || mPictureReference.isEmpty()) return "";
-
-        String link = "https://maps.googleapis.com/maps/api/place/photo?maxwidth=300&key=AIzaSyDSpFo8O861EgPYmsRlICS0sRs0zGEsrS4"
-                + "&photoreference="
-                + mPictureReference;
-
-        return link;
-    }
+    public String getPictureUrl() { return mPictureUri; }
 
     public String getDistance() {
         return mDistance;
     }
 
-    public int getRating(){
-        //Converting to notation on 3 instead of 5
-        return Math.round(mRating * 3 / 5);
+    public int getRatingResource(){
+        return mRatingResource;
     }
 
     public String getPlaceId() {
