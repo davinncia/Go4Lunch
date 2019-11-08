@@ -103,8 +103,8 @@ public class MapViewModel extends ViewModel {
 
         if (nearBySearchResponse == null) return;
         List<Poi> poiList = new ArrayList<>();
-        for (NearBySearchResult result : nearBySearchResponse.results) {
-            poiList.add(new Poi(result.name, result.geometry.location.lat, result.geometry.location.lng));
+        for (NearBySearchResult result : nearBySearchResponse.getResults()) {
+            poiList.add(new Poi(result.getName(), result.getGeometry().getLocation().getLat(), result.getGeometry().getLocation().getLng()));
         }
         mPoiListMediatorLiveData.setValue(poiList);
     }
@@ -121,11 +121,11 @@ public class MapViewModel extends ViewModel {
         }
     }
 
-    public void hasLocationPermission(boolean granted) {
+    void hasLocationPermission(boolean granted) {
         locationPermission.setValue(granted);
     }
 
-    public void setCameraMoved(boolean moved) {
+    void setCameraMoved(boolean moved) {
         this.cameraMoved = moved;
     }
 

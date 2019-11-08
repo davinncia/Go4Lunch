@@ -295,21 +295,20 @@ public class RestaurantViewModel extends ViewModel {
             "   \"status\" : \"OK\"\n" +
             "}";
 
-    private LocationRepository mLocationRepository;
     private PlacesApiRepository mPlacesApiRepository;
 
     private LatLng mCurrentLatLng;
 
     private MutableLiveData<List<RestaurantItem>> mRestaurantsMutableLiveData = new MutableLiveData<>();
-    public LiveData<List<RestaurantItem>> restaurantsLiveData = mRestaurantsMutableLiveData;
+    LiveData<List<RestaurantItem>> restaurantsLiveData = mRestaurantsMutableLiveData;
 
     public RestaurantViewModel(Application application){
 
-        mLocationRepository = LocationRepository.getInstance(application);
+        LocationRepository locationRepository = LocationRepository.getInstance(application);
         mPlacesApiRepository = PlacesApiRepository.getInstance();
 
-        if (mLocationRepository.getLatLngLiveData() != null){
-            mCurrentLatLng = mLocationRepository.getLatLngLiveData().getValue();
+        if (locationRepository.getLatLngLiveData() != null){
+            mCurrentLatLng = locationRepository.getLatLngLiveData().getValue();
         }
 
         fetchMapSelectedPlaces();
@@ -320,49 +319,34 @@ public class RestaurantViewModel extends ViewModel {
         if (response == null) return;
 
         List<RestaurantItem> restaurants = new ArrayList<>();
-        for (NearBySearchResult result : response.results){
+        for (NearBySearchResult result : response.getResults()){
             //NAME
-            String name = result.name;
+            String name = result.getName();
 
             //ID
-            String placeId = result.placeId;
+            String placeId = result.getPlaceId();
 
             //ADDRESS
-            String address = result.vicinity;
+            String address = result.getVicinity();
 
             //OPENING HOURS
             String hours = "Opening hours not communicated";
-            if (result.openingHours != null){
-                if (result.openingHours.openNow)hours = "Open now";
+            if (result.getOpeningHours() != null){
+                if (result.getOpeningHours().getOpenNow())hours = "Open now";
                 else hours = "Closed";
             }
 
             //PICTURE
             String pictureUri = "";
-            if (result.photos != null && result.photos.size() > 0) {
-                 pictureUri = RestaurantDataFormat.getPictureUri(result.photos.get(0).photoReference);
+            if (result.getPhotos() != null && result.getPhotos().size() > 0) {
+                 pictureUri = RestaurantDataFormat.getPictureUri(result.getPhotos().get(0).photoReference);
             }
 
             //DISTANCE
-            //TODO: in utils
-            float[] distanceResult = new float[1];
-            String distanceString = "";
-            if (mCurrentLatLng != null) {
-                Location.distanceBetween(result.geometry.location.lat, result.geometry.location.lng,
-                        mCurrentLatLng.latitude, mCurrentLatLng.longitude, distanceResult);
-
-                if (distanceResult[0] < 1000){
-                   distanceString = Math.round(distanceResult[0]) + "m";
-                } else if (distanceResult[0] >= 1000 && distanceResult[0] < 100000){
-                    distanceResult[0] /= 1000;
-                    distanceString = String.format(Locale.ENGLISH, "%.1f", distanceResult[0]) + "km";
-                } else if (distanceResult[0] >= 100000){
-                    distanceString = ">100km";
-                }
-            }
+            String distanceString = RestaurantDataFormat.getDistanceFromRestaurant(mCurrentLatLng, result.getGeometry());
 
             //RATING
-            int ratingResource = RestaurantDataFormat.getRatingResource(result.rating);
+            int ratingResource = RestaurantDataFormat.getRatingResource(result.getRating());
 
             restaurants.add(new RestaurantItem(
                     name,
@@ -392,7 +376,7 @@ public class RestaurantViewModel extends ViewModel {
         private PlacesApiRepository mPlacesApiRepository;
         //private LatLng mLatLng;
 
-        public GetNearByPlacesAsyncTask(RestaurantViewModel restaurantViewModel, PlacesApiRepository placesApiRepository){
+        GetNearByPlacesAsyncTask(RestaurantViewModel restaurantViewModel, PlacesApiRepository placesApiRepository){
             mViewModelReference = new WeakReference<>(restaurantViewModel);
             mPlacesApiRepository = placesApiRepository;
             //mLatLng = latLng;

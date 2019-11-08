@@ -37,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseAuth mAuth = FirebaseAuth.getInstance();
     private FirebaseUser mUser = mAuth.getCurrentUser();
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -119,9 +120,7 @@ public class MainActivity extends AppCompatActivity {
         if (drawerLayout.isDrawerOpen(GravityCompat.START)){
             drawerLayout.closeDrawer(GravityCompat.START);
         } else {
-            super.onBackPressed();
-            //TODO: bug on back pressed
-            Toast.makeText(this, "Back Pressed", Toast.LENGTH_SHORT).show();
+            finish();
         }
     }
 

@@ -5,14 +5,12 @@ import com.google.gson.annotations.SerializedName;
 
 public class Location {
 
-    //TODO: all variables in private
-
     @SerializedName("lat")
     @Expose
-    public Double lat;
+    private Double lat;
     @SerializedName("lng")
     @Expose
-    public Double lng;
+    private Double lng;
 
     public Double getLat() {
         return lat;

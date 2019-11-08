@@ -10,12 +10,15 @@ public class NearBySearchResponse {
 
     @SerializedName("html_attributions")
     @Expose
-    public List<Object> htmlAttributions = null;
+    private List<Object> htmlAttributions = null;
     @SerializedName("results")
     @Expose
-    public List<NearBySearchResult> results = null;
+    private List<NearBySearchResult> results = null;
     @SerializedName("status")
     @Expose
-    public String status;
+    private String status;
 
+    public List<NearBySearchResult> getResults() {
+        return results;
+    }
 }

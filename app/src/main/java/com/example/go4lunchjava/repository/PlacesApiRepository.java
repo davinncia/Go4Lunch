@@ -23,7 +23,7 @@ public class PlacesApiRepository {
     private PlacesApiService service;
 
     //Cache
-    //TODO: specify max ?
+    //TODO: specify max using a stack || queue ?
     private HashMap<String, NearBySearchResponse> mCache = new HashMap<>();
     private static final String CACHE_KEY_MAP_REQUEST = "cache_key"; //Key for specific demand on map via double click
 

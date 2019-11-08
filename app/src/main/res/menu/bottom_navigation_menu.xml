@@ -20,4 +20,6 @@
         android:title="@string/bottom_navigation_menu_workmates"
         app:showAsAction="ifRoom"
         android:icon="@drawable/ic_workmates"/>
+
+
 </menu>

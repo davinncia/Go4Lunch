@@ -7,9 +7,12 @@ public class Geometry {
 
     @SerializedName("location")
     @Expose
-    public Location location;
+    private Location location;
     @SerializedName("viewport")
     @Expose
-    public Viewport viewport;
+    private Viewport viewport;
 
+    public Location getLocation() {
+        return location;
+    }
 }

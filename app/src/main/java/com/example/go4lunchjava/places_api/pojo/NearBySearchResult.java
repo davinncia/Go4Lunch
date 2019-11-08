@@ -11,42 +11,79 @@ public class NearBySearchResult {
 
     @SerializedName("geometry")
     @Expose
-    public Geometry geometry;
+    private Geometry geometry;
     @SerializedName("icon")
     @Expose
-    public String icon;
+    private String icon;
     @SerializedName("id")
     @Expose
-    public String id;
+    private String id;
     @SerializedName("name")
     @Expose
-    public String name;
+    private String name;
     @SerializedName("opening_hours")
     @Expose
-    public OpeningHours openingHours;
+    private OpeningHours openingHours;
     @SerializedName("photos")
     @Expose
-    public List<Photo> photos = null;
+    private List<Photo> photos = null;
     @SerializedName("place_id")
     @Expose
-    public String placeId;
+    private String placeId;
     @SerializedName("rating")
     @Expose
     @Nullable
-    public Float rating;
+    private Float rating;
     @SerializedName("reference")
     @Expose
-    public String reference;
+    private String reference;
     @SerializedName("scope")
     @Expose
-    public String scope;
+    private String scope;
     @SerializedName("types")
     @Expose
-    public List<String> types = null;
+    private List<String> types = null;
     @SerializedName("vicinity")
     @Expose
-    public String vicinity;
+    private String vicinity;
     @SerializedName("plus_code")
     @Expose
-    public PlusCode plusCode;
+    private PlusCode plusCode;
+
+    public Geometry getGeometry() {
+        return geometry;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public OpeningHours getOpeningHours() {
+        return openingHours;
+    }
+
+    public List<Photo> getPhotos() {
+        return photos;
+    }
+
+    public String getPlaceId() {
+        return placeId;
+    }
+
+    @Nullable
+    public Float getRating() {
+        return rating;
+    }
+
+    public String getReference() {
+        return reference;
+    }
+
+    public String getVicinity() {
+        return vicinity;
+    }
 }

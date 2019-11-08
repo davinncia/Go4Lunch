@@ -2,9 +2,6 @@ package com.example.go4lunchjava.places_api;
 
 import com.example.go4lunchjava.places_api.pojo.NearBySearchResponse;
 import com.example.go4lunchjava.restaurant_details.pojo_api.RestaurantDetailsResponse;
-import com.google.gson.JsonElement;
-
-import org.json.JSONObject;
 
 import retrofit2.Call;
 import retrofit2.http.GET;

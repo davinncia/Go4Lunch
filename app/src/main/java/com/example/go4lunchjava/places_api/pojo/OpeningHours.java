@@ -7,6 +7,9 @@ public class OpeningHours {
 
     @SerializedName("open_now")
     @Expose
-    public Boolean openNow;
+    private Boolean openNow;
 
+    public Boolean getOpenNow() {
+        return openNow;
+    }
 }

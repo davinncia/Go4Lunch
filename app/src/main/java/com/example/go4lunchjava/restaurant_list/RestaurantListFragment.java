@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.example.go4lunchjava.R;
@@ -48,8 +49,8 @@ public class RestaurantListFragment extends Fragment implements RestaurantAdapte
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_restaurant_list, container, false);
-        //TODO: empty view
 
+        LinearLayout emptyView = rootView.findViewById(R.id.linearLayout_empty_list_restaurant);
         mRecyclerView = rootView.findViewById(R.id.recycler_view_restaurants);
         initRecyclerView();
 
@@ -59,7 +60,13 @@ public class RestaurantListFragment extends Fragment implements RestaurantAdapte
 
         restaurantViewModel.restaurantsLiveData.observe(this, restaurantItems -> {
             Log.d("debuglog", "RestaurantListView update");
-            mAdapter.populateRecyclerView(restaurantItems);}); //Display data on screen
+            if (restaurantItems == null || restaurantItems.size() < 1)
+                emptyView.setVisibility(View.VISIBLE);
+            else {
+                emptyView.setVisibility(View.GONE);
+                mAdapter.populateRecyclerView(restaurantItems); //Display data on screen
+                }
+        });
 
 
         return rootView;
