@@ -53,7 +53,7 @@ public class LocationRepository {
         if (enabled) {
             LocationRequest locationRequest = new LocationRequest();
             locationRequest
-                    .setSmallestDisplacement(10) //meters
+                    //.setSmallestDisplacement(10) //meters
                     .setInterval(10000) //Updates every 10 seconds
                     .setFastestInterval(10000)
                     .setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);

@@ -13,8 +13,11 @@ import com.example.go4lunchjava.repository.PlacesApiRepository;
 import com.example.go4lunchjava.places_api.pojo.NearBySearchResponse;
 import com.example.go4lunchjava.places_api.pojo.NearBySearchResult;
 import com.example.go4lunchjava.repository.LocationRepository;
+import com.example.go4lunchjava.restaurant_list.RestaurantItem;
+import com.example.go4lunchjava.utils.ObjectConverter;
 import com.example.go4lunchjava.utils.SingleLiveEvent;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.libraries.places.api.model.Place;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -38,7 +41,11 @@ public class MapViewModel extends ViewModel {
     private MediatorLiveData<List<Poi>> mPoiListMediatorLiveData = new MediatorLiveData<>();
     LiveData<List<Poi>> mPoiListLiveData = mPoiListMediatorLiveData;
 
-    // Internal LiveData to react to map ready & location permission
+    //List of Restaurants
+    private MutableLiveData<List<RestaurantItem>> mRestaurantsMutableLiveData = new MutableLiveData<>();
+    public LiveData<List<RestaurantItem>> mRestaurantsLiveData = mRestaurantsMutableLiveData;
+
+    //Internal LiveData to react to map ready & location permission
     private MutableLiveData<Boolean> mapAvailable = new MutableLiveData<>();
     private MutableLiveData<Boolean> locationPermission = new MutableLiveData<>();
 
@@ -56,7 +63,6 @@ public class MapViewModel extends ViewModel {
         mLocationMediatorLiveData.addSource(mapAvailable, available -> {
             if (available) updateDeviceLocation(mLocationRepository.getLatLngLiveData().getValue());
         });
-
 
         mPoiListMediatorLiveData.addSource(mapAvailable, available -> {
             if (available && mLocationLiveData.getValue() != null) { //Location not yet found on opening...
@@ -109,6 +115,22 @@ public class MapViewModel extends ViewModel {
         mPoiListMediatorLiveData.setValue(poiList);
     }
 
+    private void getRestaurants(NearBySearchResponse response){
+        List<RestaurantItem> restaurants = ObjectConverter.convertNearbyResponseToRestaurantItemList(response, mLocationLiveData.getValue());
+        mRestaurantsMutableLiveData.setValue(restaurants);
+    }
+
+    void setSearchedPoi(Place place){ //TODO: change name
+        if (place == null || place.getLatLng() == null) return;
+
+        List<Poi> poiList = new ArrayList<>();
+        poiList.add(new Poi(place.getName(), place.getLatLng().latitude, place.getLatLng().longitude));
+        mPoiListMediatorLiveData.setValue(poiList); //Mark on map
+
+        List<RestaurantItem> restaurants = ObjectConverter.convertPlaceToRestaurantItemList(place, mLocationLiveData.getValue());
+        mRestaurantsMutableLiveData.setValue(restaurants);
+    }
+
     public void hasMapAvailability(boolean available) {
         mapAvailable.setValue(available);
         //Start location updates
@@ -133,7 +155,6 @@ public class MapViewModel extends ViewModel {
         GetNearByPlacesAsyncTask asyncTask = new GetNearByPlacesAsyncTask(MapViewModel.this, mPlacesApiRepository, latLng);
         asyncTask.execute();
     }
-
 
     private static class GetNearByPlacesAsyncTask extends AsyncTask<Void, Void, NearBySearchResponse> {
 
@@ -160,6 +181,7 @@ public class MapViewModel extends ViewModel {
 
             if (mMapViewModelReference.get() != null) {
                 mMapViewModelReference.get().getPoi(nearBySearchResponse);
+                mMapViewModelReference.get().getRestaurants(nearBySearchResponse);
             }
         }
     }

@@ -3,6 +3,7 @@ package com.example.go4lunchjava;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
@@ -19,7 +20,6 @@ import androidx.fragment.app.Fragment;
 import com.bumptech.glide.Glide;
 import com.example.go4lunchjava.auth.AuthentificationActivity;
 import com.example.go4lunchjava.map.MapFragment;
-import com.example.go4lunchjava.restaurant_details.RestaurantDetailsActivity;
 import com.example.go4lunchjava.restaurant_list.RestaurantListFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
@@ -56,7 +56,9 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-
+    //////////////////
+    ////BOTTOM BAR////
+    //////////////////
     private Boolean updateFragment(Integer itemId){
 
         Fragment fragment;
@@ -79,6 +81,9 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    //////////////////
+    //////DRAWER//////
+    //////////////////
     private void configureNavigationDrawer(){
 
         drawerLayout = findViewById(R.id.drawer_layout_main);
@@ -139,6 +144,39 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    //////////////////
+    //////SEARCH//////
+    //////////////////
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        return true;
+    }
+
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+
+        if (item.getItemId() == R.id.menu_action_search){
+
+            //TODO NINO: My implementation of search function
+            Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.frame_layout_container_main);
+
+            if (fragment instanceof MapFragment){
+                ((MapFragment) fragment).searchPlaceOnMap();
+            } else if (fragment instanceof RestaurantListFragment){
+                Toast.makeText(this, "Search restaurant", Toast.LENGTH_SHORT).show();
+            } else if (fragment instanceof WorkmatesFragment){
+                Toast.makeText(this, "Search workmates", Toast.LENGTH_SHORT).show();
+            }
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    //////////////////
+    ////FIRE BASE/////
+    //////////////////
     //TODO NINO: In a specific ViewModel ?
     private void logOutUser(){
         mAuth.signOut();

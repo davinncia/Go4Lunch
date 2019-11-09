@@ -4,6 +4,7 @@ package com.example.go4lunchjava.restaurant_list;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -18,8 +19,12 @@ import android.widget.Toast;
 
 import com.example.go4lunchjava.R;
 import com.example.go4lunchjava.di.ViewModelFactory;
+import com.example.go4lunchjava.map.MapViewModel;
+import com.example.go4lunchjava.places_api.pojo.NearBySearchResponse;
 import com.example.go4lunchjava.restaurant_details.RestaurantDetailsActivity;
+import com.google.android.libraries.places.api.model.Place;
 
+import java.util.List;
 import java.util.Objects;
 
 
@@ -56,18 +61,18 @@ public class RestaurantListFragment extends Fragment implements RestaurantAdapte
 
         //Get data from view model
         ViewModelFactory viewModelFactory = new ViewModelFactory(Objects.requireNonNull(getActivity()).getApplication());
-        RestaurantViewModel restaurantViewModel = ViewModelProviders.of(this, viewModelFactory).get(RestaurantViewModel.class);
+        //Shared ViewModel
+        MapViewModel mapViewModel = ViewModelProviders.of(getActivity(), viewModelFactory).get(MapViewModel.class);
 
-        restaurantViewModel.restaurantsLiveData.observe(this, restaurantItems -> {
+        mapViewModel.mRestaurantsLiveData.observe(this, restaurantItems -> {
             Log.d("debuglog", "RestaurantListView update");
             if (restaurantItems == null || restaurantItems.size() < 1)
                 emptyView.setVisibility(View.VISIBLE);
             else {
                 emptyView.setVisibility(View.GONE);
                 mAdapter.populateRecyclerView(restaurantItems); //Display data on screen
-                }
+            }
         });
-
 
         return rootView;
     }

@@ -27,6 +27,7 @@
     <string name="like">LIKE</string>
     <string name="website">WEBSITE</string>
     <string name="empty_restaurant_list">Let\'s find where to have lunch !  Go to the map</string>
+    <string name="search">Search</string>
 
 
 </resources>

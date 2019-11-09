@@ -25,7 +25,7 @@ public class RestaurantDataFormat {
         int result = Math.round(rate * 3 / 5);
 
         if (result < 0)
-            return -1; //TEST
+            return 0; //No rating communicated
         else if (result < 1.5)
             return R.drawable.ic_star;
         else if (result >= 1.5 && result <= 2.5)
@@ -52,11 +52,11 @@ public class RestaurantDataFormat {
 
     /**
      * Util method calculating the distance between two LatLng objects
-     * @param latLng1
-     * @param geometry
+     * @param latLng1 of current place
+     * @param latLng2 of restaurant
      * @return formatted String of the distance
      */
-    public static String getDistanceFromRestaurant(LatLng latLng1, Geometry geometry){
+    public static String getDistanceFromRestaurant(LatLng latLng1, LatLng latLng2){
 
         float[] distanceResult = new float[1];
         String distanceString = "";
@@ -64,7 +64,7 @@ public class RestaurantDataFormat {
 
         if (latLng1 != null) {
             Location.distanceBetween(
-                    geometry.getLocation().getLat(), geometry.getLocation().getLng(),
+                    latLng2.latitude, latLng2.longitude,
                     latLng1.latitude, latLng1.longitude,
                     distanceResult);
 

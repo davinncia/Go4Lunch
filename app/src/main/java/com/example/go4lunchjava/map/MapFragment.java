@@ -2,8 +2,14 @@ package com.example.go4lunchjava.map;
 
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -12,12 +18,6 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Toast;
-
 import com.example.go4lunchjava.R;
 import com.example.go4lunchjava.di.ViewModelFactory;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -25,11 +25,23 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.api.model.TypeFilter;
+import com.google.android.libraries.places.widget.Autocomplete;
+import com.google.android.libraries.places.widget.AutocompleteActivity;
+import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+
 
 public class MapFragment extends Fragment {
+
+    private static final int AUTO_COMPLETE_REQUEST_CODE = 1;
 
     private static final int RC_LOCATION_REQUEST = 100;
     private static final float ZOOM = 15;
@@ -41,12 +53,14 @@ public class MapFragment extends Fragment {
     private MapView mMapView;
     private FloatingActionButton mFab;
 
+    private List<Poi> mPoiList;
+    private boolean mWaitingToZoom = false;
+
     private boolean hasLocation = false;
 
     private MapFragment() {
         // Required empty constructor
     }
-
 
     public static MapFragment newInstance(){
         return new MapFragment();
@@ -62,6 +76,9 @@ public class MapFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_map, container, false);
 
+        //SEARCH: Initialize Places SDK for auto complete
+        Places.initialize(Objects.requireNonNull(getContext()), getResources().getString(R.string.google_place_api_key));
+
         mMapView = rootView.findViewById(R.id.map_view);
         mFab = rootView.findViewById(R.id.fab_map_fragment);
 
@@ -69,35 +86,26 @@ public class MapFragment extends Fragment {
 
         mFab.setOnClickListener(view -> fabClick(view));
 
-
         ViewModelFactory factory = new ViewModelFactory(getActivity().getApplication());
-        mMapViewModel = ViewModelProviders.of(this, factory).get(MapViewModel.class);
+        mMapViewModel = ViewModelProviders.of(getActivity(), factory).get(MapViewModel.class);
 
         mMapViewModel.hasLocationPermission(checkLocationPermission());
 
-        mMapViewModel.mLocationLiveData.observe(this, latLng -> {
-                mLatLng = latLng;
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mLatLng, ZOOM));
-                mFab.setImageResource(R.drawable.ic_location);
-                hasLocation = true;
-        });
-
-        mMapViewModel.mNoLocationLiveData.observe(this, o -> {
-                mFab.setImageResource(R.drawable.ic_location_disabled);
-                hasLocation = false;
-                });
-
-        mMapViewModel.mPoiListLiveData.observe(this, poiList -> {
-            Log.d("debuglog", "Map View Update");
-            mMap.clear();
-            for (Poi poi : poiList){
-                LatLng poiLatLng = new LatLng(poi.getLat(), poi.getLon());
-                mMap.addMarker(new MarkerOptions().position(poiLatLng).title(poi.getName()));
-            }
-        });
-
         mMapView.getMapAsync(googleMap -> {
             mMap = googleMap;
+
+            mMap.setOnMapLoadedCallback(() -> {
+                Log.d("debuglog", "Map loaded !");
+                if (mPoiList != null && mPoiList.size() > 0) { //A Poi list is waiting to be displayed
+                    addPoiMarkers(mPoiList);
+                    mPoiList.clear();
+                }
+                if (mWaitingToZoom){
+                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mLatLng, ZOOM));
+                    mWaitingToZoom = false;
+                }
+                mMap.setOnMapLoadedCallback(null);
+            });
 
             mMap.setOnCameraMoveListener(mCameraMoveListener);
 
@@ -110,7 +118,44 @@ public class MapFragment extends Fragment {
             mMapViewModel.hasMapAvailability(true); //Triggers location updates
         });
 
+        //Observe data
+        mMapViewModel.mLocationLiveData.observe(this, latLng -> {
+            mLatLng = latLng;
+
+            if (mMap == null) { //Still loading in background
+                mWaitingToZoom = true;
+            } else
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mLatLng, ZOOM));
+            mFab.setImageResource(R.drawable.ic_location);
+            hasLocation = true;
+        });
+
+        mMapViewModel.mNoLocationLiveData.observe(this, o -> {
+            mFab.setImageResource(R.drawable.ic_location_disabled);
+            hasLocation = false;
+        });
+
+        mMapViewModel.mPoiListLiveData.observe(this, poiList -> {
+            if (mMap == null) { //Google map initialize in background, thus can be null.
+                //TODO: For some reason size = 0 on third demand...
+                Log.d("debuglog", "Poi list size: " + poiList.size());
+                mPoiList = poiList; //We then keep the list to display when map is (finally) loaded.
+            }
+            else addPoiMarkers(poiList);
+        });
+
         return rootView;
+    }
+
+    private void addPoiMarkers(List<Poi> poiList){
+        mMap.clear();
+        Log.d("debuglog", "Placing markers");
+        for (Poi poi : poiList){
+            LatLng poiLatLng = new LatLng(poi.getLat(), poi.getLon());
+            mMap.addMarker(new MarkerOptions().position(poiLatLng).title(poi.getName()));
+        }
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                new LatLng(poiList.get(0).getLat(), poiList.get(0).getLon()), ZOOM));
     }
 
     private GoogleMap.OnCameraMoveListener mCameraMoveListener = new GoogleMap.OnCameraMoveListener() {
@@ -126,7 +171,6 @@ public class MapFragment extends Fragment {
 
         if (hasLocation){
             //Animate camera to current position then resetting our CameraMoveListener (performance saving).
-            mMapViewModel.setCameraMoved(false);
             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(mLatLng, ZOOM), new GoogleMap.CancelableCallback() {
                 @Override
                 public void onFinish() {
@@ -138,12 +182,11 @@ public class MapFragment extends Fragment {
                 }
             });
 
-            mMapViewModel.setCameraMoved(false); // Allow viewModel to update camera position again
-
         } else {
             Snackbar.make(view, getResources().getString(R.string.location_null_message), Snackbar.LENGTH_SHORT).show();
+            mMap.setOnCameraMoveListener(mCameraMoveListener);
         }
-
+        mMapViewModel.setCameraMoved(false); // Allow viewModel to update camera position again
     }
 
     @Override
@@ -199,4 +242,30 @@ public class MapFragment extends Fragment {
         }
     }
 
+    ////////////////
+    /////SEARCH/////
+    ////////////////
+    public void searchPlaceOnMap(){
+        List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG,
+                Place.Field.ADDRESS, Place.Field.OPENING_HOURS, Place.Field.RATING, Place.Field.PHOTO_METADATAS);
+        //Places auto complete intent
+        Intent intent = new Autocomplete.IntentBuilder(
+                AutocompleteActivityMode.OVERLAY, fields)
+                .setTypeFilter(TypeFilter.ESTABLISHMENT)
+                .build(Objects.requireNonNull(getContext()));
+        startActivityForResult(intent, AUTO_COMPLETE_REQUEST_CODE);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == AUTO_COMPLETE_REQUEST_CODE){
+            if (resultCode == AutocompleteActivity.RESULT_OK){
+                assert data != null;
+                Place place = Autocomplete.getPlaceFromIntent(data);
+                mMapViewModel.setSearchedPoi(place);
+            }
+        }
+    }
 }

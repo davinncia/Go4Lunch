@@ -23,9 +23,7 @@ public class PlacesApiRepository {
     private PlacesApiService service;
 
     //Cache
-    //TODO: specify max using a stack || queue ?
     private HashMap<String, NearBySearchResponse> mCache = new HashMap<>();
-    private static final String CACHE_KEY_MAP_REQUEST = "cache_key"; //Key for specific demand on map via double click
 
     private PlacesApiRepository(){
         retrofit = getRetrofitInstance();
@@ -76,7 +74,6 @@ public class PlacesApiRepository {
                 Log.d("debuglog", "Places Api request...");
                 NearBySearchResponse toStore = service.nearbySearch(location).execute().body();
                 mCache.put(location, toStore); //Used for map to prevent identical requests in the future
-                mCache.put(CACHE_KEY_MAP_REQUEST, toStore); //Used for restaurant list
                 return toStore;
 
             } catch (IOException e) {
@@ -84,21 +81,6 @@ public class PlacesApiRepository {
             }
             return null;
         }
-    }
-
-    public NearBySearchResponse getMapPlacesResponse(){
-
-        NearBySearchResponse mapPlacesResponse = mCache.get(CACHE_KEY_MAP_REQUEST);
-
-        /*
-        //Necessary ?
-        if (mapPlacesResponse == null) //Cache have been destroyed
-            return getNearBySearchResponse(latLng); //Get a response from current location
-        else
-            return mapPlacesResponse;
-         */
-
-        return mapPlacesResponse;
     }
 
     ////////////////////
