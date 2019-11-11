@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -37,6 +38,9 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseAuth mAuth = FirebaseAuth.getInstance();
     private FirebaseUser mUser = mAuth.getCurrentUser();
 
+    //Search
+    private EditText mSearchEditText;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,10 +48,11 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         //startActivity(new Intent(this, RestaurantDetailsActivity.class));
+        mSearchEditText = findViewById(R.id.edit_text_search);
 
         configureNavigationDrawer();
 
-        getSupportFragmentManager().beginTransaction().replace(R.id.frame_layout_container_main, MapFragment.newInstance()).commit();
+        getSupportFragmentManager().beginTransaction().replace(R.id.frame_layout_container_main, RestaurantListFragment.newInstance()).commit();
 
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_nav_bar_main);
         bottomNavigationView.setOnNavigationItemReselectedListener(item -> { }); //Do nothing if already selected
@@ -76,6 +81,9 @@ public class MainActivity extends AppCompatActivity {
             default:
                 throw new IllegalArgumentException("No bottom bar match for: " + itemId);
         }
+
+        //If a search took place, hide search EditText
+        mSearchEditText.setVisibility(View.GONE);
 
         getSupportFragmentManager().beginTransaction().replace(R.id.frame_layout_container_main, fragment).commit();
         return true;
@@ -165,7 +173,7 @@ public class MainActivity extends AppCompatActivity {
             if (fragment instanceof MapFragment){
                 ((MapFragment) fragment).searchPlaceOnMap();
             } else if (fragment instanceof RestaurantListFragment){
-                Toast.makeText(this, "Search restaurant", Toast.LENGTH_SHORT).show();
+                ((RestaurantListFragment) fragment).setSearchEditText();
             } else if (fragment instanceof WorkmatesFragment){
                 Toast.makeText(this, "Search workmates", Toast.LENGTH_SHORT).show();
             }
