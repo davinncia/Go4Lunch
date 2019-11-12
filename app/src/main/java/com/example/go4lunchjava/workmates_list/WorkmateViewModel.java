@@ -4,7 +4,6 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-import com.example.go4lunchjava.auth.User;
 import com.example.go4lunchjava.repository.FireStoreRepository;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -15,8 +14,8 @@ public class WorkmateViewModel extends ViewModel {
 
     private FireStoreRepository mFireStoreRepository = FireStoreRepository.getInstance();
 
-    private MutableLiveData<List<User>> mUsersMutableLiveData = new MutableLiveData<>();
-    public LiveData<List<User>> mUsersLiveData = mUsersMutableLiveData;
+    private MutableLiveData<List<Workmate>> mUsersMutableLiveData = new MutableLiveData<>();
+    LiveData<List<Workmate>> mUsersLiveData = mUsersMutableLiveData;
 
     public WorkmateViewModel() {
 
@@ -28,17 +27,18 @@ public class WorkmateViewModel extends ViewModel {
 
         mFireStoreRepository.getAllUserDocuments().addOnSuccessListener(queryDocumentSnapshots -> {
 
-            List<User> users = new ArrayList<>();
+            List<Workmate> workmates = new ArrayList<>();
 
             for (QueryDocumentSnapshot document: queryDocumentSnapshots){
 
-                users.add(new User(String.valueOf(document.get(User.FIELD_NAME)),
+                workmates.add(new Workmate(String.valueOf(document.get(Workmate.FIELD_NAME)),
                         null,
-                        String.valueOf(document.get(User.FIELD_AVATAR)),
-                        null));
+                        String.valueOf(document.get(Workmate.FIELD_AVATAR)),
+                        String.valueOf(document.get(Workmate.FIELD_RESTAURANT_ID)),
+                        String.valueOf(document.get(Workmate.FIELD_RESTAURANT_NAME))));
             }
 
-            if (users.size() > 0) mUsersMutableLiveData.setValue(users);
+            if (workmates.size() > 0) mUsersMutableLiveData.setValue(workmates);
         });
     }
 }

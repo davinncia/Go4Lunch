@@ -134,7 +134,7 @@ public class AuthentificationActivity extends AppCompatActivity {
                     FirebaseUser user = mAuth.getCurrentUser();
                     //Add if not already, add user to FireStore
                     FireStoreRepository.getInstance().createUserIfNotRegistered(
-                            user.getEmail(), user.getDisplayName(), String.valueOf(user.getPhotoUrl()));
+                            user.getUid(), user.getDisplayName(), String.valueOf(user.getPhotoUrl()));
                     // Sign in success, update UI with the signed-in user's information
                     updateUI(user);
                 } else {

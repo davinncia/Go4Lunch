@@ -1,5 +1,7 @@
 package com.example.go4lunchjava.workmates_list;
 
+import android.app.Application;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,13 +14,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.go4lunchjava.R;
-import com.example.go4lunchjava.auth.User;
 
 import java.util.List;
 
 public class WorkmateAdapter extends RecyclerView.Adapter<WorkmateAdapter.WorkmateViewHolder> {
 
-    private List<User> mUsers;
+    private List<Workmate> mWorkmates;
 
     @NonNull
     @Override
@@ -31,9 +32,16 @@ public class WorkmateAdapter extends RecyclerView.Adapter<WorkmateAdapter.Workma
 
     @Override
     public void onBindViewHolder(@NonNull WorkmateViewHolder holder, int position) {
-        User currentUser = mUsers.get(position);
+        Workmate currentUser = mWorkmates.get(position);
 
-        holder.textView.setText(currentUser.getDisplayName());
+        String userSentence;
+        if (currentUser.getRestaurantName() != null && !currentUser.getRestaurantName().isEmpty()) {
+            userSentence = holder.itemView.getContext().getString(R.string.is_eating_at) + currentUser.getRestaurantName();
+        } else {
+            userSentence = holder.itemView.getContext().getString(R.string.has_not_decided_yet);
+        }
+
+        holder.textView.setText(String.format("%s%s", currentUser.getDisplayName(), userSentence));
 
         Glide.with(holder.imageView.getContext())
                 .load(currentUser.getAvatarUri())
@@ -44,11 +52,11 @@ public class WorkmateAdapter extends RecyclerView.Adapter<WorkmateAdapter.Workma
 
     @Override
     public int getItemCount() {
-        return mUsers != null ? mUsers.size() : 0;
+        return mWorkmates != null ? mWorkmates.size() : 0;
     }
 
-    public void updateData(List<User> users){
-        this.mUsers = users;
+    void updateData(List<Workmate> workmates){
+        this.mWorkmates = workmates;
         this.notifyDataSetChanged();
     }
 

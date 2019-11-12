@@ -4,23 +4,33 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.bumptech.glide.Glide;
 import com.example.go4lunchjava.R;
+import com.example.go4lunchjava.workmates_list.Workmate;
 import com.example.go4lunchjava.di.ViewModelFactory;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+import java.util.List;
 
 public class RestaurantDetailsActivity extends AppCompatActivity {
 
     public static final String RESTAURANT_ID_KEY = "restaurant_id";
+    public static final String RESTAURANT_NAME_KEY = "restaurant_name";
+
     private String mPlaceId;
+    private String mPlaceName;
+
+    RestaurantDetailsViewModel detailsViewModel;
 
     //UI
     private FloatingActionButton mFab;
@@ -35,11 +45,13 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
     //DATA
     private String mPhoneNumber;
     private String mWebUrl;
+    private boolean isSelected;
 
 
-    public static Intent newIntent(Context context, String restaurantId){
+    public static Intent newIntent(Context context, String restaurantId, String restaurantName){
         Intent intent = new Intent(context, RestaurantDetailsActivity.class);
         intent.putExtra(RESTAURANT_ID_KEY, restaurantId);
+        intent.putExtra(RESTAURANT_NAME_KEY, restaurantName);
         return intent;
     }
 
@@ -58,16 +70,31 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
         mWebImageView = findViewById(R.id.iv_web_details);
 
         mPlaceId = getIntent().getStringExtra(RESTAURANT_ID_KEY);
+        mPlaceName = getIntent().getStringExtra(RESTAURANT_NAME_KEY);
 
         ViewModelFactory factory = new ViewModelFactory(getApplication());
-        RestaurantDetailsViewModel detailsViewModel = ViewModelProviders.of(this, factory).get(RestaurantDetailsViewModel.class);
+        detailsViewModel = ViewModelProviders.of(this, factory).get(RestaurantDetailsViewModel.class);
 
-        if (mPlaceId != null) detailsViewModel.launchDetailsRequest(mPlaceId); //Provide the id to our ViewModel
+        if (mPlaceId != null) {
+            detailsViewModel.launchDetailsRequest(mPlaceId); //Provide the id to our ViewModel
+            detailsViewModel.fetchFireStoreData(mPlaceId);
+        }
 
-        detailsViewModel.mDetailsLiveData.observe(this, this::updateUi);
+        detailsViewModel.mDetailsLiveData.observe(this, this::updateDetailsUi);
+
+        detailsViewModel.mIsUserSelectionLiveData.observe(this, isUserSelection -> {
+            Log.d("debuglog", "Shoot");
+            isSelected = isUserSelection;
+            if (isUserSelection){
+                mFab.setImageResource(R.drawable.ic_done);
+            } else {
+                mFab.setImageResource(R.drawable.ic_add);
+            }
+        });
     }
 
-    private void updateUi(RestaurantDetails restaurant){
+    //Updating ui with place info from PlacesAPA
+    private void updateDetailsUi(RestaurantDetails restaurant){
 
         if (!restaurant.getPictureUri().isEmpty()) {
             Glide.with(this)
@@ -82,11 +109,10 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
         mPhoneNumber = restaurant.getPhoneNumber();
         mWebUrl = restaurant.getWebSiteUrl();
 
-
         mPhoneImageView.setOnClickListener(iconClickListener);
         mFavoriteImageView.setOnClickListener(iconClickListener);
         mWebImageView.setOnClickListener(iconClickListener);
-
+        mFab.setOnClickListener(this::handleFabClick);
     }
 
     private View.OnClickListener iconClickListener = view -> {
@@ -110,6 +136,12 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
                 break;
         }
     };
+
+    private void handleFabClick(View view){
+
+        detailsViewModel.updateUserSelection(!isSelected, mPlaceId, mPlaceName);
+
+    }
 
     private void dialPhoneNumber(String phoneNUmber){
         Intent intent = new Intent(Intent.ACTION_DIAL);

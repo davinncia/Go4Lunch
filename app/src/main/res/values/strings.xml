@@ -29,6 +29,8 @@
     <string name="empty_restaurant_list">Let\'s find where to have lunch !  Go to the map</string>
     <string name="search">Search</string>
     <string name="search_hint_restaurant">Search in the list</string>
+    <string name="is_eating_at">\u0020is eating at\u0020</string>
+    <string name="has_not_decided_yet">\u0020has not decided yet.</string>
 
 
 </resources>

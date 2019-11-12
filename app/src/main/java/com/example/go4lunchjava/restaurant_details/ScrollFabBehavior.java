@@ -33,10 +33,10 @@ public class ScrollFabBehavior extends FloatingActionButton.Behavior {
         super.onNestedScroll(coordinatorLayout, child, target, dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed, type);
 
         if (dyConsumed > 0 && child.getVisibility() == View.VISIBLE) {
-            // User scrolled dow
+            // Workmate scrolled dow
             child.setVisibility(View.INVISIBLE);
         } else if (dyConsumed < 0 && child.getVisibility() != View.VISIBLE) {
-            // User scrolled up
+            // Workmate scrolled up
             child.show();
         }
     }

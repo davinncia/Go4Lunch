@@ -6,42 +6,47 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import com.example.go4lunchjava.repository.FireStoreRepository;
 import com.example.go4lunchjava.repository.PlacesApiRepository;
 import com.example.go4lunchjava.restaurant_details.pojo_api.RestaurantDetailsResponse;
 import com.example.go4lunchjava.restaurant_details.pojo_api.RestaurantDetailsResult;
 import com.example.go4lunchjava.utils.RestaurantDataFormat;
-import com.google.gson.Gson;
+import com.example.go4lunchjava.workmates_list.Workmate;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 public class RestaurantDetailsViewModel extends ViewModel {
 
     //https://maps.googleapis.com/maps/api/place/details/json?place_id=ChIJJ4y_XahZwokRgO8olYwA7Cg&fields=name,photo,rating,vicinity,international_phone_number,website&key=AIzaSyDSpFo8O861EgPYmsRlICS0sRs0zGEsrS4
 
-    private static final String DUMMY_JSON = "{\n" +
-            "   \"html_attributions\" : [],\n" +
-            "   \"result\" : {\n" +
-            "      \"international_phone_number\" : \"+1 212-889-0089\",\n" +
-            "      \"name\" : \"Let's Meat BBQ\",\n" +
-            "      \"rating\" : 3.3,\n" +
-            "      \"vicinity\" : \"307 5th Avenue, New York\",\n" +
-            "      \"website\" : \"https://www.letsmeatnyc.com/\"\n" +
-            "   },\n" +
-            "   \"status\" : \"OK\"\n" +
-            "}";
-
     private PlacesApiRepository mPlacesApiRepository;
+    private FireStoreRepository mFireStoreRepository;
 
+    //DETAILS
     private MutableLiveData<RestaurantDetails> mDetailsMutableLiveData = new MutableLiveData<>();
-    public LiveData<RestaurantDetails> mDetailsLiveData = mDetailsMutableLiveData;
+    LiveData<RestaurantDetails> mDetailsLiveData = mDetailsMutableLiveData;
+
+    //WORKMATES
+    private MutableLiveData<List<Workmate>> mWorkmatesMutable = new MutableLiveData<>();
+    public LiveData<List<Workmate>> mWorkmatesLiveData = mWorkmatesMutable;
+
+    //USER'S CHOICE
+    private MutableLiveData<Boolean> mIsUserSelectionMutable = new MutableLiveData<>();
+    public LiveData<Boolean> mIsUserSelectionLiveData = mIsUserSelectionMutable;
 
     public RestaurantDetailsViewModel(){
 
         mPlacesApiRepository = PlacesApiRepository.getInstance();
+        mFireStoreRepository = FireStoreRepository.getInstance();
 
     }
 
-    public void launchDetailsRequest(String placeId){
+    void launchDetailsRequest(String placeId){
 
         GetRestaurantDetailsAsyncTask asyncTask = new GetRestaurantDetailsAsyncTask(
                 RestaurantDetailsViewModel.this, mPlacesApiRepository, placeId);
@@ -82,11 +87,44 @@ public class RestaurantDetailsViewModel extends ViewModel {
         mDetailsMutableLiveData.setValue(restaurantDetails);
     }
 
+    void fetchFireStoreData(String placeId){
 
-    //DEBUG
-    private RestaurantDetailsResponse getResponse(){
-        Gson gson = new Gson();
-        return gson.fromJson(DUMMY_JSON, RestaurantDetailsResponse.class);
+        mFireStoreRepository.getAllUserDocuments().addOnSuccessListener(queryDocumentSnapshots -> {
+
+            List<Workmate> workmates = new ArrayList<>();
+
+            for (QueryDocumentSnapshot document: queryDocumentSnapshots){
+
+                //Checking if restaurant selected by current user
+                if (document.getId().equals(FirebaseAuth.getInstance().getUid())) {
+                    if (Objects.equals(document.get(Workmate.FIELD_RESTAURANT_ID), placeId)) {
+                        mIsUserSelectionMutable.setValue(true);
+                    } else {
+                        mIsUserSelectionMutable.setValue(false);
+                    }
+                } else if (Objects.equals(document.get(Workmate.FIELD_RESTAURANT_ID), placeId)) {
+                    //Every other users
+                    workmates.add(new Workmate(String.valueOf(document.get(Workmate.FIELD_NAME)),
+                            null,
+                            String.valueOf(document.get(Workmate.FIELD_AVATAR)), null, null));
+                    }
+                }
+            mWorkmatesMutable.setValue(workmates);
+        });
+
+    }
+
+    void updateUserSelection(boolean selected, String placeId, String placeName){
+        mIsUserSelectionMutable.setValue(selected);
+
+        if (!selected) {
+            placeId = "";
+            placeName = "";
+        }
+
+        //Update FireStore
+        mFireStoreRepository.updateRestaurantSelection(FirebaseAuth.getInstance().getUid(), placeId, placeName);
+
     }
 
     private static class GetRestaurantDetailsAsyncTask extends AsyncTask<Void, Void, RestaurantDetailsResponse>{

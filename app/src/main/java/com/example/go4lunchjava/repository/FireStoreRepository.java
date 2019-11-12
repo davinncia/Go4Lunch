@@ -1,10 +1,9 @@
 package com.example.go4lunchjava.repository;
 
 
-import android.net.Uri;
 import android.util.Log;
 
-import com.example.go4lunchjava.auth.User;
+import com.example.go4lunchjava.workmates_list.Workmate;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -50,30 +49,44 @@ public class FireStoreRepository {
     }
 
     //CREATE
-    public void createUserIfNotRegistered(String email, String userName, String avatarUri){
-        db.collection(USER_COLLECTION_NAME).document(email).get()
+    public void createUserIfNotRegistered(String uid, String userName, String avatarUri){
+        db.collection(USER_COLLECTION_NAME).document(uid).get()
                 .addOnCompleteListener(task -> {
             if (!Objects.requireNonNull(task.getResult()).exists()){
-                createUser(email, userName, avatarUri);
+                createUser(uid, userName, avatarUri);
             } else {
-                Log.d("debuglog", "User already registered.");
+                Log.d("debuglog", "Workmate already registered.");
             }
         });
     }
 
-    private void createUser(String email, String userName, String avatarUri){
+    private void createUser(String uid, String userName, String avatarUri){
         Map<String, Object> user = new HashMap<>();
-        user.put(User.FIELD_NAME, userName);
-        user.put(User.FIELD_AVATAR, avatarUri);
+        user.put(Workmate.FIELD_NAME, userName);
+        user.put(Workmate.FIELD_AVATAR, avatarUri);
 
         db.collection(USER_COLLECTION_NAME)
-                .document(email)
+                .document(uid)
                 .set(user)
                 .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) Log.d("debuglog", "User successfully registered.");
-                    else Log.d("debuglog", "User not added: " + task.getException());
+                    if (task.isSuccessful()) Log.d("debuglog", "Workmate successfully registered.");
+                    else Log.d("debuglog", "Workmate not added: " + task.getException());
                 });
     }
 
+    //UPDATE
+    public void updateRestaurantSelection(String uid, String placeId, String placeName){
+        Map<String, Object> restaurant = new HashMap<>();
+        restaurant.put(Workmate.FIELD_RESTAURANT_ID, placeId);
+        restaurant.put(Workmate.FIELD_RESTAURANT_NAME, placeName);
+
+        db.collection(USER_COLLECTION_NAME)
+                .document(uid)
+                .update(restaurant)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) Log.d("debuglog", "Restaurant updated in FireStore.");
+                    else Log.d("debuglog", "Error updating restaurant in ForeStore." + task.getException());
+                });
+    }
 
 }
