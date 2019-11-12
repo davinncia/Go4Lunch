@@ -10,7 +10,6 @@ import com.google.android.gms.maps.model.LatLng;
 import java.io.IOException;
 import java.util.HashMap;
 
-import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -98,42 +97,5 @@ public class PlacesApiRepository {
         return response;
 
     }
-
-
-
-    /*
-    public void testPlaceApi(){
-
-        List<NearBySearchResult> results = new ArrayList<>();
-        List<Poi> poiList = new ArrayList<>();
-
-        service.testMapsApi("44.4076406,0.2197464").enqueue(new Callback<NearBySearchResponse>() {
-            @Override
-            public void onResponse(Call<NearBySearchResponse> call, Response<NearBySearchResponse> response) {
-
-                for (NearBySearchResult result : response.body().results){
-                    poiList.add(new Poi(result.name, result.geometry.location.lat, result.geometry.location.lng));
-                }
-
-                for (Poi poi : poiList){
-
-                    Log.d("debuglog", "name " + poi.getName());
-                    Log.d("debuglog", "lat " + poi.getLat());
-                    Log.d("debuglog", "long " + poi.getLon());
-                    Log.d("debuglog", "______________________");
-
-                }
-            }
-
-            @Override
-            public void onFailure(Call<NearBySearchResponse> call, Throwable t) {
-                Log.d("debuglog", "onFailure: " + t);
-
-            }
-        });
-    }
-
-     */
-
 
 }

@@ -22,6 +22,7 @@ import com.bumptech.glide.Glide;
 import com.example.go4lunchjava.auth.AuthentificationActivity;
 import com.example.go4lunchjava.map.MapFragment;
 import com.example.go4lunchjava.restaurant_list.RestaurantListFragment;
+import com.example.go4lunchjava.workmates_list.WorkmatesFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;

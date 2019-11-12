@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.go4lunchjava.MainActivity;
 import com.example.go4lunchjava.R;
+import com.example.go4lunchjava.repository.FireStoreRepository;
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
@@ -51,9 +52,6 @@ public class AuthentificationActivity extends AppCompatActivity {
         setContentView(R.layout.activity_authentification);
 
         mAuth = FirebaseAuth.getInstance();
-
-        //Sign Out
-        //mAuth.getInstance().signOut();
 
         setUpGoogleSignIn();
         setUpFaceBookSignIn();
@@ -131,9 +129,13 @@ public class AuthentificationActivity extends AppCompatActivity {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if (task.isSuccessful()){
-                    // Sign in success, update UI with the signed-in user's information
                     Log.w(AuthentificationActivity.class.getSimpleName(), "signInWithCredential:success");
+
                     FirebaseUser user = mAuth.getCurrentUser();
+                    //Add if not already, add user to FireStore
+                    FireStoreRepository.getInstance().createUserIfNotRegistered(
+                            user.getEmail(), user.getDisplayName(), String.valueOf(user.getPhotoUrl()));
+                    // Sign in success, update UI with the signed-in user's information
                     updateUI(user);
                 } else {
                     // If sign in fails, display a message to the user.

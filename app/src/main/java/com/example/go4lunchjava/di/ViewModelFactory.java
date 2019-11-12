@@ -10,6 +10,8 @@ import com.example.go4lunchjava.auth.LogInCheckViewModel;
 import com.example.go4lunchjava.map.MapViewModel;
 import com.example.go4lunchjava.restaurant_details.RestaurantDetailsViewModel;
 import com.example.go4lunchjava.restaurant_list.RestaurantViewModel;
+import com.example.go4lunchjava.workmates_list.WorkmateAdapter;
+import com.example.go4lunchjava.workmates_list.WorkmateViewModel;
 
 public class ViewModelFactory extends ViewModelProvider.NewInstanceFactory {
 
@@ -31,6 +33,8 @@ public class ViewModelFactory extends ViewModelProvider.NewInstanceFactory {
             return (T) new RestaurantViewModel(mApplication);
         } else if (modelClass.isAssignableFrom(RestaurantDetailsViewModel.class)){
             return (T) new RestaurantDetailsViewModel();
+        } else if (modelClass.isAssignableFrom(WorkmateViewModel.class)){
+            return (T) new WorkmateViewModel();
         }
         throw new IllegalArgumentException("Unknown ViewModel class");
     }
