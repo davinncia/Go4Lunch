@@ -8,6 +8,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -15,7 +17,7 @@ import com.example.go4lunchjava.R;
 
 import java.util.List;
 
-public class RestaurantAdapter extends RecyclerView.Adapter<RestaurantAdapter.RestaurantViewHolder> {
+public class RestaurantAdapter extends ListAdapter<RestaurantItem, RestaurantAdapter.RestaurantViewHolder> {
 
     //DATA
     private List<RestaurantItem> mRestaurants;
@@ -23,7 +25,8 @@ public class RestaurantAdapter extends RecyclerView.Adapter<RestaurantAdapter.Re
     //CLICKS
     private OnRestaurantClickListener mListener;
 
-    public RestaurantAdapter(){
+    protected RestaurantAdapter() {
+        super(DIFF_CALLBACK);
     }
 
     @NonNull
@@ -38,7 +41,7 @@ public class RestaurantAdapter extends RecyclerView.Adapter<RestaurantAdapter.Re
     @Override
     public void onBindViewHolder(@NonNull RestaurantViewHolder holder, int i) {
 
-        RestaurantItem restaurant = mRestaurants.get(i);
+        RestaurantItem restaurant = getItem(i);
 
         holder.restaurantNameView.setText(restaurant.getName());
         holder.address.setText(restaurant.getAddress());
@@ -58,15 +61,15 @@ public class RestaurantAdapter extends RecyclerView.Adapter<RestaurantAdapter.Re
 
     }
 
-    @Override
-    public int getItemCount() {
-        return mRestaurants != null ? mRestaurants.size() : 0;
-    }
-
-    void populateRecyclerView(List<RestaurantItem> restaurants){
-        this.mRestaurants = restaurants;
-        notifyDataSetChanged();
-    }
+//    @Override
+//    public int getItemCount() {
+//        return mRestaurants != null ? mRestaurants.size() : 0;
+//    }
+//
+//    void populateRecyclerView(List<RestaurantItem> restaurants){
+//        this.mRestaurants = restaurants;
+//        notifyDataSetChanged();
+//    }
 
     interface OnRestaurantClickListener{
         void onRestaurantClick(RestaurantItem restaurant);
@@ -75,6 +78,22 @@ public class RestaurantAdapter extends RecyclerView.Adapter<RestaurantAdapter.Re
     void setOnRestaurantClickListener(OnRestaurantClickListener listener){
         this.mListener = listener;
     }
+
+    /////////////////
+    //DIFF CALLBACK//
+    /////////////////
+    public static final DiffUtil.ItemCallback<RestaurantItem> DIFF_CALLBACK =
+            new DiffUtil.ItemCallback<RestaurantItem>() {
+                @Override
+                public boolean areItemsTheSame(@NonNull RestaurantItem oldItem, @NonNull RestaurantItem newItem) {
+                    return oldItem.getPlaceId().equals(newItem.getPlaceId());
+                }
+
+                @Override
+                public boolean areContentsTheSame(@NonNull RestaurantItem oldItem, @NonNull RestaurantItem newItem) {
+                    return oldItem.equals(newItem);
+                }
+            };
 
     /////////////////
     ///VIEW HOLDER///
@@ -101,4 +120,6 @@ public class RestaurantAdapter extends RecyclerView.Adapter<RestaurantAdapter.Re
             itemView.setOnClickListener(view -> mListener.onRestaurantClick(mRestaurants.get(getAdapterPosition())));
         }
     }
+
+
 }

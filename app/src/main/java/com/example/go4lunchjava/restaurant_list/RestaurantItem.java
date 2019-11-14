@@ -1,5 +1,7 @@
 package com.example.go4lunchjava.restaurant_list;
 
+import androidx.annotation.Nullable;
+
 public class RestaurantItem {
 
     //Unique id ?
@@ -48,5 +50,10 @@ public class RestaurantItem {
 
     public String getPlaceId() {
         return mPlaceId;
+    }
+
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        return super.equals(obj);
     }
 }

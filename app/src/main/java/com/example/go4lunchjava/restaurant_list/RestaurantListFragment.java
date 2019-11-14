@@ -78,14 +78,16 @@ public class RestaurantListFragment extends Fragment implements RestaurantAdapte
                 emptyView.setVisibility(View.VISIBLE);
             else {
                 emptyView.setVisibility(View.GONE);
-                mAdapter.populateRecyclerView(restaurantItems); //Display data on screen
+                //mAdapter.populateRecyclerView(restaurantItems); //Display data on screen
+                mAdapter.submitList(restaurantItems);  //Display data on screen
             }
         });
 
         //SEARCH
         restaurantViewModel.mFilteredRestaurants.observe(this, restaurantItems -> {
 
-            mAdapter.populateRecyclerView(restaurantItems); //Display data on screen
+            //mAdapter.populateRecyclerView(restaurantItems); //Display data on screen
+            mAdapter.submitList(restaurantItems);
 
         });
 
