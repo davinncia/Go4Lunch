@@ -4,11 +4,14 @@ import android.util.Log;
 
 import com.example.go4lunchjava.places_api.PlacesApiService;
 import com.example.go4lunchjava.places_api.pojo.NearBySearchResponse;
+import com.example.go4lunchjava.places_api.pojo.NearBySearchResult;
 import com.example.go4lunchjava.restaurant_details.pojo_api.RestaurantDetailsResponse;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -21,8 +24,10 @@ public class PlacesApiRepository {
     private Retrofit retrofit;
     private PlacesApiService service;
 
-    //Cache
-    private HashMap<String, NearBySearchResponse> mCache = new HashMap<>();
+    //Caches
+    private HashMap<String, NearBySearchResponse> mNearByCache = new HashMap<>();
+    private HashMap<String, RestaurantDetailsResponse> mDetailsCache = new HashMap<>();
+    private List<String> mLastRestaurantIdsSearch = new ArrayList<>();
 
     private PlacesApiRepository(){
         retrofit = getRetrofitInstance();
@@ -63,23 +68,29 @@ public class PlacesApiRepository {
         double longitude = Math.floor(latLng.longitude * 10_000) / 10_000;
 
         String location = latitude + "," + longitude;
-        NearBySearchResponse nearBySearchResponse = mCache.get(location);
+        NearBySearchResponse nearBySearchResponse = mNearByCache.get(location);
 
-        if (nearBySearchResponse != null){
-            Log.d("debuglog", "Places cache used");
-            return nearBySearchResponse;
-        } else {
+        if (nearBySearchResponse == null){
             try {
                 Log.d("debuglog", "Places Api request...");
-                NearBySearchResponse toStore = service.nearbySearch(location).execute().body();
-                mCache.put(location, toStore); //Used for map to prevent identical requests in the future
-                return toStore;
+                nearBySearchResponse = service.nearbySearch(location).execute().body();
+                mNearByCache.put(location, nearBySearchResponse); //Used for map to prevent identical requests in the future
 
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            return null;
+
+        } else {
+            Log.d("debuglog", "Places cache used");
         }
+
+        assert nearBySearchResponse != null;
+        mLastRestaurantIdsSearch.clear();
+        for (NearBySearchResult result : nearBySearchResponse.getResults()){
+            mLastRestaurantIdsSearch.add(result.getId());
+        }
+
+        return nearBySearchResponse;
     }
 
     ////////////////////
@@ -96,6 +107,10 @@ public class PlacesApiRepository {
         }
         return response;
 
+    }
+
+    public List<String> getLastRestaurantIdsSearch(){
+        return mLastRestaurantIdsSearch;
     }
 
 }

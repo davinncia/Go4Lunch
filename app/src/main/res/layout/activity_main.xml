@@ -23,7 +23,7 @@
             app:layout_constraintTop_toTopOf="parent"
             app:theme="@style/AppTheme" >
 
-            <com.example.go4lunchjava.SearchEditText
+            <com.example.go4lunchjava.utils.SearchEditText
                 android:id="@+id/edit_text_search"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

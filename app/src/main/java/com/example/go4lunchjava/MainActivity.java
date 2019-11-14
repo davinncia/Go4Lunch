@@ -186,7 +186,6 @@ public class MainActivity extends AppCompatActivity {
     //////////////////
     ////FIRE BASE/////
     //////////////////
-    //TODO NINO: In a specific ViewModel ?
     private void logOutUser(){
         mAuth.signOut();
         startActivity(new Intent(this, AuthentificationActivity.class));

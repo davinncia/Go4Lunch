@@ -4,29 +4,23 @@ package com.example.go4lunchjava.restaurant_list;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.example.go4lunchjava.R;
-import com.example.go4lunchjava.SearchEditText;
+import com.example.go4lunchjava.utils.SearchEditText;
 import com.example.go4lunchjava.di.ViewModelFactory;
 import com.example.go4lunchjava.map.MapViewModel;
-import com.example.go4lunchjava.places_api.pojo.NearBySearchResponse;
 import com.example.go4lunchjava.restaurant_details.RestaurantDetailsActivity;
-import com.google.android.libraries.places.api.model.Place;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -74,7 +68,7 @@ public class RestaurantListFragment extends Fragment implements RestaurantAdapte
         ViewModelFactory viewModelFactory = new ViewModelFactory(Objects.requireNonNull(getActivity()).getApplication());
         //Restaurant (filtering) ViewModel
         RestaurantViewModel restaurantViewModel = ViewModelProviders.of(this, viewModelFactory).get(RestaurantViewModel.class);
-        //Shared ViewModel
+        //Shared ViewModel to get the searched place
         MapViewModel mapViewModel = ViewModelProviders.of(getActivity(), viewModelFactory).get(MapViewModel.class);
 
         mapViewModel.mRestaurantsLiveData.observe(this, restaurantItems -> {

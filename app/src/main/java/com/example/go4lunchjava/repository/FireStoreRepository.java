@@ -14,8 +14,7 @@ import java.util.Map;
 import java.util.Objects;
 
 public class FireStoreRepository {
-
-    //TODO NINO: architecture, faut-il créer une interface + class service ?
+    //TODO: Create interface
 
     public static final String USER_COLLECTION_NAME = "users";
 
@@ -43,9 +42,7 @@ public class FireStoreRepository {
     }
 
     public Task<QuerySnapshot> getAllUserDocuments(){
-
         return db.collection(USER_COLLECTION_NAME).get();
-
     }
 
     //CREATE

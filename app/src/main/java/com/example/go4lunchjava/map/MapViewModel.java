@@ -9,15 +9,19 @@ import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-import com.example.go4lunchjava.repository.PlacesApiRepository;
+import com.example.go4lunchjava.R;
 import com.example.go4lunchjava.places_api.pojo.NearBySearchResponse;
 import com.example.go4lunchjava.places_api.pojo.NearBySearchResult;
+import com.example.go4lunchjava.repository.FireStoreRepository;
 import com.example.go4lunchjava.repository.LocationRepository;
+import com.example.go4lunchjava.repository.PlacesApiRepository;
 import com.example.go4lunchjava.restaurant_list.RestaurantItem;
 import com.example.go4lunchjava.utils.ObjectConverter;
 import com.example.go4lunchjava.utils.SingleLiveEvent;
+import com.example.go4lunchjava.workmates_list.Workmate;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.libraries.places.api.model.Place;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -28,6 +32,7 @@ public class MapViewModel extends ViewModel {
     //Repositories
     private LocationRepository mLocationRepository;
     private PlacesApiRepository mPlacesApiRepository;
+    private FireStoreRepository mFireStoreRepository;
 
     //Location
     private MediatorLiveData<LatLng> mLocationMediatorLiveData = new MediatorLiveData<>();
@@ -53,8 +58,10 @@ public class MapViewModel extends ViewModel {
 
 
     public MapViewModel(Application application) {
+
         mLocationRepository = LocationRepository.getInstance(application);
         mPlacesApiRepository = PlacesApiRepository.getInstance();
+        mFireStoreRepository = FireStoreRepository.getInstance();
 
         mLocationRepository.startLocationUpdates(true);
 
@@ -109,10 +116,14 @@ public class MapViewModel extends ViewModel {
 
         if (nearBySearchResponse == null) return;
         List<Poi> poiList = new ArrayList<>();
+
         for (NearBySearchResult result : nearBySearchResponse.getResults()) {
-            poiList.add(new Poi(result.getName(), result.getGeometry().getLocation().getLat(), result.getGeometry().getLocation().getLng()));
+
+            poiList.add(new Poi(result.getName(), result.getPlaceId(),
+                    result.getGeometry().getLocation().getLat(), result.getGeometry().getLocation().getLng()));
         }
-        mPoiListMediatorLiveData.setValue(poiList);
+        mPoiListMediatorLiveData.setValue(poiList); //Sending data to view before making the request to FireStore
+        checkWorkmateInterest(poiList);
     }
 
     private void getRestaurants(NearBySearchResponse response){
@@ -120,18 +131,41 @@ public class MapViewModel extends ViewModel {
         mRestaurantsMutableLiveData.setValue(restaurants);
     }
 
+    private void checkWorkmateInterest(List<Poi> poiList){
+
+        mFireStoreRepository.getAllUserDocuments().addOnSuccessListener(queryDocumentSnapshots -> {
+
+            for (QueryDocumentSnapshot document : queryDocumentSnapshots){
+                String restaurantId = String.valueOf(document.get(Workmate.FIELD_RESTAURANT_ID));
+
+                Log.d("debuglogFire", "Rest Id: " + restaurantId);
+                for (Poi poi : poiList){
+                    Log.d("debuglogFire", "Poi Id: " + poi.getId());
+                    //Checking if workmate choice is on the map
+                    if (poi.getId().equals(restaurantId)) {
+                        Log.d("debuglogFire", "Workmate interest !");
+                        poi.setPointerRes(R.drawable.ic_pointer_blue);
+                    }
+                }
+
+            }
+            mPoiListMediatorLiveData.setValue(poiList); //Updating view
+        });
+    }
+
     void setSearchedPoi(Place place){ //TODO: change name
         if (place == null || place.getLatLng() == null) return;
 
         List<Poi> poiList = new ArrayList<>();
-        poiList.add(new Poi(place.getName(), place.getLatLng().latitude, place.getLatLng().longitude));
+        poiList.add(new Poi(place.getName(), place.getId(), place.getLatLng().latitude, place.getLatLng().longitude));
         mPoiListMediatorLiveData.setValue(poiList); //Mark on map
 
         List<RestaurantItem> restaurants = ObjectConverter.convertPlaceToRestaurantItemList(place, mLocationLiveData.getValue());
         mRestaurantsMutableLiveData.setValue(restaurants);
     }
 
-    public void hasMapAvailability(boolean available) {
+
+    void hasMapAvailability(boolean available) {
         mapAvailable.setValue(available);
         //Start location updates
         Boolean permission = locationPermission.getValue();

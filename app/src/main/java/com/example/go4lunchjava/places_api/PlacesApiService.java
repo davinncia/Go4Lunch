@@ -11,7 +11,7 @@ import retrofit2.http.Query;
 public interface PlacesApiService {
 
     //location=40.7463956,-73.9852992
-    @GET("maps/api/place/nearbysearch/json?type=restaurant&radius=10000&key=AIzaSyDSpFo8O861EgPYmsRlICS0sRs0zGEsrS4")
+    @GET("maps/api/place/nearbysearch/json?type=restaurant&radius=5000&key=AIzaSyDSpFo8O861EgPYmsRlICS0sRs0zGEsrS4")
     Call<NearBySearchResponse> nearbySearch(
             @Query("location") String location
     );

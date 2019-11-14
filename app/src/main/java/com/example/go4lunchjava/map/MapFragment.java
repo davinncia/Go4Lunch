@@ -4,6 +4,8 @@ package com.example.go4lunchjava.map;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -20,9 +22,12 @@ import androidx.lifecycle.ViewModelProviders;
 
 import com.example.go4lunchjava.R;
 import com.example.go4lunchjava.di.ViewModelFactory;
+import com.example.go4lunchjava.utils.BitmapConvertor;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.libraries.places.api.Places;
@@ -136,9 +141,9 @@ public class MapFragment extends Fragment {
         });
 
         mMapViewModel.mPoiListLiveData.observe(this, poiList -> {
+            Log.d("debuglog", "Poi list triggered.");
             if (mMap == null) { //Google map initialize in background, thus can be null.
                 //TODO: For some reason size = 0 on third demand...
-                Log.d("debuglog", "Poi list size: " + poiList.size());
                 mPoiList = poiList; //We then keep the list to display when map is (finally) loaded.
             }
             else addPoiMarkers(poiList);
@@ -149,13 +154,18 @@ public class MapFragment extends Fragment {
 
     private void addPoiMarkers(List<Poi> poiList){
         mMap.clear();
+
+        //BitmapDescriptor bitmapDescriptor = BitmapConvertor.bitmapDescriptorFromVector(getContext(), R.drawable.ic_restaurant);
+        //Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_restaurant);
+
         Log.d("debuglog", "Placing markers");
         for (Poi poi : poiList){
+            BitmapDescriptor bitmapDescriptor = BitmapConvertor.getBitmapDescriptor(getContext(), poi.getPointerRes());
             LatLng poiLatLng = new LatLng(poi.getLat(), poi.getLon());
-            mMap.addMarker(new MarkerOptions().position(poiLatLng).title(poi.getName()));
+            mMap.addMarker(new MarkerOptions().icon(bitmapDescriptor)
+                    .position(poiLatLng).title(poi.getName()));
         }
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                new LatLng(poiList.get(0).getLat(), poiList.get(0).getLon()), ZOOM));
+        //mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(poiList.get(0).getLat(), poiList.get(0).getLon()), ZOOM));
     }
 
     private GoogleMap.OnCameraMoveListener mCameraMoveListener = new GoogleMap.OnCameraMoveListener() {
