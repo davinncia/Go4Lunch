@@ -4,13 +4,12 @@ import androidx.annotation.Nullable;
 
 public class RestaurantItem {
 
-    //Unique id ?
+
     private String mName;
     private String mPlaceId;
     private String mDistance;
-    private String mType;
     private String mAddress;
-    private String mIsOpen;
+    private String mHoursDesc;
     private int mRatingResource;
     private int mWorkmates;
     private String mPictureUri;
@@ -20,7 +19,7 @@ public class RestaurantItem {
         mName = name;
         mPlaceId = placeId;
         mAddress = address;
-        mIsOpen = openingHours;
+        mHoursDesc = openingHours;
         mPictureUri = pictureUri;
         mDistance = distance;
         mRatingResource = ratingResource;
@@ -34,8 +33,8 @@ public class RestaurantItem {
         return mAddress;
     }
 
-    public String isOpen() {
-        return mIsOpen;
+    public String getHours() {
+        return mHoursDesc;
     }
 
     public String getPictureUrl() { return mPictureUri; }

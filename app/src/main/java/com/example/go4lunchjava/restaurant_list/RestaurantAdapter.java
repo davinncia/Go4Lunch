@@ -46,9 +46,10 @@ public class RestaurantAdapter extends ListAdapter<RestaurantItem, RestaurantAda
         holder.restaurantNameView.setText(restaurant.getName());
         holder.address.setText(restaurant.getAddress());
 
-        holder.openingHoursView.setText(restaurant.isOpen());
-        if (restaurant.isOpen().equals("Closed")) holder.openingHoursView.setTextColor(Color.RED);
-        else holder.openingHoursView.setTextColor(Color.DKGRAY);
+        holder.openingHoursView.setText(restaurant.getHours());
+        if (restaurant.getHours().equals("Closed") || restaurant.getHours().equals("Closing soon")){
+            holder.openingHoursView.setTextColor(Color.RED);
+        } else holder.openingHoursView.setTextColor(Color.DKGRAY);
 
         holder.distanceView.setText(restaurant.getDistance());
 
@@ -59,24 +60,6 @@ public class RestaurantAdapter extends ListAdapter<RestaurantItem, RestaurantAda
                 .centerCrop()
                 .into(holder.pictureView);
 
-    }
-
-//    @Override
-//    public int getItemCount() {
-//        return mRestaurants != null ? mRestaurants.size() : 0;
-//    }
-//
-//    void populateRecyclerView(List<RestaurantItem> restaurants){
-//        this.mRestaurants = restaurants;
-//        notifyDataSetChanged();
-//    }
-
-    interface OnRestaurantClickListener{
-        void onRestaurantClick(RestaurantItem restaurant);
-    }
-
-    void setOnRestaurantClickListener(OnRestaurantClickListener listener){
-        this.mListener = listener;
     }
 
     /////////////////
@@ -117,9 +100,17 @@ public class RestaurantAdapter extends ListAdapter<RestaurantItem, RestaurantAda
             starsView = itemView.findViewById(R.id.iv_stars_restaurant_item);
             pictureView = itemView.findViewById(R.id.iv_picture_restraurant_item);
 
-            itemView.setOnClickListener(view -> mListener.onRestaurantClick(mRestaurants.get(getAdapterPosition())));
+
+            itemView.setOnClickListener(view -> mListener.onRestaurantClick(getItem(getAdapterPosition())));
         }
     }
 
+    interface OnRestaurantClickListener{
+        void onRestaurantClick(RestaurantItem restaurant);
+    }
+
+    void setOnRestaurantClickListener(OnRestaurantClickListener listener){
+        this.mListener = listener;
+    }
 
 }

@@ -2,11 +2,17 @@ package com.example.go4lunchjava.utils;
 
 
 import android.location.Location;
+import android.util.Log;
 
 import com.example.go4lunchjava.R;
-import com.example.go4lunchjava.places_api.pojo.Geometry;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.libraries.places.api.model.OpeningHours;
+import com.google.android.libraries.places.api.model.Period;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Locale;
 
 public class RestaurantDataFormat {
@@ -78,5 +84,98 @@ public class RestaurantDataFormat {
             }
         }
         return distanceString;
+    }
+
+    /**
+     * Util method formatting the hour displayed on screen
+     *
+     * @param openingHours form Places API or SDK
+     * @return String
+     */
+
+    public static String getHoursFromOpeningHours(OpeningHours openingHours){
+        if (openingHours == null){
+            return "Opening hours not communicated";
+        }
+
+        Calendar calendar = Calendar.getInstance(Locale.getDefault());
+        int dayInt = calendar.get(Calendar.DAY_OF_WEEK); //6
+        String day = "";
+
+        switch (dayInt) {
+            case 1:
+                day = "SUNDAY";
+                break;
+            case 2:
+                day = "MONDAY";
+                break;
+            case 3:
+                day = "TUESDAY";
+                break;
+            case 4:
+                day = "WEDNESDAY";
+                break;
+            case 5:
+                day = "THURSDAY";
+                break;
+            case 6:
+                day = "FRIDAY";
+                break;
+            case 7:
+                day = "SATURDAY";
+                break;
+        }
+
+        int hour = calendar.get(Calendar.HOUR_OF_DAY);
+        int min = calendar.get(Calendar.MINUTE);
+
+
+        String hours = "Closed";
+
+        for (Period period : openingHours.getPeriods()) {
+
+            if (period.getOpen() != null && period.getOpen().getDay().toString().equals(day)) {
+                //Open today !
+                if (period.getClose() == null) {
+                    hours = "24/7";
+                } else {
+
+                    int minutesStillOpen = 0;
+
+                    if (hour < period.getClose().getTime().getHours()) {
+                        //Still open
+                        minutesStillOpen = 60 * (period.getClose().getTime().getHours() - hour)
+                                + period.getClose().getTime().getMinutes() - min;
+                    } else if (hour == period.getClose().getTime().getHours() && min <= period.getClose().getTime().getMinutes()) {
+                        //Soon closed
+                        minutesStillOpen = period.getClose().getTime().getMinutes() - min;
+                    }
+
+                    if (minutesStillOpen > 30) {
+                        hours = "Open until " + period.getClose().getTime().getHours() + "h" + period.getClose().getTime().getMinutes();
+                        try {
+                            //Convert to 12 hours format
+                            String _24HourTime = period.getClose().getTime().getHours() + ":" + period.getClose().getTime().getMinutes();
+                            SimpleDateFormat _24HourSDF = new SimpleDateFormat("HH:mm");
+                            SimpleDateFormat _12HourSDF = new SimpleDateFormat("hh:mm a");
+                            Date _24HourDt = _24HourSDF.parse(_24HourTime);
+
+                            assert _24HourDt != null;
+                            hours = "Open until " + _12HourSDF.format(_24HourDt);
+
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                        }
+
+                    } else if (minutesStillOpen > 0) {
+                        hours = "Closing soon";
+                    } else {
+                        hours = "Closed";
+                    }
+
+                }
+            }
+        }
+        return hours;
     }
 }

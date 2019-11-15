@@ -1,6 +1,7 @@
 package com.example.go4lunchjava.restaurant_details;
 
 import android.os.AsyncTask;
+import android.util.Log;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
