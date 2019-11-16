@@ -136,6 +136,7 @@ public class RestaurantDataFormat {
 
             if (period.getOpen() != null && period.getOpen().getDay().toString().equals(day)) {
                 //Open today !
+                //TODO: what if to early !?
                 if (period.getClose() == null) {
                     hours = "24/7";
                 } else {

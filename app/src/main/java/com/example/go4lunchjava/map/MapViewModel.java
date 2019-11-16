@@ -159,6 +159,7 @@ public class MapViewModel extends ViewModel {
         List<Poi> poiList = new ArrayList<>();
         poiList.add(new Poi(place.getName(), place.getId(), place.getLatLng().latitude, place.getLatLng().longitude));
         mPoiListMediatorLiveData.setValue(poiList); //Mark on map
+        checkWorkmateInterest(poiList); //update color if workmate joining
 
         List<RestaurantItem> restaurants = ObjectConverter.convertPlaceToRestaurantItemList(place, mLocationLiveData.getValue());
         mRestaurantsMutableLiveData.setValue(restaurants);

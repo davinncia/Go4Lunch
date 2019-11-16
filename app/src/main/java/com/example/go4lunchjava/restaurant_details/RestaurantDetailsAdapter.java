@@ -1,4 +1,4 @@
-package com.example.go4lunchjava.workmates_list;
+package com.example.go4lunchjava.restaurant_details;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,32 +12,28 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.go4lunchjava.R;
+import com.example.go4lunchjava.workmates_list.Workmate;
 
 import java.util.List;
 
-public class WorkmateAdapter extends RecyclerView.Adapter<WorkmateAdapter.WorkmateViewHolder> {
+public class RestaurantDetailsAdapter extends RecyclerView.Adapter<RestaurantDetailsAdapter.DetailsViewHolder>{
 
     private List<Workmate> mWorkmates;
 
     @NonNull
     @Override
-    public WorkmateViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public RestaurantDetailsAdapter.DetailsViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         View view = inflater.inflate(R.layout.wormate_item, parent, false);
-        return new WorkmateViewHolder(view);
+        return new RestaurantDetailsAdapter.DetailsViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull WorkmateViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull RestaurantDetailsAdapter.DetailsViewHolder holder, int position) {
         Workmate currentUser = mWorkmates.get(position);
 
-        String userSentence;
-        if (currentUser.getRestaurantName() != null && !currentUser.getRestaurantName().isEmpty()) {
-            userSentence = holder.itemView.getContext().getString(R.string.is_eating_at) + currentUser.getRestaurantName();
-        } else {
-            userSentence = holder.itemView.getContext().getString(R.string.has_not_decided_yet);
-        }
+        String userSentence = holder.textView.getContext().getString(R.string.is_joining);
 
         holder.textView.setText(String.format("%s%s", currentUser.getDisplayName(), userSentence));
 
@@ -59,12 +55,12 @@ public class WorkmateAdapter extends RecyclerView.Adapter<WorkmateAdapter.Workma
     }
 
 
-    class WorkmateViewHolder extends RecyclerView.ViewHolder {
+    class DetailsViewHolder extends RecyclerView.ViewHolder {
 
         private ImageView imageView;
         private TextView textView;
 
-        WorkmateViewHolder(@NonNull View itemView) {
+        DetailsViewHolder(@NonNull View itemView) {
             super(itemView);
 
             imageView = itemView.findViewById(R.id.iv_workmate_list);

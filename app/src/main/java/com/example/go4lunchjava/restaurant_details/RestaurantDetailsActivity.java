@@ -13,11 +13,14 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.go4lunchjava.R;
 import com.example.go4lunchjava.workmates_list.Workmate;
 import com.example.go4lunchjava.di.ViewModelFactory;
+import com.example.go4lunchjava.workmates_list.WorkmateAdapter;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.List;
@@ -41,6 +44,9 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
     private ImageView mPhoneImageView;
     private ImageView mFavoriteImageView;
     private ImageView mWebImageView;
+    //RecyclerView
+    private RecyclerView mRecyclerView;
+    private RestaurantDetailsAdapter mAdapter;
 
     //DATA
     private String mPhoneNumber;
@@ -72,6 +78,8 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
         mPlaceId = getIntent().getStringExtra(RESTAURANT_ID_KEY);
         mPlaceName = getIntent().getStringExtra(RESTAURANT_NAME_KEY);
 
+        initRecyclerView();
+
         ViewModelFactory factory = new ViewModelFactory(getApplication());
         detailsViewModel = ViewModelProviders.of(this, factory).get(RestaurantDetailsViewModel.class);
 
@@ -80,8 +88,9 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
             detailsViewModel.fetchFireStoreData(mPlaceId);
         }
 
+        //DETAILS
         detailsViewModel.mDetailsLiveData.observe(this, this::updateDetailsUi);
-
+        //CURRENT USER CHOICE
         detailsViewModel.mIsUserSelectionLiveData.observe(this, isUserSelection -> {
             Log.d("debuglog", "Shoot");
             isSelected = isUserSelection;
@@ -91,6 +100,18 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
                 mFab.setImageResource(R.drawable.ic_add);
             }
         });
+        //WORKMATES
+        detailsViewModel.mWorkmatesLiveData.observe(this, workmates -> mAdapter.updateData(workmates));
+    }
+
+    private void initRecyclerView(){
+        mRecyclerView = findViewById(R.id.recycler_view_details_activity_workmates);
+
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        mRecyclerView.setHasFixedSize(true);
+
+        mAdapter = new RestaurantDetailsAdapter();
+        mRecyclerView.setAdapter(mAdapter);
     }
 
     //Updating ui with place info from PlacesAPA

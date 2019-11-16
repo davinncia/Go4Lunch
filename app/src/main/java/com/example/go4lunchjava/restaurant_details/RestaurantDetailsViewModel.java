@@ -98,6 +98,7 @@ public class RestaurantDetailsViewModel extends ViewModel {
 
                 //Checking if restaurant selected by current user
                 if (document.getId().equals(FirebaseAuth.getInstance().getUid())) {
+                    //Current user
                     if (Objects.equals(document.get(Workmate.FIELD_RESTAURANT_ID), placeId)) {
                         mIsUserSelectionMutable.setValue(true);
                     } else {
