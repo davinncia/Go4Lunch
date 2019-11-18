@@ -40,10 +40,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+import static com.example.go4lunchjava.MainActivity.AUTO_COMPLETE_REQUEST_CODE;
+
 
 public class MapFragment extends Fragment {
 
-    private static final int AUTO_COMPLETE_REQUEST_CODE = 1;
+
 
     private static final int RC_LOCATION_REQUEST = 100;
     private static final float ZOOM = 15;
@@ -95,6 +97,8 @@ public class MapFragment extends Fragment {
 
         mMapView.getMapAsync(googleMap -> {
             mMap = googleMap;
+
+            mMap.getUiSettings().setMapToolbarEnabled(false);
 
             mMap.setOnMapLoadedCallback(() -> {
                 Log.d("debuglog", "Map loaded !");
@@ -252,16 +256,7 @@ public class MapFragment extends Fragment {
     ////////////////
     /////SEARCH/////
     ////////////////
-    public void searchPlaceOnMap(){
-        List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG,
-                Place.Field.ADDRESS, Place.Field.OPENING_HOURS, Place.Field.RATING, Place.Field.PHOTO_METADATAS);
-        //Places auto complete intent
-        Intent intent = new Autocomplete.IntentBuilder(
-                AutocompleteActivityMode.OVERLAY, fields)
-                .setTypeFilter(TypeFilter.ESTABLISHMENT)
-                .build(Objects.requireNonNull(getContext()));
-        startActivityForResult(intent, AUTO_COMPLETE_REQUEST_CODE);
-    }
+
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {

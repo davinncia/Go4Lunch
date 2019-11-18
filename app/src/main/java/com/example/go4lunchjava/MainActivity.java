@@ -23,12 +23,24 @@ import com.example.go4lunchjava.auth.AuthentificationActivity;
 import com.example.go4lunchjava.map.MapFragment;
 import com.example.go4lunchjava.restaurant_list.RestaurantListFragment;
 import com.example.go4lunchjava.workmates_list.WorkmatesFragment;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.api.model.TypeFilter;
+import com.google.android.libraries.places.widget.Autocomplete;
+import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+
+import static java.security.AccessController.getContext;
+
 public class MainActivity extends AppCompatActivity {
+
+    public static final int AUTO_COMPLETE_REQUEST_CODE = 1;
 
     //Drawer layout
     private DrawerLayout drawerLayout;
@@ -172,15 +184,28 @@ public class MainActivity extends AppCompatActivity {
             Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.frame_layout_container_main);
 
             if (fragment instanceof MapFragment){
-                ((MapFragment) fragment).searchPlaceOnMap();
+                //((MapFragment) fragment).searchPlaceOnMap();
+                searchPlaceOnMap();
             } else if (fragment instanceof RestaurantListFragment){
-                ((RestaurantListFragment) fragment).setSearchEditText();
+                //((RestaurantListFragment) fragment).setSearchEditText();
+                searchPlaceOnMap();
             } else if (fragment instanceof WorkmatesFragment){
                 Toast.makeText(this, "Search workmates", Toast.LENGTH_SHORT).show();
             }
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    public void searchPlaceOnMap(){
+        List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG,
+                Place.Field.ADDRESS, Place.Field.OPENING_HOURS, Place.Field.RATING, Place.Field.PHOTO_METADATAS);
+        //Places auto complete intent
+        Intent intent = new Autocomplete.IntentBuilder(
+                AutocompleteActivityMode.OVERLAY, fields)
+                .setTypeFilter(TypeFilter.ESTABLISHMENT)
+                .build(this);
+        startActivityForResult(intent, AUTO_COMPLETE_REQUEST_CODE);
     }
 
     //////////////////

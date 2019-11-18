@@ -112,6 +112,7 @@ public class MapViewModel extends ViewModel {
         }
     }
 
+    //region get poi
     private void getPoi(NearBySearchResponse nearBySearchResponse) {
 
         if (nearBySearchResponse == null) return;
@@ -125,6 +126,7 @@ public class MapViewModel extends ViewModel {
         mPoiListMediatorLiveData.setValue(poiList); //Sending data to view before making the request to FireStore
         checkWorkmateInterest(poiList);
     }
+//endregion
 
     private void getRestaurants(NearBySearchResponse response){
         List<RestaurantItem> restaurants = ObjectConverter.convertNearbyResponseToRestaurantItemList(response, mLocationLiveData.getValue());
@@ -138,12 +140,9 @@ public class MapViewModel extends ViewModel {
             for (QueryDocumentSnapshot document : queryDocumentSnapshots){
                 String restaurantId = String.valueOf(document.get(Workmate.FIELD_RESTAURANT_ID));
 
-                Log.d("debuglogFire", "Rest Id: " + restaurantId);
                 for (Poi poi : poiList){
-                    Log.d("debuglogFire", "Poi Id: " + poi.getId());
                     //Checking if workmate choice is on the map
                     if (poi.getId().equals(restaurantId)) {
-                        Log.d("debuglogFire", "Workmate interest !");
                         poi.setPointerRes(R.drawable.ic_pointer_blue);
                     }
                 }

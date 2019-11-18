@@ -4,6 +4,7 @@ package com.example.go4lunchjava.restaurant_list;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -73,26 +74,33 @@ public class RestaurantListFragment extends Fragment implements RestaurantAdapte
 
         mapViewModel.mRestaurantsLiveData.observe(this, restaurantItems -> {
             mRestaurantItems = restaurantItems; //SEARCH
-            Log.d("debuglog", "RestaurantListView update");
             if (restaurantItems == null || restaurantItems.size() < 1)
                 emptyView.setVisibility(View.VISIBLE);
             else {
                 emptyView.setVisibility(View.GONE);
-                //mAdapter.populateRecyclerView(restaurantItems); //Display data on screen
-                mAdapter.submitList(restaurantItems);  //Display data on screen
+                //mAdapter.submitList(restaurantItems);  //Display data on screen
+                restaurantViewModel.provideRestaurantList(restaurantItems);
             }
         });
 
         //SEARCH
         restaurantViewModel.mFilteredRestaurants.observe(this, restaurantItems -> {
 
-            //mAdapter.populateRecyclerView(restaurantItems); //Display data on screen
-            mAdapter.submitList(restaurantItems);
+            mAdapter.submitList(restaurantItems); //Display data on screen
 
         });
 
         mSearchEditText.setSearchTextChangedListener(charSequence -> {
             restaurantViewModel.searchInRestaurantList(mRestaurantItems, charSequence);
+        });
+
+        //UPDATING DATA DETAILS
+        restaurantViewModel.mRestaurantsLiveData.observe(this, restaurantItems -> {
+            //TODO: Find a better solution
+            //mAdapter.submitList(null);
+            mAdapter.submitList(restaurantItems);
+            Log.d("debuglog", "Updating adapter");
+
         });
 
         return rootView;

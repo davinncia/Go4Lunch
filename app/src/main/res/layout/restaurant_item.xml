@@ -38,7 +38,7 @@
             android:layout_height="wrap_content"
             android:layout_alignBottom="@id/iv_workmate_restaurant_item"
             android:layout_alignParentEnd="true"
-            android:text="(3)"/>
+            tools:text="(3)"/>
 
         <ImageView
             android:id="@+id/iv_stars_restaurant_item"

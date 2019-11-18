@@ -22,12 +22,14 @@ public class LocationRepository {
     private MutableLiveData<LatLng> latLngMutableLiveData = new MutableLiveData<>();
     private LiveData<LatLng> latLngLiveData = latLngMutableLiveData;
 
+    private LatLng userSelectedLatLng;
+
     private FusedLocationProviderClient fusedLocationProviderClient;
 
     private LocationCallback locationCallback = new LocationCallback() {
         @Override
         public void onLocationResult(LocationResult locationResult) {
-            if (locationResult != null) {
+            if (locationResult != null && userSelectedLatLng != null) {
                 latLngMutableLiveData.setValue(new LatLng(locationResult.getLastLocation().getLatitude(),
                         locationResult.getLastLocation().getLongitude()));
                 Log.d("debuglog", "LocationCallback");
@@ -65,6 +67,11 @@ public class LocationRepository {
 
     public LiveData<LatLng> getLatLngLiveData() {
         return latLngLiveData;
+    }
+
+    public void setCustomLatLng(LatLng latLng){
+        this.userSelectedLatLng = latLng;
+        latLngMutableLiveData.setValue(userSelectedLatLng);
     }
 
     /*

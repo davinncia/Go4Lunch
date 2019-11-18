@@ -53,6 +53,9 @@ public class RestaurantAdapter extends ListAdapter<RestaurantItem, RestaurantAda
 
         holder.distanceView.setText(restaurant.getDistance());
 
+        //holder.nbrOfWorkmatesView.setText("(" + restaurant.getWorkmatesJoiningNbr() + ")");
+        holder.nbrOfWorkmatesView.setText(String.format("%s", "(" + restaurant.getWorkmatesJoiningNbr() + ")"));
+
         holder.starsView.setImageResource(restaurant.getRatingResource());
 
         Glide.with(holder.pictureView.getContext())
@@ -69,7 +72,7 @@ public class RestaurantAdapter extends ListAdapter<RestaurantItem, RestaurantAda
             new DiffUtil.ItemCallback<RestaurantItem>() {
                 @Override
                 public boolean areItemsTheSame(@NonNull RestaurantItem oldItem, @NonNull RestaurantItem newItem) {
-                    return oldItem.getPlaceId().equals(newItem.getPlaceId());
+                    return oldItem == newItem;
                 }
 
                 @Override
@@ -87,6 +90,7 @@ public class RestaurantAdapter extends ListAdapter<RestaurantItem, RestaurantAda
         private TextView address;
         private TextView openingHoursView;
         private TextView distanceView;
+        private TextView nbrOfWorkmatesView;
         private ImageView starsView;
         private ImageView pictureView;
 
@@ -97,6 +101,7 @@ public class RestaurantAdapter extends ListAdapter<RestaurantItem, RestaurantAda
             address = itemView.findViewById(R.id.tv_address_restaurant_item);
             openingHoursView = itemView.findViewById(R.id.tv_hours_restaurant_item);
             distanceView = itemView.findViewById(R.id.tv_distance_restaurant_item);
+            nbrOfWorkmatesView = itemView.findViewById(R.id.tv_workmates_number_restaurant_item);
             starsView = itemView.findViewById(R.id.iv_stars_restaurant_item);
             pictureView = itemView.findViewById(R.id.iv_picture_restraurant_item);
 
