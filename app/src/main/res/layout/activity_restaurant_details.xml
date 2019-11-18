@@ -7,7 +7,7 @@
     android:fitsSystemWindows="true"
     tools:context=".restaurant_details.RestaurantDetailsActivity">
 
-    <!--TODO: button doesn't disappear anymore-->
+
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_restaurant_details"
         android:layout_width="wrap_content"

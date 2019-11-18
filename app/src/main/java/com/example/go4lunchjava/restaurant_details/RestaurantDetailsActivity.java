@@ -51,8 +51,8 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
     //DATA
     private String mPhoneNumber;
     private String mWebUrl;
-    private boolean isSelected;
-
+    private Boolean isSelected;
+    private Boolean isFavorite;
 
     public static Intent newIntent(Context context, String restaurantId, String restaurantName){
         Intent intent = new Intent(context, RestaurantDetailsActivity.class);
@@ -92,12 +92,20 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
         detailsViewModel.mDetailsLiveData.observe(this, this::updateDetailsUi);
         //CURRENT USER CHOICE
         detailsViewModel.mIsUserSelectionLiveData.observe(this, isUserSelection -> {
-            Log.d("debuglog", "Shoot");
             isSelected = isUserSelection;
             if (isUserSelection){
                 mFab.setImageResource(R.drawable.ic_done);
             } else {
                 mFab.setImageResource(R.drawable.ic_add);
+            }
+        });
+        //USER FAVORITE
+        detailsViewModel.mIsUserFavLiveData.observe(this, isUserFavorite -> {
+            isFavorite = isUserFavorite;
+            if (isUserFavorite){
+                mFavoriteImageView.setImageResource(R.drawable.ic_favorite);
+            } else {
+                mFavoriteImageView.setImageResource(R.drawable.ic_favorite_empty);
             }
         });
         //WORKMATES
@@ -142,25 +150,25 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
                 if (mPhoneNumber != null)
                     dialPhoneNumber(mPhoneNumber);
                 else
-                    Toast.makeText(this, "No phone number communicated.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, getResources().getString(R.string.no_phone), Toast.LENGTH_SHORT).show();
                 break;
 
             case R.id.iv_favorite_details:
-                Toast.makeText(this, "Like !", Toast.LENGTH_SHORT).show();
+                if (isFavorite != null) detailsViewModel.updateUserFavorite(!isFavorite, mPlaceId);
                 break;
 
             case R.id.iv_web_details:
                 if (mWebUrl != null)
                     openWebPage(mWebUrl);
                 else
-                    Toast.makeText(this, "No website communicated.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, getResources().getString(R.string.no_website), Toast.LENGTH_SHORT).show();
                 break;
         }
     };
 
     private void handleFabClick(View view){
 
-        detailsViewModel.updateUserSelection(!isSelected, mPlaceId, mPlaceName);
+        if (isSelected != null) detailsViewModel.updateUserSelection(!isSelected, mPlaceId, mPlaceName);
 
     }
 

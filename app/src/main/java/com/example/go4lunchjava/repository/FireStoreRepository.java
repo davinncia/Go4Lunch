@@ -6,6 +6,7 @@ import android.util.Log;
 import com.example.go4lunchjava.workmates_list.Workmate;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 
@@ -37,7 +38,7 @@ public class FireStoreRepository {
     }
 
     //GET
-    public Task<DocumentSnapshot> getUser(String userId){
+    public Task<DocumentSnapshot> getUserDocument(String userId){
         return db.collection(USER_COLLECTION_NAME).document(userId).get();
     }
 
@@ -84,6 +85,19 @@ public class FireStoreRepository {
                     if (task.isSuccessful()) Log.d("debuglog", "Restaurant updated in FireStore.");
                     else Log.d("debuglog", "Error updating restaurant in ForeStore." + task.getException());
                 });
+    }
+
+    public void addFavoriteRestaurants(String uid, String placeId){
+        db.collection(USER_COLLECTION_NAME)
+                .document(uid)
+                .update(Workmate.FIELD_FAVORITE_RESTAURANTS, FieldValue.arrayUnion(placeId));
+    }
+
+    //DELETE
+    public void deleteFavoriteRestaurant(String uid, String placeId){
+        db.collection(USER_COLLECTION_NAME)
+                .document(uid)
+                .update(Workmate.FIELD_FAVORITE_RESTAURANTS, FieldValue.arrayRemove(placeId));
     }
 
 }

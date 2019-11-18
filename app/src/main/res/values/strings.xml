@@ -32,6 +32,8 @@
     <string name="is_eating_at">\u0020is eating at\u0020</string>
     <string name="has_not_decided_yet">\u0020has not decided yet.</string>
     <string name="is_joining">\u0020is joining in!</string>
+    <string name="no_phone">No phone number communicated.</string>
+    <string name="no_website">No website communicated.</string>
 
 
 </resources>

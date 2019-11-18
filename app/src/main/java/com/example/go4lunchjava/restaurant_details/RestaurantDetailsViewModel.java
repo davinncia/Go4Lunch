@@ -27,6 +27,7 @@ public class RestaurantDetailsViewModel extends ViewModel {
 
     private PlacesApiRepository mPlacesApiRepository;
     private FireStoreRepository mFireStoreRepository;
+    private FirebaseAuth mAuth;
 
     //DETAILS
     private MutableLiveData<RestaurantDetails> mDetailsMutableLiveData = new MutableLiveData<>();
@@ -40,10 +41,15 @@ public class RestaurantDetailsViewModel extends ViewModel {
     private MutableLiveData<Boolean> mIsUserSelectionMutable = new MutableLiveData<>();
     public LiveData<Boolean> mIsUserSelectionLiveData = mIsUserSelectionMutable;
 
+    //USER'S FAVORITE
+    private MutableLiveData<Boolean> mIsUserFavMutable = new MutableLiveData<>();
+    public LiveData<Boolean> mIsUserFavLiveData = mIsUserFavMutable;
+
     public RestaurantDetailsViewModel(){
 
         mPlacesApiRepository = PlacesApiRepository.getInstance();
         mFireStoreRepository = FireStoreRepository.getInstance();
+        mAuth = FirebaseAuth.getInstance();
 
     }
 
@@ -97,13 +103,19 @@ public class RestaurantDetailsViewModel extends ViewModel {
             for (QueryDocumentSnapshot document: queryDocumentSnapshots){
 
                 //Checking if restaurant selected by current user
-                if (document.getId().equals(FirebaseAuth.getInstance().getUid())) {
+                if (document.getId().equals(mAuth.getUid())) {
                     //Current user
                     if (Objects.equals(document.get(Workmate.FIELD_RESTAURANT_ID), placeId)) {
                         mIsUserSelectionMutable.setValue(true);
                     } else {
                         mIsUserSelectionMutable.setValue(false);
                     }
+
+                    List<String> favorites = (List<String>) document.get(Workmate.FIELD_FAVORITE_RESTAURANTS);
+
+                    if (favorites != null && favorites.contains(placeId)) mIsUserFavMutable.setValue(true);
+                    else mIsUserFavMutable.setValue(false);
+
                 } else if (Objects.equals(document.get(Workmate.FIELD_RESTAURANT_ID), placeId)) {
                     //Every other users
                     workmates.add(new Workmate(String.valueOf(document.get(Workmate.FIELD_NAME)),
@@ -111,6 +123,7 @@ public class RestaurantDetailsViewModel extends ViewModel {
                             String.valueOf(document.get(Workmate.FIELD_AVATAR)), null, null));
                     }
                 }
+
             mWorkmatesMutable.setValue(workmates);
         });
 
@@ -125,8 +138,20 @@ public class RestaurantDetailsViewModel extends ViewModel {
         }
 
         //Update FireStore
-        mFireStoreRepository.updateRestaurantSelection(FirebaseAuth.getInstance().getUid(), placeId, placeName);
+        mFireStoreRepository.updateRestaurantSelection(mAuth.getUid(), placeId, placeName);
 
+    }
+
+    void updateUserFavorite(boolean favorite, String placeId){
+        mIsUserFavMutable.setValue(favorite);
+
+        if (!favorite){
+            //Remove from FireStore
+            mFireStoreRepository.deleteFavoriteRestaurant(mAuth.getUid(), placeId);
+        } else {
+            //Add to FireStore
+            mFireStoreRepository.addFavoriteRestaurants(mAuth.getUid(), placeId);
+        }
     }
 
     private static class GetRestaurantDetailsAsyncTask extends AsyncTask<Void, Void, RestaurantDetailsResponse>{

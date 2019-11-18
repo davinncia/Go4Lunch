@@ -3,6 +3,7 @@ package com.example.go4lunchjava.restaurant_details;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -16,7 +17,7 @@ public class ScrollFabBehavior extends FloatingActionButton.Behavior {
     public ScrollFabBehavior(Context context, AttributeSet attrs) {
         super(context, attrs);
 
-        setAutoHideEnabled(true);
+        //setAutoHideEnabled(true);
     }
 
 
@@ -32,11 +33,11 @@ public class ScrollFabBehavior extends FloatingActionButton.Behavior {
     public void onNestedScroll(@NonNull CoordinatorLayout coordinatorLayout, @NonNull FloatingActionButton child, @NonNull View target, int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed, int type) {
         super.onNestedScroll(coordinatorLayout, child, target, dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed, type);
 
-        if (dyConsumed > 0 && child.getVisibility() == View.VISIBLE) {
-            // Workmate scrolled dow
+        if (dyUnconsumed > 0 && child.getVisibility() == View.VISIBLE) {
+            // Workmate scrolled down
             child.setVisibility(View.INVISIBLE);
-        } else if (dyConsumed < 0 && child.getVisibility() != View.VISIBLE) {
-            // Workmate scrolled up
+        } else if (dyUnconsumed < 0 && child.getVisibility() != View.VISIBLE) {
+            // Workmate scrolled all the way up
             child.show();
         }
     }

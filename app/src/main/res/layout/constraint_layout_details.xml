@@ -60,7 +60,7 @@
         android:layout_width="150dp"
         android:layout_height="wrap_content"
         android:padding="16dp"
-        android:src="@drawable/ic_favorite"
+        android:src="@drawable/ic_favorite_empty"
         app:layout_constraintHorizontal_chainStyle="spread"
         app:layout_constraintEnd_toStartOf="@+id/iv_web_details"
         app:layout_constraintHorizontal_bias="0.5"
