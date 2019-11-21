@@ -1,7 +1,6 @@
 package com.example.go4lunchjava.restaurant_details;
 
 import android.os.AsyncTask;
-import android.util.Log;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -9,8 +8,8 @@ import androidx.lifecycle.ViewModel;
 
 import com.example.go4lunchjava.repository.FireStoreRepository;
 import com.example.go4lunchjava.repository.PlacesApiRepository;
-import com.example.go4lunchjava.restaurant_details.pojo_api.RestaurantDetailsResponse;
-import com.example.go4lunchjava.restaurant_details.pojo_api.RestaurantDetailsResult;
+import com.example.go4lunchjava.places_api.pojo.details.RestaurantDetailsResponse;
+import com.example.go4lunchjava.places_api.pojo.details.RestaurantDetailsResult;
 import com.example.go4lunchjava.utils.RestaurantDataFormat;
 import com.example.go4lunchjava.workmates_list.Workmate;
 import com.google.firebase.auth.FirebaseAuth;

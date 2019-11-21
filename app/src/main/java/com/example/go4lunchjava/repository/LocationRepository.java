@@ -29,14 +29,13 @@ public class LocationRepository {
     private LocationCallback locationCallback = new LocationCallback() {
         @Override
         public void onLocationResult(LocationResult locationResult) {
-            if (locationResult != null && userSelectedLatLng != null) {
+            if (locationResult != null && userSelectedLatLng == null) {
                 latLngMutableLiveData.setValue(new LatLng(locationResult.getLastLocation().getLatitude(),
                         locationResult.getLastLocation().getLongitude()));
                 Log.d("debuglog", "LocationCallback");
             }
         }
     };
-
 
     private LocationRepository(Application application){
         this.mApplication = application;
@@ -56,8 +55,8 @@ public class LocationRepository {
             LocationRequest locationRequest = new LocationRequest();
             locationRequest
                     //.setSmallestDisplacement(10) //meters
-                    .setInterval(10000) //Updates every 10 seconds
-                    .setFastestInterval(10000)
+                    .setInterval(100000) //Updates every 10 seconds
+                    .setFastestInterval(100000)
                     .setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
             fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, null); // ?
         } else {

@@ -1,4 +1,4 @@
-package com.example.go4lunchjava.restaurant_details.pojo_api;
+package com.example.go4lunchjava.places_api.pojo.details;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;

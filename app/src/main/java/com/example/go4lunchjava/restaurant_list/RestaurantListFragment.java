@@ -1,8 +1,11 @@
 package com.example.go4lunchjava.restaurant_list;
 
 
+import android.content.Intent;
 import android.os.Bundle;
 
+import androidx.annotation.Nullable;
+import androidx.core.widget.ContentLoadingProgressBar;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
@@ -22,10 +25,15 @@ import com.example.go4lunchjava.utils.SearchEditText;
 import com.example.go4lunchjava.di.ViewModelFactory;
 import com.example.go4lunchjava.map.MapViewModel;
 import com.example.go4lunchjava.restaurant_details.RestaurantDetailsActivity;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.widget.Autocomplete;
+import com.google.android.libraries.places.widget.AutocompleteActivity;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
+import static com.example.go4lunchjava.MainActivity.AUTO_COMPLETE_REQUEST_CODE;
 
 
 public class RestaurantListFragment extends Fragment implements RestaurantAdapter.OnRestaurantClickListener {
@@ -33,9 +41,9 @@ public class RestaurantListFragment extends Fragment implements RestaurantAdapte
     //Recycler View
     private RecyclerView mRecyclerView;
     private RestaurantAdapter mAdapter;
-    private RecyclerView.LayoutManager layoutManager;
 
     //SEARCH
+    private static final String RESTAURANT_LIST_FRAGMENT_ID_KEY = "place_id_key_list_fragment";
     private List<RestaurantItem> mRestaurantItems = new ArrayList<>();
     private SearchEditText mSearchEditText;
 
@@ -44,8 +52,12 @@ public class RestaurantListFragment extends Fragment implements RestaurantAdapte
         // Required empty public constructor
     }
 
-    public static RestaurantListFragment newInstance() {
-        return new RestaurantListFragment();
+    public static RestaurantListFragment newInstance(String placeId) {
+        RestaurantListFragment fragment = new RestaurantListFragment();
+        Bundle args = new Bundle();
+        args.putString(RESTAURANT_LIST_FRAGMENT_ID_KEY, placeId);
+        fragment.setArguments(args);
+        return fragment;
     }
 
     @Override
@@ -60,47 +72,40 @@ public class RestaurantListFragment extends Fragment implements RestaurantAdapte
         View rootView = inflater.inflate(R.layout.fragment_restaurant_list, container, false);
 
         mSearchEditText = getActivity().findViewById(R.id.edit_text_search);
-
+        ContentLoadingProgressBar progressBar = rootView.findViewById(R.id.progress_bar_restaurant_list);
         LinearLayout emptyView = rootView.findViewById(R.id.linearLayout_empty_list_restaurant);
         mRecyclerView = rootView.findViewById(R.id.recycler_view_restaurants);
+
         initRecyclerView();
 
-        //Get data from view model
+        //Get our view model
         ViewModelFactory viewModelFactory = new ViewModelFactory(Objects.requireNonNull(getActivity()).getApplication());
-        //Restaurant (filtering) ViewModel
         RestaurantViewModel restaurantViewModel = ViewModelProviders.of(this, viewModelFactory).get(RestaurantViewModel.class);
-        //Shared ViewModel to get the searched place
-        MapViewModel mapViewModel = ViewModelProviders.of(getActivity(), viewModelFactory).get(MapViewModel.class);
 
-        mapViewModel.mRestaurantsLiveData.observe(this, restaurantItems -> {
+        //INIT
+        restaurantViewModel.init(getArguments().getString(RESTAURANT_LIST_FRAGMENT_ID_KEY));
+
+        //UPDATING DATA
+        restaurantViewModel.mRestaurantsLiveData.observe(this, restaurantItems -> {
+
             mRestaurantItems = restaurantItems; //SEARCH
+            progressBar.setVisibility(View.GONE);
+
             if (restaurantItems == null || restaurantItems.size() < 1)
                 emptyView.setVisibility(View.VISIBLE);
             else {
                 emptyView.setVisibility(View.GONE);
-                //mAdapter.submitList(restaurantItems);  //Display data on screen
-                restaurantViewModel.provideRestaurantList(restaurantItems);
+                mAdapter.submitList(restaurantItems);  //Display data on screen
             }
         });
 
         //SEARCH
         restaurantViewModel.mFilteredRestaurants.observe(this, restaurantItems -> {
-
             mAdapter.submitList(restaurantItems); //Display data on screen
-
         });
 
         mSearchEditText.setSearchTextChangedListener(charSequence -> {
             restaurantViewModel.searchInRestaurantList(mRestaurantItems, charSequence);
-        });
-
-        //UPDATING DATA DETAILS
-        restaurantViewModel.mRestaurantsLiveData.observe(this, restaurantItems -> {
-            //TODO: Find a better solution
-            //mAdapter.submitList(null);
-            mAdapter.submitList(restaurantItems);
-            Log.d("debuglog", "Updating adapter");
-
         });
 
         return rootView;
@@ -109,18 +114,18 @@ public class RestaurantListFragment extends Fragment implements RestaurantAdapte
     private void initRecyclerView(){
 
         // Improve performance if layout size fixed
-        mRecyclerView.setHasFixedSize(true);
+        //mRecyclerView.setHasFixedSize(true);
 
         //Divider deco
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(Objects.requireNonNull(this.getContext()), LinearLayoutManager.VERTICAL);
         mRecyclerView.addItemDecoration(dividerItemDecoration);
 
-        layoutManager = new LinearLayoutManager(getContext());
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getContext());
         mRecyclerView.setLayoutManager(layoutManager);
 
         mAdapter = new RestaurantAdapter();
-        mAdapter.setOnRestaurantClickListener(this);
         mRecyclerView.setAdapter(mAdapter);
+        mAdapter.setOnRestaurantClickListener(this);
     }
 
     public void setSearchEditText(){

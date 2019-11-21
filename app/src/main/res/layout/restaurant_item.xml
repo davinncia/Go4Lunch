@@ -93,10 +93,13 @@
         android:id="@+id/iv_picture_restraurant_item"
         android:layout_width="0dp"
         android:layout_height="match_parent"
+        android:padding="4dp"
+        android:src="@drawable/ic_food"
+
         app:layout_constraintHorizontal_weight="2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/frameLayout"
         app:layout_constraintTop_toTopOf="@+id/frameLayout"
-        app:srcCompat="@drawable/com_facebook_profile_picture_blank_portrait" />
+         />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

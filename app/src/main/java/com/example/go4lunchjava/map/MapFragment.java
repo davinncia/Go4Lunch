@@ -2,7 +2,6 @@ package com.example.go4lunchjava.map;
 
 
 import android.Manifest;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
@@ -28,19 +27,11 @@ import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.libraries.places.api.Places;
-import com.google.android.libraries.places.api.model.Place;
-import com.google.android.libraries.places.api.model.TypeFilter;
-import com.google.android.libraries.places.widget.Autocomplete;
-import com.google.android.libraries.places.widget.AutocompleteActivity;
-import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-
-import static com.example.go4lunchjava.MainActivity.AUTO_COMPLETE_REQUEST_CODE;
 
 
 public class MapFragment extends Fragment {
@@ -48,7 +39,7 @@ public class MapFragment extends Fragment {
 
 
     private static final int RC_LOCATION_REQUEST = 100;
-    private static final float ZOOM = 15;
+    private static final float ZOOM = 13;
 
     private MapViewModel mMapViewModel;
 
@@ -68,8 +59,8 @@ public class MapFragment extends Fragment {
 
     public static MapFragment newInstance(){
         return new MapFragment();
-    }
 
+    }
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -118,7 +109,7 @@ public class MapFragment extends Fragment {
             mMap.setOnMapLongClickListener(latLng -> {
                 //Make a request to new PoiList at given location
                 Toast.makeText(getContext(), getResources().getString(R.string.restaurant_search), Toast.LENGTH_SHORT).show();
-                mMapViewModel.fetchNearByPlaces(latLng);
+                mMapViewModel.setCustomLocation(latLng);
             });
 
             mMapViewModel.hasMapAvailability(true); //Triggers location updates
@@ -144,7 +135,6 @@ public class MapFragment extends Fragment {
         mMapViewModel.mPoiListLiveData.observe(this, poiList -> {
             Log.d("debuglog", "Poi list triggered.");
             if (mMap == null) { //Google map initialize in background, thus can be null.
-                //TODO: For some reason size = 0 on third demand...
                 mPoiList = poiList; //We then keep the list to display when map is (finally) loaded.
             }
             else addPoiMarkers(poiList);
@@ -156,9 +146,6 @@ public class MapFragment extends Fragment {
     private void addPoiMarkers(List<Poi> poiList){
         mMap.clear();
 
-        //BitmapDescriptor bitmapDescriptor = BitmapConverter.bitmapDescriptorFromVector(getContext(), R.drawable.ic_restaurant);
-        //Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_restaurant);
-
         Log.d("debuglog", "Placing markers");
         for (Poi poi : poiList){
             BitmapDescriptor bitmapDescriptor = BitmapConverter.getBitmapDescriptor(getContext(), poi.getPointerRes());
@@ -166,7 +153,10 @@ public class MapFragment extends Fragment {
             mMap.addMarker(new MarkerOptions().icon(bitmapDescriptor)
                     .position(poiLatLng).title(poi.getName()));
         }
-        //mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(poiList.get(0).getLat(), poiList.get(0).getLon()), ZOOM));
+
+        if (poiList.size() == 1) { //Zoom on specific search
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(poiList.get(0).getLat(), poiList.get(0).getLon()), ZOOM));
+        }
     }
 
     private GoogleMap.OnCameraMoveListener mCameraMoveListener = new GoogleMap.OnCameraMoveListener() {
@@ -227,6 +217,15 @@ public class MapFragment extends Fragment {
         mMapView.onLowMemory();
     }
 
+
+    ////////////////
+    /////SEARCH/////
+    ////////////////
+    public void searchSpecificPlace(String placeId){
+        Log.d("debuglog", "searchSpecificPlace: ");
+        mMapViewModel.fetchSpecificPlace(placeId);
+    }
+
     ////////////////
     ///PERMISSION///
     ////////////////
@@ -250,24 +249,6 @@ public class MapFragment extends Fragment {
         } else {
             mMapViewModel.hasLocationPermission(false);
             Toast.makeText(getContext(), "Location not available.", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    ////////////////
-    /////SEARCH/////
-    ////////////////
-
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == AUTO_COMPLETE_REQUEST_CODE){
-            if (resultCode == AutocompleteActivity.RESULT_OK){
-                assert data != null;
-                Place place = Autocomplete.getPlaceFromIntent(data);
-                mMapViewModel.setSearchedPoi(place);
-            }
         }
     }
 }

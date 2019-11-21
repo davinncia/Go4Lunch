@@ -1,5 +1,7 @@
 package com.example.go4lunchjava.restaurant_list;
 
+import android.util.Log;
+
 import androidx.annotation.Nullable;
 
 import java.util.Objects;
@@ -57,22 +59,28 @@ public class RestaurantItem {
         return mWorkmatesJoiningNbr;
     }
 
-    public void setWorkmatesJoingingNbr(int workmatesJoiningNbr) {
+    public void setWorkmatesJoiningNbr(int workmatesJoiningNbr) {
         mWorkmatesJoiningNbr = workmatesJoiningNbr;
+    }
+
+    public void setHoursDesc(String hoursDesc) {
+        mHoursDesc = hoursDesc;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
+        Log.d("debuglog", "Equals: ");
+        //if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
+
         RestaurantItem that = (RestaurantItem) o;
-        return mRatingResource == that.mRatingResource &&
-                mWorkmatesJoiningNbr == that.mWorkmatesJoiningNbr &&
-                mName.equals(that.mName) &&
-                mDistance.equals(that.mDistance) &&
-                mAddress.equals(that.mAddress) &&
-                mHoursDesc.equals(that.mHoursDesc) &&
-                mPictureUri.equals(that.mPictureUri);
+
+        Log.d("debuglog", "Old: " + mWorkmatesJoiningNbr);
+        Log.d("debuglog", "New: " + that.mWorkmatesJoiningNbr);
+
+        return mWorkmatesJoiningNbr == that.mWorkmatesJoiningNbr &&
+                Objects.equals(mHoursDesc, that.mHoursDesc);
+
     }
 
     @Override

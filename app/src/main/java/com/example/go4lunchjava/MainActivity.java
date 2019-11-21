@@ -3,6 +3,7 @@ package com.example.go4lunchjava;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -11,6 +12,7 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -26,6 +28,7 @@ import com.example.go4lunchjava.workmates_list.WorkmatesFragment;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.api.model.TypeFilter;
 import com.google.android.libraries.places.widget.Autocomplete;
+import com.google.android.libraries.places.widget.AutocompleteActivity;
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
@@ -33,6 +36,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -53,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
 
     //Search
     private EditText mSearchEditText;
+    private String mSearchPlaceId;
 
 
     @Override
@@ -86,7 +91,9 @@ public class MainActivity extends AppCompatActivity {
                 fragment = MapFragment.newInstance();
                 break;
             case R.id.action_list_view:
-                fragment = RestaurantListFragment.newInstance();
+                String specificPlace = mSearchPlaceId;
+                mSearchPlaceId = null;
+                fragment = RestaurantListFragment.newInstance(specificPlace);
                 break;
             case R.id.action_workmates:
                 fragment = WorkmatesFragment.newInstance();
@@ -180,15 +187,12 @@ public class MainActivity extends AppCompatActivity {
 
         if (item.getItemId() == R.id.menu_action_search){
 
-            //TODO NINO: My implementation of search function
             Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.frame_layout_container_main);
 
             if (fragment instanceof MapFragment){
-                //((MapFragment) fragment).searchPlaceOnMap();
                 searchPlaceOnMap();
             } else if (fragment instanceof RestaurantListFragment){
-                //((RestaurantListFragment) fragment).setSearchEditText();
-                searchPlaceOnMap();
+                ((RestaurantListFragment) fragment).setSearchEditText();
             } else if (fragment instanceof WorkmatesFragment){
                 Toast.makeText(this, "Search workmates", Toast.LENGTH_SHORT).show();
             }
@@ -198,14 +202,30 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void searchPlaceOnMap(){
-        List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG,
-                Place.Field.ADDRESS, Place.Field.OPENING_HOURS, Place.Field.RATING, Place.Field.PHOTO_METADATAS);
+        List<Place.Field> fields = Collections.singletonList(Place.Field.ID);
         //Places auto complete intent
         Intent intent = new Autocomplete.IntentBuilder(
                 AutocompleteActivityMode.OVERLAY, fields)
                 .setTypeFilter(TypeFilter.ESTABLISHMENT)
                 .build(this);
         startActivityForResult(intent, AUTO_COMPLETE_REQUEST_CODE);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == AUTO_COMPLETE_REQUEST_CODE){
+            if (resultCode == AutocompleteActivity.RESULT_OK){
+                assert data != null;
+                Place place = Autocomplete.getPlaceFromIntent(data);
+                mSearchPlaceId = place.getId();
+                Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.frame_layout_container_main);
+                if (fragment instanceof MapFragment){
+                    ((MapFragment) fragment).searchSpecificPlace(mSearchPlaceId);
+                }
+            }
+        }
     }
 
     //////////////////

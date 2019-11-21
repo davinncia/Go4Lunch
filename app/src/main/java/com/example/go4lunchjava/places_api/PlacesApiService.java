@@ -1,7 +1,7 @@
 package com.example.go4lunchjava.places_api;
 
 import com.example.go4lunchjava.places_api.pojo.NearBySearchResponse;
-import com.example.go4lunchjava.restaurant_details.pojo_api.RestaurantDetailsResponse;
+import com.example.go4lunchjava.places_api.pojo.details.RestaurantDetailsResponse;
 
 import retrofit2.Call;
 import retrofit2.http.GET;
@@ -11,14 +11,20 @@ import retrofit2.http.Query;
 public interface PlacesApiService {
 
     //location=40.7463956,-73.9852992
-    @GET("maps/api/place/nearbysearch/json?type=restaurant&radius=5000&key=AIzaSyDSpFo8O861EgPYmsRlICS0sRs0zGEsrS4")
+    @GET("maps/api/place/nearbysearch/json?type=restaurant&radius=3000&key=AIzaSyDSpFo8O861EgPYmsRlICS0sRs0zGEsrS4")
     Call<NearBySearchResponse> nearbySearch(
             @Query("location") String location
     );
 
     //place_id=ChIJJ4y_XahZwokRgO8olYwA7Cg
-    @GET("maps/api/place/details/json?fields=name,photo,rating,vicinity,international_phone_number,website&key=AIzaSyDSpFo8O861EgPYmsRlICS0sRs0zGEsrS4")
+    @GET("maps/api/place/details/json?fields=name,photo,rating,vicinity,international_phone_number,website,geometry,place_id,opening_hours&key=AIzaSyDSpFo8O861EgPYmsRlICS0sRs0zGEsrS4")
     Call<RestaurantDetailsResponse> detailsSearch(
+            @Query("place_id") String placeId
+    );
+
+    //place_id=ChIJJ4y_XahZwokRgO8olYwA7Cg
+    @GET("maps/api/place/details/json?fields=place_id,opening_hours&key=AIzaSyDSpFo8O861EgPYmsRlICS0sRs0zGEsrS4")
+    Call<RestaurantDetailsResponse> hoursDetailsSearch(
             @Query("place_id") String placeId
     );
 }

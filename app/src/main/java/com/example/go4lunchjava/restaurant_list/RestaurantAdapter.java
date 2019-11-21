@@ -15,17 +15,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.go4lunchjava.R;
 
-import java.util.List;
-
 public class RestaurantAdapter extends ListAdapter<RestaurantItem, RestaurantAdapter.RestaurantViewHolder> {
-
-    //DATA
-    private List<RestaurantItem> mRestaurants;
 
     //CLICKS
     private OnRestaurantClickListener mListener;
 
-    protected RestaurantAdapter() {
+    RestaurantAdapter() {
         super(DIFF_CALLBACK);
     }
 
@@ -53,12 +48,12 @@ public class RestaurantAdapter extends ListAdapter<RestaurantItem, RestaurantAda
 
         holder.distanceView.setText(restaurant.getDistance());
 
-        //holder.nbrOfWorkmatesView.setText("(" + restaurant.getWorkmatesJoiningNbr() + ")");
         holder.nbrOfWorkmatesView.setText(String.format("%s", "(" + restaurant.getWorkmatesJoiningNbr() + ")"));
 
         holder.starsView.setImageResource(restaurant.getRatingResource());
 
-        Glide.with(holder.pictureView.getContext())
+        if (!restaurant.getPictureUrl().isEmpty())
+            Glide.with(holder.pictureView.getContext())
                 .load(restaurant.getPictureUrl())
                 .centerCrop()
                 .into(holder.pictureView);
@@ -68,16 +63,18 @@ public class RestaurantAdapter extends ListAdapter<RestaurantItem, RestaurantAda
     /////////////////
     //DIFF CALLBACK//
     /////////////////
-    public static final DiffUtil.ItemCallback<RestaurantItem> DIFF_CALLBACK =
+    private static final DiffUtil.ItemCallback<RestaurantItem> DIFF_CALLBACK =
             new DiffUtil.ItemCallback<RestaurantItem>() {
                 @Override
                 public boolean areItemsTheSame(@NonNull RestaurantItem oldItem, @NonNull RestaurantItem newItem) {
-                    return oldItem == newItem;
+                    return oldItem.getPlaceId().equals(newItem.getPlaceId());
                 }
 
                 @Override
                 public boolean areContentsTheSame(@NonNull RestaurantItem oldItem, @NonNull RestaurantItem newItem) {
-                    return oldItem.equals(newItem);
+                    //TODO: fix bug
+                    //oldItem seems already updated...
+                    return false; //oldItem.equals(newItem);
                 }
             };
 

@@ -5,9 +5,9 @@ import android.location.Location;
 import android.util.Log;
 
 import com.example.go4lunchjava.R;
+import com.example.go4lunchjava.places_api.pojo.details.hours.OpeningHoursDetails;
+import com.example.go4lunchjava.places_api.pojo.details.hours.OpeningPeriod;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.libraries.places.api.model.OpeningHours;
-import com.google.android.libraries.places.api.model.Period;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -28,10 +28,9 @@ public class RestaurantDataFormat {
 
         if (rate == null) return 0; //This won't display any image
 
-        //TODO TEST: Unit test for rating
         int result = Math.round(rate * 3 / 5);
 
-        if (result < 0)
+        if (result <= 0)
             return 0; //No rating communicated
         else if (result < 1.5)
             return R.drawable.ic_star;
@@ -95,91 +94,73 @@ public class RestaurantDataFormat {
      * @param openingHours form Places API or SDK
      * @return String
      */
-
-    public static String getHoursFromOpeningHours(OpeningHours openingHours) {
+    //TODO: we should use resource string...
+    public static String getHoursFromOpeningHours(OpeningHoursDetails openingHours) {
         if (openingHours == null) {
             return "Opening hours not communicated";
         }
 
         Calendar calendar = Calendar.getInstance(Locale.getDefault());
         int dayInt = calendar.get(Calendar.DAY_OF_WEEK); //6
-        String day = "";
-
-        switch (dayInt) {
-            case 1:
-                day = "SUNDAY";
-                break;
-            case 2:
-                day = "MONDAY";
-                break;
-            case 3:
-                day = "TUESDAY";
-                break;
-            case 4:
-                day = "WEDNESDAY";
-                break;
-            case 5:
-                day = "THURSDAY";
-                break;
-            case 6:
-                day = "FRIDAY";
-                break;
-            case 7:
-                day = "SATURDAY";
-                break;
-        }
 
         int hour = calendar.get(Calendar.HOUR_OF_DAY);
         int min = calendar.get(Calendar.MINUTE);
 
 
-        String hours = "Closed";
+        String hours = "Closed today";
 
-        for (Period period : openingHours.getPeriods()) {
+        for (OpeningPeriod period : openingHours.getPeriods()) {
 
-            if (period.getOpen() != null && period.getOpen().getDay().toString().equals(day)) {
+            if (period.getOpen() != null && period.getOpen().getDay() == dayInt) {
                 //Open today !
-                //TODO: what if to early !?
                 if (period.getClose() == null) {
                     return "24/7";
                 }
 
-                int minutesStillOpen = 0;
+                int openingHour = Integer.parseInt(period.getOpen().getTime().substring(0, 2));
+                int openingMinutes = Integer.parseInt(period.getOpen().getTime().substring(2));
 
-                if (hour < period.getClose().getTime().getHours() && hour > period.getOpen().getTime().getHours()) {
-                    //Still open
-                    minutesStillOpen = 60 * (period.getClose().getTime().getHours() - hour)
-                            + period.getClose().getTime().getMinutes() - min;
-                } else if (hour == period.getClose().getTime().getHours() && min <= period.getClose().getTime().getMinutes()) {
-                    //Soon closed
-                    minutesStillOpen = period.getClose().getTime().getMinutes() - min;
-                }
+                int closingHour = Integer.parseInt(period.getClose().getTime().substring(0, 2));
+                if (closingHour < 5) closingHour = 24;
+                int closingMinutes = Integer.parseInt(period.getClose().getTime().substring(2));
 
-                if (minutesStillOpen > 30) {
-                    hours = "Open until " + period.getClose().getTime().getHours() + "h" + period.getClose().getTime().getMinutes();
-                    try {
-                        //Convert to 12 hours format
-                        String _24HourTime = period.getClose().getTime().getHours() + ":" + period.getClose().getTime().getMinutes();
-                        SimpleDateFormat _24HourSDF = new SimpleDateFormat("HH:mm");
-                        SimpleDateFormat _12HourSDF = new SimpleDateFormat("hh:mm a");
-                        Date _24HourDt = _24HourSDF.parse(_24HourTime);
 
-                        assert _24HourDt != null;
-                        hours = "Open until " + _12HourSDF.format(_24HourDt);
+                if (hour < closingHour && hour >= openingHour || hour == closingHour && min < closingMinutes) {
+                    //OPEN NOW
+                    int minutesStillOpen = 60 * (closingHour - hour) + closingMinutes - min;
 
-                    } catch (ParseException e) {
-                        e.printStackTrace();
+                    if (minutesStillOpen > 30) {
+                        hours = "Open until " + convertTo12HoursFormat(closingHour, closingMinutes);
+
+                    } else if (minutesStillOpen > 0) {
+                        hours = "Closing soon";
                     }
 
-                } else if (minutesStillOpen > 0) {
-                    hours = "Closing soon";
-                } else {
-                    hours = "Closed";
+                } else if (hour < openingHour || hour == openingHour && min < openingMinutes){
+                    //BEFORE OPENING
+                    hours = "Closed until " + convertTo12HoursFormat(openingHour, openingMinutes);
                 }
-
-
             }
+
         }
         return hours;
+    }
+
+    private static String convertTo12HoursFormat(int hours, int minutes){
+        String hour12 = "";
+        try {
+            //Convert to 12 hours format
+            String _24HourTime = hours + ":" + minutes;
+            SimpleDateFormat _24HourSDF = new SimpleDateFormat("HH:mm");
+            SimpleDateFormat _12HourSDF = new SimpleDateFormat("hh:mm a");
+            Date _24HourDt = _24HourSDF.parse(_24HourTime);
+
+            assert _24HourDt != null;
+            hour12 = _12HourSDF.format(_24HourDt);
+
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return hour12;
     }
 }

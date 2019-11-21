@@ -15,12 +15,11 @@ import com.example.go4lunchjava.places_api.pojo.NearBySearchResult;
 import com.example.go4lunchjava.repository.FireStoreRepository;
 import com.example.go4lunchjava.repository.LocationRepository;
 import com.example.go4lunchjava.repository.PlacesApiRepository;
-import com.example.go4lunchjava.restaurant_list.RestaurantItem;
-import com.example.go4lunchjava.utils.ObjectConverter;
+import com.example.go4lunchjava.places_api.pojo.details.RestaurantDetailsResponse;
+import com.example.go4lunchjava.places_api.pojo.details.RestaurantDetailsResult;
 import com.example.go4lunchjava.utils.SingleLiveEvent;
 import com.example.go4lunchjava.workmates_list.Workmate;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.libraries.places.api.model.Place;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.lang.ref.WeakReference;
@@ -45,10 +44,6 @@ public class MapViewModel extends ViewModel {
     //List of Points of interest
     private MediatorLiveData<List<Poi>> mPoiListMediatorLiveData = new MediatorLiveData<>();
     LiveData<List<Poi>> mPoiListLiveData = mPoiListMediatorLiveData;
-
-    //List of Restaurants
-    private MutableLiveData<List<RestaurantItem>> mRestaurantsMutableLiveData = new MutableLiveData<>();
-    public LiveData<List<RestaurantItem>> mRestaurantsLiveData = mRestaurantsMutableLiveData;
 
     //Internal LiveData to react to map ready & location permission
     private MutableLiveData<Boolean> mapAvailable = new MutableLiveData<>();
@@ -128,9 +123,17 @@ public class MapViewModel extends ViewModel {
     }
 //endregion
 
-    private void getRestaurants(NearBySearchResponse response){
-        List<RestaurantItem> restaurants = ObjectConverter.convertNearbyResponseToRestaurantItemList(response, mLocationLiveData.getValue());
-        mRestaurantsMutableLiveData.setValue(restaurants);
+    private void setSearchedPoi(RestaurantDetailsResponse response){
+
+        RestaurantDetailsResult result = response.getResult();
+        if (result == null) return;
+
+        List<Poi> poiList = new ArrayList<>();
+
+        poiList.add(new Poi(result.getName(), result.getPlaceId(), result.getGeometry().getLocation().getLat(),
+                result.getGeometry().getLocation().getLng()));
+        mPoiListMediatorLiveData.setValue(poiList); //Mark on map
+        checkWorkmateInterest(poiList); //update color if workmate joining
     }
 
     private void checkWorkmateInterest(List<Poi> poiList){
@@ -150,18 +153,6 @@ public class MapViewModel extends ViewModel {
             }
             mPoiListMediatorLiveData.setValue(poiList); //Updating view
         });
-    }
-
-    void setSearchedPoi(Place place){ //TODO: change name
-        if (place == null || place.getLatLng() == null) return;
-
-        List<Poi> poiList = new ArrayList<>();
-        poiList.add(new Poi(place.getName(), place.getId(), place.getLatLng().latitude, place.getLatLng().longitude));
-        mPoiListMediatorLiveData.setValue(poiList); //Mark on map
-        checkWorkmateInterest(poiList); //update color if workmate joining
-
-        List<RestaurantItem> restaurants = ObjectConverter.convertPlaceToRestaurantItemList(place, mLocationLiveData.getValue());
-        mRestaurantsMutableLiveData.setValue(restaurants);
     }
 
 
@@ -185,11 +176,26 @@ public class MapViewModel extends ViewModel {
         this.cameraMoved = moved;
     }
 
-    void fetchNearByPlaces(LatLng latLng){
+    void setCustomLocation(LatLng latLng){
+        mLocationRepository.setCustomLatLng(latLng);
+        fetchNearByPlaces(latLng);
+    }
+
+    private void fetchNearByPlaces(LatLng latLng){
         GetNearByPlacesAsyncTask asyncTask = new GetNearByPlacesAsyncTask(MapViewModel.this, mPlacesApiRepository, latLng);
         asyncTask.execute();
     }
 
+    void fetchSpecificPlace(String placeId){
+        if (placeId != null){
+            GetRestaurantDetailsAsyncTask asyncTask = new GetRestaurantDetailsAsyncTask(MapViewModel.this, mPlacesApiRepository, placeId);
+            asyncTask.execute();
+        }
+    }
+
+    ///////////////////
+    //////NEAR BY//////
+    ///////////////////
     private static class GetNearByPlacesAsyncTask extends AsyncTask<Void, Void, NearBySearchResponse> {
 
         private final WeakReference<MapViewModel> mMapViewModelReference; //WeakReference in case ViewModel instance is gone while async task -> garbage collector
@@ -215,7 +221,38 @@ public class MapViewModel extends ViewModel {
 
             if (mMapViewModelReference.get() != null) {
                 mMapViewModelReference.get().getPoi(nearBySearchResponse);
-                mMapViewModelReference.get().getRestaurants(nearBySearchResponse);
+            }
+        }
+    }
+
+    ///////////////////
+    //////SPECIFIC/////
+    ///////////////////
+    private static class GetRestaurantDetailsAsyncTask extends AsyncTask<Void, Void, RestaurantDetailsResponse>{
+
+        private final WeakReference<MapViewModel> mMapViewModelReference;
+        private PlacesApiRepository mPlacesApiRepository;
+        private String mPlaceId;
+
+        GetRestaurantDetailsAsyncTask(MapViewModel mapViewModel, PlacesApiRepository placesApiRepository, String placeId){
+
+            this.mMapViewModelReference = new WeakReference<>(mapViewModel);
+            this.mPlacesApiRepository = placesApiRepository;
+            mPlaceId = placeId;
+
+        }
+
+        @Override
+        protected RestaurantDetailsResponse doInBackground(Void... voids) {
+            return mPlacesApiRepository.getRestaurantDetailsResponse(mPlaceId);
+        }
+
+        @Override
+        protected void onPostExecute(RestaurantDetailsResponse response) {
+            super.onPostExecute(response);
+
+            if (mMapViewModelReference.get() != null && response != null){
+                mMapViewModelReference.get().setSearchedPoi(response);
             }
         }
     }

@@ -9,7 +9,8 @@
         android:id="@+id/linearLayout_empty_list_restaurant"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:visibility="gone">
 
         <TextView
             android:layout_width="match_parent"
@@ -19,7 +20,8 @@
             android:text="@string/empty_restaurant_list"
             android:textSize="21sp"
             android:textColor="@color/colorPrimary"
-            android:textStyle="bold"/>
+            android:textStyle="bold"
+            />
 
         <ImageView
             android:layout_width="match_parent"
@@ -27,6 +29,13 @@
             android:layout_weight="1"
             android:src="@drawable/ic_food" />
     </LinearLayout>
+
+    <androidx.core.widget.ContentLoadingProgressBar
+        android:id="@+id/progress_bar_restaurant_list"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_gravity="center"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view_restaurants"

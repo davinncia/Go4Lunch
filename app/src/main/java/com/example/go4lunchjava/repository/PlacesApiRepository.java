@@ -4,14 +4,12 @@ import android.util.Log;
 
 import com.example.go4lunchjava.places_api.PlacesApiService;
 import com.example.go4lunchjava.places_api.pojo.NearBySearchResponse;
-import com.example.go4lunchjava.places_api.pojo.NearBySearchResult;
-import com.example.go4lunchjava.restaurant_details.pojo_api.RestaurantDetailsResponse;
+import com.example.go4lunchjava.places_api.pojo.details.RestaurantDetailsResponse;
+import com.example.go4lunchjava.restaurant_details.RestaurantDetails;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -27,7 +25,6 @@ public class PlacesApiRepository {
     //Caches
     private HashMap<String, NearBySearchResponse> mNearByCache = new HashMap<>();
     private HashMap<String, RestaurantDetailsResponse> mDetailsCache = new HashMap<>();
-    private List<String> mLastRestaurantIdsSearch = new ArrayList<>();
 
     private PlacesApiRepository(){
         retrofit = getRetrofitInstance();
@@ -84,12 +81,6 @@ public class PlacesApiRepository {
             Log.d("debuglog", "Places cache used");
         }
 
-        assert nearBySearchResponse != null;
-        mLastRestaurantIdsSearch.clear();
-        for (NearBySearchResult result : nearBySearchResponse.getResults()){
-            mLastRestaurantIdsSearch.add(result.getId());
-        }
-
         return nearBySearchResponse;
     }
 
@@ -98,19 +89,34 @@ public class PlacesApiRepository {
     ////////////////////
     public RestaurantDetailsResponse getRestaurantDetailsResponse(String placeId){
 
+        RestaurantDetailsResponse response = mDetailsCache.get(placeId);
+
+        if (response == null) {
+            //Not in cache : make a request
+            try {
+                Log.d("debuglog", "Details Api request...");
+                response = service.detailsSearch(placeId).execute().body();
+                mDetailsCache.put(placeId, response);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
+        return response;
+    }
+
+    //HOURS
+    //TODO NINO: Demande horaire specifique. (Perd l'utilité du cache mais réduit le poids des nombreuses demandes) ?
+    public RestaurantDetailsResponse getHoursDetails(String placeId){
+
         RestaurantDetailsResponse response = null;
 
         try {
-            response = service.detailsSearch(placeId).execute().body();
+            response = service.hoursDetailsSearch(placeId).execute().body();
         } catch (IOException e) {
             e.printStackTrace();
         }
+
         return response;
-
     }
-
-    public List<String> getLastRestaurantIdsSearch(){
-        return mLastRestaurantIdsSearch;
-    }
-
 }
