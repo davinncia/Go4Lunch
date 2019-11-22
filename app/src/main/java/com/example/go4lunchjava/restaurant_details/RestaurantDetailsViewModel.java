@@ -1,15 +1,21 @@
 package com.example.go4lunchjava.restaurant_details;
 
+import android.app.Application;
 import android.os.AsyncTask;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
+import androidx.work.Data;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
 
-import com.example.go4lunchjava.repository.FireStoreRepository;
-import com.example.go4lunchjava.repository.PlacesApiRepository;
+import com.example.go4lunchjava.NotificationWorker;
 import com.example.go4lunchjava.places_api.pojo.details.RestaurantDetailsResponse;
 import com.example.go4lunchjava.places_api.pojo.details.RestaurantDetailsResult;
+import com.example.go4lunchjava.repository.FireStoreRepository;
+import com.example.go4lunchjava.repository.PlacesApiRepository;
 import com.example.go4lunchjava.utils.RestaurantDataFormat;
 import com.example.go4lunchjava.workmates_list.Workmate;
 import com.google.firebase.auth.FirebaseAuth;
@@ -17,8 +23,11 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 public class RestaurantDetailsViewModel extends ViewModel {
 
@@ -26,6 +35,7 @@ public class RestaurantDetailsViewModel extends ViewModel {
 
     private PlacesApiRepository mPlacesApiRepository;
     private FireStoreRepository mFireStoreRepository;
+    private Application mApplication;
     private FirebaseAuth mAuth;
 
     //DETAILS
@@ -44,11 +54,12 @@ public class RestaurantDetailsViewModel extends ViewModel {
     private MutableLiveData<Boolean> mIsUserFavMutable = new MutableLiveData<>();
     public LiveData<Boolean> mIsUserFavLiveData = mIsUserFavMutable;
 
-    public RestaurantDetailsViewModel(){
+    public RestaurantDetailsViewModel(Application application){
 
-        mPlacesApiRepository = PlacesApiRepository.getInstance();
-        mFireStoreRepository = FireStoreRepository.getInstance();
-        mAuth = FirebaseAuth.getInstance();
+        this.mPlacesApiRepository = PlacesApiRepository.getInstance();
+        this.mFireStoreRepository = FireStoreRepository.getInstance();
+        this.mApplication = application;
+        this.mAuth = FirebaseAuth.getInstance();
 
     }
 
@@ -134,6 +145,8 @@ public class RestaurantDetailsViewModel extends ViewModel {
         if (!selected) {
             placeId = "";
             placeName = "";
+        } else {
+            setNotification(placeName);
         }
 
         //Update FireStore
@@ -152,6 +165,71 @@ public class RestaurantDetailsViewModel extends ViewModel {
             mFireStoreRepository.addFavoriteRestaurants(mAuth.getUid(), placeId);
         }
     }
+    //--------------------------------------------------------------------------------------------//
+    //                                      Notifications
+    //--------------------------------------------------------------------------------------------//
+    private void setNotification(String restaurantName){
+
+        //DATA
+        String address = "";
+        if (mDetailsLiveData.getValue() != null && mDetailsLiveData.getValue().getAddress() != null){
+            address = " - " + mDetailsLiveData.getValue().getAddress();
+        }
+
+        List<String> workmateNames = new ArrayList<>();
+        if (mWorkmatesLiveData.getValue() != null){
+            for (Workmate mate : mWorkmatesLiveData.getValue()){
+                workmateNames.add(mate.getDisplayName());
+            }
+        }
+
+        Data data = new Data.Builder()
+                .putString(NotificationWorker.KEY_RESTAURANT_NAME, restaurantName)
+                .putString(NotificationWorker.KEY_ADDRESS, address)
+                .putStringArray(NotificationWorker.KEY_COWORKERS, workmateNames.toArray(new String[0]))
+                .build();
+
+        //TIME
+        Calendar currentDate = Calendar.getInstance();
+        Calendar dueDate = Calendar.getInstance();
+
+        // Set Execution around 12:00:00 PM
+        dueDate.set(Calendar.HOUR_OF_DAY, 12);
+        dueDate.set(Calendar.MINUTE, 0);
+        dueDate.set(Calendar.SECOND, 0);
+
+        if (dueDate.before(currentDate)){
+            //It's 12PM past, set it for tomorrow then
+            dueDate.add(Calendar.HOUR_OF_DAY, 24);
+        }
+
+        long timeDiff = dueDate.getTimeInMillis() - currentDate.getTimeInMillis();
+
+        OneTimeWorkRequest notifRequest = new OneTimeWorkRequest.Builder(NotificationWorker.class)
+                .setInputData(data)
+                //.setInitialDelay(timeDiff, TimeUnit.MILLISECONDS)
+                //.setInitialDelay(1, TimeUnit.MINUTES)
+                .build();
+
+        WorkManager.getInstance(mApplication.getApplicationContext()).enqueue(notifRequest);
+
+    }
+
+    private void startPeriodicNotificationWorker(){
+
+        //Constraints constraints = new Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build();
+
+        PeriodicWorkRequest notifRequest =
+                new PeriodicWorkRequest.Builder(NotificationWorker.class, 1, TimeUnit.MINUTES)
+                        //.setConstraints(constraints)
+                        .build();
+
+        WorkManager.getInstance(mApplication.getApplicationContext()).enqueue(notifRequest);
+    }
+
+    //--------------------------------------------------------------------------------------------//
+    //                                        AsyncTask
+    //--------------------------------------------------------------------------------------------//
 
     private static class GetRestaurantDetailsAsyncTask extends AsyncTask<Void, Void, RestaurantDetailsResponse>{
 

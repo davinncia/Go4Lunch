@@ -2,7 +2,6 @@ package com.example.go4lunchjava.utils;
 
 
 import android.location.Location;
-import android.util.Log;
 
 import com.example.go4lunchjava.R;
 import com.example.go4lunchjava.places_api.pojo.details.hours.OpeningHoursDetails;

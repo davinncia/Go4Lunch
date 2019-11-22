@@ -15,15 +15,21 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
 
 import com.bumptech.glide.Glide;
+import com.example.go4lunchjava.NotificationWorker;
 import com.example.go4lunchjava.R;
 import com.example.go4lunchjava.workmates_list.Workmate;
 import com.example.go4lunchjava.di.ViewModelFactory;
 import com.example.go4lunchjava.workmates_list.WorkmateAdapter;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.util.Calendar;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class RestaurantDetailsActivity extends AppCompatActivity {
 

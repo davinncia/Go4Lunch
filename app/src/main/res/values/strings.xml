@@ -34,6 +34,7 @@
     <string name="is_joining">\u0020is joining in!</string>
     <string name="no_phone">No phone number communicated.</string>
     <string name="no_website">No website communicated.</string>
+    <string name="notif_title">Ton repas de ce midi t\'attends!</string>
 
 
 </resources>

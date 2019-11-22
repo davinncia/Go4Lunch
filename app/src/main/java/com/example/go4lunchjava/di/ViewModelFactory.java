@@ -32,7 +32,7 @@ public class ViewModelFactory extends ViewModelProvider.NewInstanceFactory {
         } else if (modelClass.isAssignableFrom(RestaurantViewModel.class)){
             return (T) new RestaurantViewModel(mApplication);
         } else if (modelClass.isAssignableFrom(RestaurantDetailsViewModel.class)){
-            return (T) new RestaurantDetailsViewModel();
+            return (T) new RestaurantDetailsViewModel(mApplication);
         } else if (modelClass.isAssignableFrom(WorkmateViewModel.class)){
             return (T) new WorkmateViewModel();
         }

@@ -61,6 +61,9 @@ public class MapFragment extends Fragment {
         return new MapFragment();
 
     }
+
+    //TODO: add on poi click listener sending to details activity
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
