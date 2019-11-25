@@ -17,15 +17,17 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.go4lunchjava.R;
+import com.example.go4lunchjava.chat.ChatActivity;
 import com.example.go4lunchjava.di.ViewModelFactory;
 import com.example.go4lunchjava.repository.FireStoreRepository;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 
 import java.util.List;
 import java.util.Objects;
 
 
-public class WorkmatesFragment extends Fragment {
+public class WorkmatesFragment extends Fragment implements WorkmateAdapter.WorkmateClickListener {
 
     private RecyclerView mRecyclerView;
     private WorkmateAdapter mAdapter;
@@ -60,7 +62,7 @@ public class WorkmatesFragment extends Fragment {
 
     private void initRecyclerView(){
 
-        mAdapter = new WorkmateAdapter();
+        mAdapter = new WorkmateAdapter(this);
 
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         mRecyclerView.setHasFixedSize(true); //Performance
@@ -68,4 +70,19 @@ public class WorkmatesFragment extends Fragment {
 
     }
 
+    @Override
+    public void onWorkmateClick(String workmateId) {
+
+        String currentUid = FirebaseAuth.getInstance().getUid();
+        if (workmateId == null || currentUid == null) return;
+
+        String chatId;
+        if (currentUid.compareToIgnoreCase(workmateId) < 0){
+            chatId = currentUid + workmateId;
+        } else {
+            chatId = workmateId + currentUid;
+        }
+
+        startActivity(ChatActivity.navigate(getContext(), chatId));
+    }
 }

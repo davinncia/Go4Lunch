@@ -19,6 +19,13 @@ public class WorkmateAdapter extends RecyclerView.Adapter<WorkmateAdapter.Workma
 
     private List<Workmate> mWorkmates;
 
+    private WorkmateClickListener mWorkmateClickListener;
+
+    //Constructor
+    WorkmateAdapter(WorkmateClickListener listener){
+        this.mWorkmateClickListener = listener;
+    }
+
     @NonNull
     @Override
     public WorkmateViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -70,6 +77,13 @@ public class WorkmateAdapter extends RecyclerView.Adapter<WorkmateAdapter.Workma
             imageView = itemView.findViewById(R.id.iv_workmate_list);
             textView = itemView.findViewById(R.id.tv_workmates_list);
 
+            itemView.setOnClickListener(view ->
+                    mWorkmateClickListener.onWorkmateClick(mWorkmates.get(getAdapterPosition()).getUid()));
+
         }
+    }
+
+    interface WorkmateClickListener{
+        void onWorkmateClick(String workmateId);
     }
 }

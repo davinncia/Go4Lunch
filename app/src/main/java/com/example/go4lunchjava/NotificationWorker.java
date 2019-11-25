@@ -7,7 +7,6 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
@@ -44,7 +43,7 @@ public class NotificationWorker extends Worker {
         String[] workmates = getInputData().getStringArray(KEY_COWORKERS);
 
         try {
-            //resetNotifWorkerForTomorrow();
+            resetNotifWorkerForTomorrow();
             createNotificationChannel();
             sendNotification(restaurant, address, workmates);
         } catch (Exception e){
@@ -84,7 +83,7 @@ public class NotificationWorker extends Worker {
             workmateNames.append(name);
             workmateNames.append(" ");
         }
-        //TODO: String in resources
+
         String textTitle = mContext.getResources().getString(R.string.notif_title);
         String textContent = restaurant + address;
 
@@ -100,7 +99,7 @@ public class NotificationWorker extends Worker {
                 .setContentText(textContent)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                .setStyle(new NotificationCompat.BigTextStyle().bigText(textContent + " " + workmateNames))
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(textContent + "\n" + workmateNames))
                 .setContentIntent(pendingIntent)
                 .setAutoCancel(true);
 
@@ -120,7 +119,7 @@ public class NotificationWorker extends Worker {
 
         if (dueDate.before(currentDate)){
             //It's 12PM past, set it for tomorrow then
-            dueDate.add(Calendar.HOUR_OF_DAY, 24);
+            dueDate.add(Calendar.HOUR_OF_DAY, 23);
         }
 
         long timeDiff = dueDate.getTimeInMillis() - currentDate.getTimeInMillis();

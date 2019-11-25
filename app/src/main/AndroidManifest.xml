@@ -12,7 +12,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".restaurant_details.RestaurantDetailsActivity"></activity>
+        <activity android:name=".chat.ChatActivity"></activity>
+        <activity android:name=".restaurant_details.RestaurantDetailsActivity" />
         <activity
             android:name=".auth.LogInCheckActivity"
             android:theme="@style/SignInTheme">

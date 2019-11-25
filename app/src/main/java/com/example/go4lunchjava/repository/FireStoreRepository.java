@@ -3,24 +3,43 @@ package com.example.go4lunchjava.repository;
 
 import android.util.Log;
 
+import androidx.annotation.Nullable;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+
+import com.example.go4lunchjava.chat.ChatMessageModelUi;
+import com.example.go4lunchjava.chat.model.ChatMessage;
 import com.example.go4lunchjava.workmates_list.Workmate;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
 public class FireStoreRepository {
     //TODO: Create interface
 
-    public static final String USER_COLLECTION_NAME = "users";
+    private static final String USER_COLLECTION_NAME = "users";
+
+    private static final String CHAT_COLLECTION_NAME = "chat";
+    private static final String MESSAGES_COLLECTION_NAME = "messages";
+
+    private static final String TAG = FireStoreRepository.class.getSimpleName();
 
     private static FireStoreRepository sInstance;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+    private MutableLiveData<List<ChatMessage>> messagesMutable = new MutableLiveData<>();
+    public LiveData<List<ChatMessage>> messagesLiveData = messagesMutable;
 
     private FireStoreRepository(){
         //No constructor allowed
@@ -37,6 +56,9 @@ public class FireStoreRepository {
         return sInstance;
     }
 
+    //--------------------------------------------------------------------------------------------//
+    //                                         Restaurants
+    //--------------------------------------------------------------------------------------------//
     //GET
     public Task<DocumentSnapshot> getUserDocument(String userId){
         return db.collection(USER_COLLECTION_NAME).document(userId).get();
@@ -98,6 +120,36 @@ public class FireStoreRepository {
         db.collection(USER_COLLECTION_NAME)
                 .document(uid)
                 .update(Workmate.FIELD_FAVORITE_RESTAURANTS, FieldValue.arrayRemove(placeId));
+    }
+
+    //--------------------------------------------------------------------------------------------//
+    //                                          Chat
+    //--------------------------------------------------------------------------------------------//
+    //GET
+    public void listenToMessages(String chatId){
+        db.collection(CHAT_COLLECTION_NAME).document(chatId).collection(MESSAGES_COLLECTION_NAME)
+                .orderBy("creationTimeStamp").addSnapshotListener((queryDocumentSnapshots, e) -> {
+
+                    if (queryDocumentSnapshots == null || e != null){
+                        Log.w(TAG, "Listen messages failed.", e);
+                        return;
+                    }
+
+                    List<ChatMessage> messages = new ArrayList<>();
+
+                    for (QueryDocumentSnapshot document : queryDocumentSnapshots){
+                        messages.add(document.toObject(ChatMessage.class));
+                    }
+
+                    messagesMutable.setValue(messages);
+                    Log.d("debuglog", "Fetched messages: " + messages.size());
+                });
+    }
+
+    //CREATE
+    public void addMessage(ChatMessage message, String chatId){
+        db.collection(CHAT_COLLECTION_NAME).document(chatId).collection(MESSAGES_COLLECTION_NAME)
+                .document().set(message);
     }
 
 }

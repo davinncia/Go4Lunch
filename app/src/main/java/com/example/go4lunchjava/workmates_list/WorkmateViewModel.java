@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.example.go4lunchjava.repository.FireStoreRepository;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
@@ -31,11 +32,14 @@ public class WorkmateViewModel extends ViewModel {
 
             for (QueryDocumentSnapshot document: queryDocumentSnapshots){
 
-                workmates.add(new Workmate(String.valueOf(document.get(Workmate.FIELD_NAME)),
-                        null,
-                        String.valueOf(document.get(Workmate.FIELD_AVATAR)),
-                        String.valueOf(document.get(Workmate.FIELD_RESTAURANT_ID)),
-                        String.valueOf(document.get(Workmate.FIELD_RESTAURANT_NAME))));
+                if (!document.getId().equals(FirebaseAuth.getInstance().getUid())) {
+
+                    workmates.add(new Workmate(String.valueOf(document.get(Workmate.FIELD_NAME)),
+                            document.getId(),
+                            String.valueOf(document.get(Workmate.FIELD_AVATAR)),
+                            String.valueOf(document.get(Workmate.FIELD_RESTAURANT_ID)),
+                            String.valueOf(document.get(Workmate.FIELD_RESTAURANT_NAME))));
+                }
             }
 
             if (workmates.size() > 0) mUsersMutableLiveData.setValue(workmates);

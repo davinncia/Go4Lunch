@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.go4lunchjava.auth.LogInCheckViewModel;
+import com.example.go4lunchjava.chat.ChatViewModel;
 import com.example.go4lunchjava.map.MapViewModel;
 import com.example.go4lunchjava.restaurant_details.RestaurantDetailsViewModel;
 import com.example.go4lunchjava.restaurant_list.RestaurantViewModel;
@@ -35,6 +36,8 @@ public class ViewModelFactory extends ViewModelProvider.NewInstanceFactory {
             return (T) new RestaurantDetailsViewModel(mApplication);
         } else if (modelClass.isAssignableFrom(WorkmateViewModel.class)){
             return (T) new WorkmateViewModel();
+        } else if (modelClass.isAssignableFrom(ChatViewModel.class)){
+            return (T) new ChatViewModel();
         }
         throw new IllegalArgumentException("Unknown ViewModel class");
     }

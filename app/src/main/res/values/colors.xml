@@ -4,5 +4,10 @@
     <color name="colorPrimaryDark">#00574B</color>
     <color name="colorAccent">#D81B60</color>
 
+    <color name="colorSender">#D695AA</color>
+    <color name="colorReceiver">#82ADA4</color>
+
+
+
     <color name="colorGoogle">#A1FF0202</color>
 </resources>

@@ -74,7 +74,7 @@ public class RestaurantAdapter extends ListAdapter<RestaurantItem, RestaurantAda
                 public boolean areContentsTheSame(@NonNull RestaurantItem oldItem, @NonNull RestaurantItem newItem) {
                     //TODO: fix bug
                     //oldItem seems already updated...
-                    return false; //oldItem.equals(newItem);
+                    return false;//oldItem.equals(newItem);
                 }
             };
 

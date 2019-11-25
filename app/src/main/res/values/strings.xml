@@ -35,6 +35,7 @@
     <string name="no_phone">No phone number communicated.</string>
     <string name="no_website">No website communicated.</string>
     <string name="notif_title">Ton repas de ce midi t\'attends!</string>
+    <string name="send">Send</string>
 
 
 </resources>

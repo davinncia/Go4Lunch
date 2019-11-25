@@ -80,7 +80,6 @@ public class RestaurantItem {
 
         return mWorkmatesJoiningNbr == that.mWorkmatesJoiningNbr &&
                 Objects.equals(mHoursDesc, that.mHoursDesc);
-
     }
 
     @Override

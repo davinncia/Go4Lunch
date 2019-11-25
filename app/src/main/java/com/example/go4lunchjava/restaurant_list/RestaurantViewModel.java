@@ -9,6 +9,7 @@ import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import com.example.go4lunchjava.R;
 import com.example.go4lunchjava.places_api.pojo.NearBySearchResponse;
 import com.example.go4lunchjava.places_api.pojo.NearBySearchResult;
 import com.example.go4lunchjava.places_api.pojo.details.RestaurantDetailsResponse;
@@ -24,7 +25,9 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 public class RestaurantViewModel extends ViewModel {
@@ -171,10 +174,25 @@ public class RestaurantViewModel extends ViewModel {
                         //We have a match !
                         Log.d("debuglog", "We have a match !");
 
-                        restaurant.setWorkmatesJoiningNbr(++nbr);
+                        RestaurantItem newItem = new RestaurantItem(restaurant.getName(), restaurant.getPlaceId(), restaurant.getAddress(),
+                                restaurant.getHours(), restaurant.getPictureUrl(), restaurant.getDistance(), restaurant.getRatingResource());
+                        newItem.setWorkmatesJoiningNbr(++nbr);
+
+                        restaurants.set(restaurants.indexOf(restaurant), newItem);
                     }
                 }
             }
+/*
+            //TODO NINO: ListAdapter bug. This order has to be precisely followed
+            //1- Create a NEW item & NEW list (!= android id)
+            RestaurantItem newItem = new RestaurantItem("test", "xxxxxx", "Rue du debug",
+                    "", "", "", R.drawable.ic_star);
+            List<RestaurantItem> newList = new ArrayList<>(restaurants);
+
+            //3- Insert new item in the new list
+            newList.set(1, newItem);
+ */
+
             mRestaurantsMediatorLiveData.setValue(new ArrayList<>(restaurants)); //Otherwise listAdapter won't make any difference
         });
 

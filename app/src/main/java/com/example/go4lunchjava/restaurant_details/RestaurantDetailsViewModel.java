@@ -145,6 +145,7 @@ public class RestaurantDetailsViewModel extends ViewModel {
         if (!selected) {
             placeId = "";
             placeName = "";
+            disableNotification();
         } else {
             setNotification(placeName);
         }
@@ -203,16 +204,21 @@ public class RestaurantDetailsViewModel extends ViewModel {
             dueDate.add(Calendar.HOUR_OF_DAY, 24);
         }
 
+        //TODO: reset timer
         long timeDiff = dueDate.getTimeInMillis() - currentDate.getTimeInMillis();
 
         OneTimeWorkRequest notifRequest = new OneTimeWorkRequest.Builder(NotificationWorker.class)
                 .setInputData(data)
                 //.setInitialDelay(timeDiff, TimeUnit.MILLISECONDS)
-                //.setInitialDelay(1, TimeUnit.MINUTES)
+                //.setInitialDelay(20, TimeUnit.SECONDS)
+                .addTag("notification")
                 .build();
 
         WorkManager.getInstance(mApplication.getApplicationContext()).enqueue(notifRequest);
+    }
 
+    private void disableNotification(){
+        WorkManager.getInstance(mApplication.getApplicationContext()).cancelAllWorkByTag("notification");
     }
 
     private void startPeriodicNotificationWorker(){
