@@ -42,13 +42,14 @@ public class RestaurantAdapter extends ListAdapter<RestaurantItem, RestaurantAda
         holder.address.setText(restaurant.getAddress());
 
         holder.openingHoursView.setText(restaurant.getHours());
-        if (restaurant.getHours().equals("Closed") || restaurant.getHours().equals("Closing soon")){
+        if (restaurant.getHours().contains("Close"))
             holder.openingHoursView.setTextColor(Color.RED);
-        } else holder.openingHoursView.setTextColor(Color.DKGRAY);
+        else
+            holder.openingHoursView.setTextColor(Color.DKGRAY);
 
         holder.distanceView.setText(restaurant.getDistance());
 
-        holder.nbrOfWorkmatesView.setText(String.format("%s", "(" + restaurant.getWorkmatesJoiningNbr() + ")"));
+        holder.nbrOfWorkmatesView.setText(String.format("%s", "(" + restaurant.getWorkmatesNbr() + ")"));
 
         holder.starsView.setImageResource(restaurant.getRatingResource());
 
@@ -72,9 +73,7 @@ public class RestaurantAdapter extends ListAdapter<RestaurantItem, RestaurantAda
 
                 @Override
                 public boolean areContentsTheSame(@NonNull RestaurantItem oldItem, @NonNull RestaurantItem newItem) {
-                    //TODO: fix bug
-                    //oldItem seems already updated...
-                    return false;//oldItem.equals(newItem);
+                    return oldItem.equals(newItem);
                 }
             };
 

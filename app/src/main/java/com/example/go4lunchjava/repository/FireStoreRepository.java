@@ -60,10 +60,6 @@ public class FireStoreRepository {
     //                                         Restaurants
     //--------------------------------------------------------------------------------------------//
     //GET
-    public Task<DocumentSnapshot> getUserDocument(String userId){
-        return db.collection(USER_COLLECTION_NAME).document(userId).get();
-    }
-
     public Task<QuerySnapshot> getAllUserDocuments(){
         return db.collection(USER_COLLECTION_NAME).get();
     }

@@ -219,6 +219,7 @@ public class RestaurantDetailsViewModel extends ViewModel {
 
     private void disableNotification(){
         WorkManager.getInstance(mApplication.getApplicationContext()).cancelAllWorkByTag("notification");
+
     }
 
     private void startPeriodicNotificationWorker(){

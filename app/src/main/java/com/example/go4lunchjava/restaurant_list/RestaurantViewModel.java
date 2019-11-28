@@ -9,7 +9,6 @@ import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-import com.example.go4lunchjava.R;
 import com.example.go4lunchjava.places_api.pojo.NearBySearchResponse;
 import com.example.go4lunchjava.places_api.pojo.NearBySearchResult;
 import com.example.go4lunchjava.places_api.pojo.details.RestaurantDetailsResponse;
@@ -25,16 +24,13 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 public class RestaurantViewModel extends ViewModel {
 
     private FireStoreRepository mFireStoreRepository;
     private PlacesApiRepository mPlacesApiRepository;
-    private LocationRepository mLocationRepository;
 
     //List of restaurants
     private MediatorLiveData<List<RestaurantItem>> mRestaurantsMediatorLiveData = new MediatorLiveData<>();
@@ -48,20 +44,18 @@ public class RestaurantViewModel extends ViewModel {
     private MutableLiveData<LatLng> mLatLngLiveData = new MutableLiveData<>();
 
 
-    public RestaurantViewModel(Application application){
+    public RestaurantViewModel(Application application) {
 
         mFireStoreRepository = FireStoreRepository.getInstance();
         mPlacesApiRepository = PlacesApiRepository.getInstance();
-        mLocationRepository = LocationRepository.getInstance(application);
 
-        mLatLngLiveData.setValue(mLocationRepository.getLatLngLiveData().getValue());
-
-
+        LocationRepository locationRepository = LocationRepository.getInstance(application);
+        mLatLngLiveData.setValue(locationRepository.getLatLngLiveData().getValue());
     }
 
-    void init(String specificPlaceId){
+    void init(String specificPlaceId) {
 
-        if (specificPlaceId != null){
+        if (specificPlaceId != null) {
             //A place has been looked up on map
             GetRestaurantDetailsAsyncTask asyncTask = new GetRestaurantDetailsAsyncTask(
                     RestaurantViewModel.this, mPlacesApiRepository, specificPlaceId);
@@ -75,10 +69,12 @@ public class RestaurantViewModel extends ViewModel {
                 mRestaurantsMediatorLiveData.removeSource(mLatLngLiveData); //We don't want anymore updates
             });
 
+            //TODO: Get hour details
+
         }
     }
 
-    private void getRestaurantsNearBy(NearBySearchResponse response){
+    private void getRestaurantsNearBy(NearBySearchResponse response) {
 
         if (response == null) return;
 
@@ -114,17 +110,16 @@ public class RestaurantViewModel extends ViewModel {
                     hours,
                     pictureUri,
                     distanceString,
-                    ratingResource
+                    ratingResource,
+                    0
             ));
         }
         mRestaurantsMediatorLiveData.setValue(restaurants);
 
-        fetchNumberOfWorkmatesInRestaurant(restaurants);
-
-        fetchOpeningHourDetails(restaurants);
+        fetchNumberOfWorkmatesInRestaurant();
     }
 
-    private void getSpecificRestaurant(RestaurantDetailsResponse response){
+    private void getSpecificRestaurant(RestaurantDetailsResponse response) {
 
         if (response == null) return;
         List<RestaurantItem> restaurants = new ArrayList<>();
@@ -151,36 +146,42 @@ public class RestaurantViewModel extends ViewModel {
         int ratingResource = RestaurantDataFormat.getRatingResource((float) rate);
 
 
-        restaurants.add(new RestaurantItem(name, placeId, address, hours, pictureUri, distanceString, ratingResource));
+        restaurants.add(new RestaurantItem(name, placeId, address, hours, pictureUri, distanceString, ratingResource, 0));
+        mRestaurantsMediatorLiveData.setValue(restaurants);
 
-        fetchNumberOfWorkmatesInRestaurant(restaurants);
+        fetchNumberOfWorkmatesInRestaurant();
     }
 
 
     //WORKMATE JOINING
-    private void fetchNumberOfWorkmatesInRestaurant(List<RestaurantItem> restaurants){
-        Log.d("debuglog", "fetching workmates");
+    private void fetchNumberOfWorkmatesInRestaurant() {
+
+        if (mRestaurantsMediatorLiveData.getValue() == null) return;
 
         mFireStoreRepository.getAllUserDocuments().addOnSuccessListener(queryDocumentSnapshots -> {
 
-            for (QueryDocumentSnapshot document : queryDocumentSnapshots){
+            List<RestaurantItem> result = new ArrayList<>();
 
-                for (RestaurantItem restaurant : restaurants) {
+            for (RestaurantItem item : mRestaurantsMediatorLiveData.getValue()) {
 
-                    int nbr = 0;
+                RestaurantItem newItem = new RestaurantItem(
+                        item.getName(), item.getPlaceId(), item.getAddress(), item.getHours(), item.getPictureUrl(),
+                        item.getDistance(), item.getRatingResource(), item.getWorkmatesNbr());
 
-                    if (Objects.requireNonNull(document.get(Workmate.FIELD_RESTAURANT_ID)).equals(restaurant.getPlaceId())
-                            && !document.getId().equals(FirebaseAuth.getInstance().getUid())){
+                int nbr = 0;
+
+                for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+
+                    if (Objects.requireNonNull(document.get(Workmate.FIELD_RESTAURANT_ID)).equals(item.getPlaceId())
+                            && !document.getId().equals(FirebaseAuth.getInstance().getUid())) {
                         //We have a match !
                         Log.d("debuglog", "We have a match !");
 
-                        RestaurantItem newItem = new RestaurantItem(restaurant.getName(), restaurant.getPlaceId(), restaurant.getAddress(),
-                                restaurant.getHours(), restaurant.getPictureUrl(), restaurant.getDistance(), restaurant.getRatingResource());
-                        newItem.setWorkmatesJoiningNbr(++nbr);
-
-                        restaurants.set(restaurants.indexOf(restaurant), newItem);
+                        nbr++;
                     }
                 }
+                newItem.setWorkmatesNbr(nbr);
+                result.add(newItem);
             }
 /*
             //TODO NINO: ListAdapter bug. This order has to be precisely followed
@@ -192,14 +193,15 @@ public class RestaurantViewModel extends ViewModel {
             //3- Insert new item in the new list
             newList.set(1, newItem);
  */
+            mRestaurantsMediatorLiveData.setValue(result);
 
-            mRestaurantsMediatorLiveData.setValue(new ArrayList<>(restaurants)); //Otherwise listAdapter won't make any difference
+            fetchOpeningHourDetails(result);
         });
 
     }
 
     //HOURS
-    private void fetchOpeningHourDetails(List<RestaurantItem> restaurants){
+    private void fetchOpeningHourDetails(List<RestaurantItem> restaurants) {
 
         GetRestaurantHoursAsyncTask hoursAsyncTask = new GetRestaurantHoursAsyncTask(
                 RestaurantViewModel.this, mPlacesApiRepository, restaurants);
@@ -208,13 +210,13 @@ public class RestaurantViewModel extends ViewModel {
 
 
     //SEARCH FUNCTION
-    void searchInRestaurantList(List<RestaurantItem> restaurants, CharSequence charSequence){
+    void searchInRestaurantList(List<RestaurantItem> restaurants, CharSequence charSequence) {
 
         List<RestaurantItem> filteredRestaurants = new ArrayList<>();
         String input = charSequence.toString().trim().toLowerCase();
 
-        for (RestaurantItem restaurantItem : restaurants){
-            if (restaurantItem.getName().toLowerCase().contains(input)){
+        for (RestaurantItem restaurantItem : restaurants) {
+            if (restaurantItem.getName().toLowerCase().contains(input)) {
                 filteredRestaurants.add(restaurantItem);
             }
         }
@@ -257,13 +259,13 @@ public class RestaurantViewModel extends ViewModel {
     }
 
     //SPECIFIC SEARCH
-    private static class GetRestaurantDetailsAsyncTask extends AsyncTask<Void, Void, RestaurantDetailsResponse>{
+    private static class GetRestaurantDetailsAsyncTask extends AsyncTask<Void, Void, RestaurantDetailsResponse> {
 
         private final WeakReference<RestaurantViewModel> mRestaurantViewModelWeakReference;
         private PlacesApiRepository mPlacesApiRepository;
         private String mPlaceId;
 
-        GetRestaurantDetailsAsyncTask(RestaurantViewModel restaurantViewModel, PlacesApiRepository placesApiRepository, String placeId){
+        GetRestaurantDetailsAsyncTask(RestaurantViewModel restaurantViewModel, PlacesApiRepository placesApiRepository, String placeId) {
 
             this.mRestaurantViewModelWeakReference = new WeakReference<>(restaurantViewModel);
             this.mPlacesApiRepository = placesApiRepository;
@@ -280,20 +282,20 @@ public class RestaurantViewModel extends ViewModel {
         protected void onPostExecute(RestaurantDetailsResponse response) {
             super.onPostExecute(response);
 
-            if (mRestaurantViewModelWeakReference.get() != null && response != null){
+            if (mRestaurantViewModelWeakReference.get() != null && response != null) {
                 mRestaurantViewModelWeakReference.get().getSpecificRestaurant(response);
             }
         }
     }
 
     //HOURS DETAILS
-    private static class GetRestaurantHoursAsyncTask extends AsyncTask<Void, Void, List<RestaurantItem>>{
+    private static class GetRestaurantHoursAsyncTask extends AsyncTask<Void, Void, List<RestaurantItem>> {
 
         private final WeakReference<RestaurantViewModel> mRestaurantViewModelWeakReference;
         private PlacesApiRepository mPlacesApiRepository;
         private List<RestaurantItem> mRestaurants;
 
-        GetRestaurantHoursAsyncTask(RestaurantViewModel restaurantViewModel, PlacesApiRepository placesApiRepository, List<RestaurantItem> restaurants){
+        GetRestaurantHoursAsyncTask(RestaurantViewModel restaurantViewModel, PlacesApiRepository placesApiRepository, List<RestaurantItem> restaurants) {
 
             this.mRestaurantViewModelWeakReference = new WeakReference<>(restaurantViewModel);
             this.mPlacesApiRepository = placesApiRepository;
@@ -304,20 +306,22 @@ public class RestaurantViewModel extends ViewModel {
         protected List<RestaurantItem> doInBackground(Void... voids) {
 
             RestaurantDetailsResponse response;
+            List<RestaurantItem> result = new ArrayList<>(); //We have to populate a new array for ListAdapter to be triggered
 
-            for (RestaurantItem item : mRestaurants){
+            for (RestaurantItem item : mRestaurants) {
                 response = mPlacesApiRepository.getHoursDetails(item.getPlaceId());
                 String hours = RestaurantDataFormat.getHoursFromOpeningHours(response.getResult().getOpeningHours());
-                if (hours != null) item.setHoursDesc(hours);
+                result.add(new RestaurantItem(item.getName(), item.getPlaceId(), item.getAddress(), hours,
+                        item.getPictureUrl(), item.getDistance(), item.getRatingResource(), item.getWorkmatesNbr()));
             }
-            return mRestaurants;
+            return result;
         }
 
         @Override
         protected void onPostExecute(List<RestaurantItem> restaurants) {
             super.onPostExecute(restaurants);
 
-            if (mRestaurantViewModelWeakReference.get() != null){
+            if (mRestaurantViewModelWeakReference.get() != null) {
                 mRestaurantViewModelWeakReference.get().mRestaurantsMediatorLiveData.setValue(restaurants);
             }
         }
