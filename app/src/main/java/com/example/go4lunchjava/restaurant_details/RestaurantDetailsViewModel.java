@@ -6,15 +6,16 @@ import android.os.AsyncTask;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
+import androidx.work.Constraints;
 import androidx.work.Data;
-import androidx.work.OneTimeWorkRequest;
+import androidx.work.NetworkType;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 
 import com.example.go4lunchjava.NotificationWorker;
 import com.example.go4lunchjava.places_api.pojo.details.RestaurantDetailsResponse;
 import com.example.go4lunchjava.places_api.pojo.details.RestaurantDetailsResult;
-import com.example.go4lunchjava.repository.FireStoreRepository;
+import com.example.go4lunchjava.repository.UsersFireStoreRepository;
 import com.example.go4lunchjava.repository.PlacesApiRepository;
 import com.example.go4lunchjava.utils.RestaurantDataFormat;
 import com.example.go4lunchjava.workmates_list.Workmate;
@@ -23,7 +24,6 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Objects;
@@ -32,9 +32,10 @@ import java.util.concurrent.TimeUnit;
 public class RestaurantDetailsViewModel extends ViewModel {
 
     //https://maps.googleapis.com/maps/api/place/details/json?place_id=ChIJJ4y_XahZwokRgO8olYwA7Cg&fields=name,photo,rating,vicinity,international_phone_number,website&key=AIzaSyDSpFo8O861EgPYmsRlICS0sRs0zGEsrS4
+    public static final String NOTIF_TAG = "notification";
 
     private PlacesApiRepository mPlacesApiRepository;
-    private FireStoreRepository mFireStoreRepository;
+    private UsersFireStoreRepository mFireStoreRepository;
     private Application mApplication;
     private FirebaseAuth mAuth;
 
@@ -57,7 +58,7 @@ public class RestaurantDetailsViewModel extends ViewModel {
     public RestaurantDetailsViewModel(Application application){
 
         this.mPlacesApiRepository = PlacesApiRepository.getInstance();
-        this.mFireStoreRepository = FireStoreRepository.getInstance();
+        this.mFireStoreRepository = UsersFireStoreRepository.getInstance();
         this.mApplication = application;
         this.mAuth = FirebaseAuth.getInstance();
 
@@ -147,7 +148,7 @@ public class RestaurantDetailsViewModel extends ViewModel {
             placeName = "";
             disableNotification();
         } else {
-            setNotification(placeName);
+            setNotification(placeName, placeId);
         }
 
         //Update FireStore
@@ -166,10 +167,11 @@ public class RestaurantDetailsViewModel extends ViewModel {
             mFireStoreRepository.addFavoriteRestaurants(mAuth.getUid(), placeId);
         }
     }
+
     //--------------------------------------------------------------------------------------------//
     //                                      Notifications
     //--------------------------------------------------------------------------------------------//
-    private void setNotification(String restaurantName){
+    private void setNotification(String restaurantName, String restaurantId){
 
         //DATA
         String address = "";
@@ -177,17 +179,10 @@ public class RestaurantDetailsViewModel extends ViewModel {
             address = " - " + mDetailsLiveData.getValue().getAddress();
         }
 
-        List<String> workmateNames = new ArrayList<>();
-        if (mWorkmatesLiveData.getValue() != null){
-            for (Workmate mate : mWorkmatesLiveData.getValue()){
-                workmateNames.add(mate.getDisplayName());
-            }
-        }
-
         Data data = new Data.Builder()
                 .putString(NotificationWorker.KEY_RESTAURANT_NAME, restaurantName)
                 .putString(NotificationWorker.KEY_ADDRESS, address)
-                .putStringArray(NotificationWorker.KEY_COWORKERS, workmateNames.toArray(new String[0]))
+                .putString(NotificationWorker.KEY_RESTAURANT_ID, restaurantId)
                 .build();
 
         //TIME
@@ -204,34 +199,25 @@ public class RestaurantDetailsViewModel extends ViewModel {
             dueDate.add(Calendar.HOUR_OF_DAY, 24);
         }
 
-        //TODO: reset timer
         long timeDiff = dueDate.getTimeInMillis() - currentDate.getTimeInMillis();
 
-        OneTimeWorkRequest notifRequest = new OneTimeWorkRequest.Builder(NotificationWorker.class)
-                .setInputData(data)
-                //.setInitialDelay(timeDiff, TimeUnit.MILLISECONDS)
-                //.setInitialDelay(20, TimeUnit.SECONDS)
-                .addTag("notification")
-                .build();
+        Constraints constraints = new Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build();
+
+        PeriodicWorkRequest notifRequest =
+                new PeriodicWorkRequest.Builder(NotificationWorker.class, 24, TimeUnit.HOURS)
+                        .setInputData(data)
+                        .setConstraints(constraints)
+                        //.setInitialDelay(0, TimeUnit.MINUTES)
+                        .setInitialDelay(timeDiff, TimeUnit.MILLISECONDS)
+                        .addTag(NOTIF_TAG)
+                        .build();
 
         WorkManager.getInstance(mApplication.getApplicationContext()).enqueue(notifRequest);
     }
 
     private void disableNotification(){
-        WorkManager.getInstance(mApplication.getApplicationContext()).cancelAllWorkByTag("notification");
+        WorkManager.getInstance(mApplication.getApplicationContext()).cancelAllWorkByTag(NOTIF_TAG);
 
-    }
-
-    private void startPeriodicNotificationWorker(){
-
-        //Constraints constraints = new Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build();
-
-        PeriodicWorkRequest notifRequest =
-                new PeriodicWorkRequest.Builder(NotificationWorker.class, 1, TimeUnit.MINUTES)
-                        //.setConstraints(constraints)
-                        .build();
-
-        WorkManager.getInstance(mApplication.getApplicationContext()).enqueue(notifRequest);
     }
 
     //--------------------------------------------------------------------------------------------//

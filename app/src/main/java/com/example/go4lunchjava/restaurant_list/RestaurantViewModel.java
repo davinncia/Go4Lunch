@@ -2,7 +2,6 @@ package com.example.go4lunchjava.restaurant_list;
 
 import android.app.Application;
 import android.os.AsyncTask;
-import android.util.Log;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
@@ -13,7 +12,7 @@ import com.example.go4lunchjava.places_api.pojo.NearBySearchResponse;
 import com.example.go4lunchjava.places_api.pojo.NearBySearchResult;
 import com.example.go4lunchjava.places_api.pojo.details.RestaurantDetailsResponse;
 import com.example.go4lunchjava.places_api.pojo.details.RestaurantDetailsResult;
-import com.example.go4lunchjava.repository.FireStoreRepository;
+import com.example.go4lunchjava.repository.UsersFireStoreRepository;
 import com.example.go4lunchjava.repository.LocationRepository;
 import com.example.go4lunchjava.repository.PlacesApiRepository;
 import com.example.go4lunchjava.utils.RestaurantDataFormat;
@@ -24,12 +23,14 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 public class RestaurantViewModel extends ViewModel {
 
-    private FireStoreRepository mFireStoreRepository;
+    private UsersFireStoreRepository mFireStoreRepository;
     private PlacesApiRepository mPlacesApiRepository;
 
     //List of restaurants
@@ -46,7 +47,7 @@ public class RestaurantViewModel extends ViewModel {
 
     public RestaurantViewModel(Application application) {
 
-        mFireStoreRepository = FireStoreRepository.getInstance();
+        mFireStoreRepository = UsersFireStoreRepository.getInstance();
         mPlacesApiRepository = PlacesApiRepository.getInstance();
 
         LocationRepository locationRepository = LocationRepository.getInstance(application);
@@ -132,7 +133,7 @@ public class RestaurantViewModel extends ViewModel {
         //ADDRESS
         String address = result.getVicinity();
         //OPENING HOURS
-        String hours = RestaurantDataFormat.getHoursFromOpeningHours(result.getOpeningHours());
+        String hours = RestaurantDataFormat.getHoursFromOpeningHours(result.getOpeningHours(), Calendar.getInstance(Locale.getDefault()));
         //PICTURE
         String pictureUri = "";
         if (result.getPhotos() != null && result.getPhotos().length > 0) {
@@ -175,24 +176,13 @@ public class RestaurantViewModel extends ViewModel {
                     if (Objects.requireNonNull(document.get(Workmate.FIELD_RESTAURANT_ID)).equals(item.getPlaceId())
                             && !document.getId().equals(FirebaseAuth.getInstance().getUid())) {
                         //We have a match !
-                        Log.d("debuglog", "We have a match !");
-
                         nbr++;
                     }
                 }
                 newItem.setWorkmatesNbr(nbr);
                 result.add(newItem);
             }
-/*
-            //TODO NINO: ListAdapter bug. This order has to be precisely followed
-            //1- Create a NEW item & NEW list (!= android id)
-            RestaurantItem newItem = new RestaurantItem("test", "xxxxxx", "Rue du debug",
-                    "", "", "", R.drawable.ic_star);
-            List<RestaurantItem> newList = new ArrayList<>(restaurants);
 
-            //3- Insert new item in the new list
-            newList.set(1, newItem);
- */
             mRestaurantsMediatorLiveData.setValue(result);
 
             fetchOpeningHourDetails(result);
@@ -310,7 +300,7 @@ public class RestaurantViewModel extends ViewModel {
 
             for (RestaurantItem item : mRestaurants) {
                 response = mPlacesApiRepository.getHoursDetails(item.getPlaceId());
-                String hours = RestaurantDataFormat.getHoursFromOpeningHours(response.getResult().getOpeningHours());
+                String hours = RestaurantDataFormat.getHoursFromOpeningHours(response.getResult().getOpeningHours(), Calendar.getInstance(Locale.getDefault()));
                 result.add(new RestaurantItem(item.getName(), item.getPlaceId(), item.getAddress(), hours,
                         item.getPictureUrl(), item.getDistance(), item.getRatingResource(), item.getWorkmatesNbr()));
             }

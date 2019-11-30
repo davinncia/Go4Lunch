@@ -4,7 +4,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-import com.example.go4lunchjava.repository.FireStoreRepository;
+import com.example.go4lunchjava.repository.UsersFireStoreRepository;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -13,7 +13,7 @@ import java.util.List;
 
 public class WorkmateViewModel extends ViewModel {
 
-    private FireStoreRepository mFireStoreRepository = FireStoreRepository.getInstance();
+    private UsersFireStoreRepository mFireStoreRepository = UsersFireStoreRepository.getInstance();
 
     private MutableLiveData<List<Workmate>> mUsersMutableLiveData = new MutableLiveData<>();
     LiveData<List<Workmate>> mUsersLiveData = mUsersMutableLiveData;

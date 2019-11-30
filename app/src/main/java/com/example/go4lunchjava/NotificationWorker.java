@@ -11,27 +11,31 @@ import android.os.Build;
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
-import androidx.work.OneTimeWorkRequest;
-import androidx.work.WorkManager;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
-import java.util.Calendar;
-import java.util.concurrent.TimeUnit;
+import com.example.go4lunchjava.repository.UsersFireStoreRepository;
+import com.example.go4lunchjava.workmates_list.Workmate;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class NotificationWorker extends Worker {
 
     public static final String KEY_RESTAURANT_NAME = "name_key";
-    public static final String KEY_COWORKERS = "coworkers_key";
+    public static final String KEY_RESTAURANT_ID = "id_key";
     public static final String KEY_ADDRESS = "address_key";
 
-
     private Context mContext;
+    private UsersFireStoreRepository mFireStoreRepository;
 
     public NotificationWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
 
         this.mContext = context;
+        this.mFireStoreRepository = UsersFireStoreRepository.getInstance();
     }
 
     @NonNull
@@ -40,12 +44,12 @@ public class NotificationWorker extends Worker {
 
         String restaurant = getInputData().getString(KEY_RESTAURANT_NAME);
         String address = getInputData().getString(KEY_ADDRESS);
-        String[] workmates = getInputData().getStringArray(KEY_COWORKERS);
+        String id = getInputData().getString(KEY_RESTAURANT_ID);
 
         try {
-            resetNotifWorkerForTomorrow();
             createNotificationChannel();
-            sendNotification(restaurant, address, workmates);
+            getWorkmatesJoining(restaurant, address, id);
+            //sendNotification(restaurant, address, workmates);
         } catch (Exception e){
             return Result.retry();
         }
@@ -56,8 +60,7 @@ public class NotificationWorker extends Worker {
     private void createNotificationChannel(){
         //This should always be executed on app start.
 
-        // Create the NotificationChannel, but only on API 26+ because
-        // the NotificationChannel class is new and not in the support library
+        // Create the NotificationChannel, but only on API 26+
         String CHANNEL_ID = "eating_time_notif_channel";
         String notifDescription = "Notification to alert on eating time";
 
@@ -74,6 +77,26 @@ public class NotificationWorker extends Worker {
         }
     }
 
+    private void getWorkmatesJoining(String restaurant, String address, String restaurantId){
+        mFireStoreRepository.getAllUserDocuments().addOnSuccessListener(queryDocumentSnapshots -> {
+
+            List<String> workmates = new ArrayList<>();
+
+            for (QueryDocumentSnapshot document : queryDocumentSnapshots){
+
+                if (document.get(Workmate.FIELD_RESTAURANT_ID) != null &&
+                        document.get(Workmate.FIELD_RESTAURANT_ID).equals(restaurantId) &&
+                        !document.getId().equals(FirebaseAuth.getInstance().getUid())){
+
+                    workmates.add(String.valueOf(document.get(Workmate.FIELD_NAME)));
+
+                }
+            }
+
+            sendNotification(restaurant, address, workmates.toArray(new String[0]));
+        });
+    }
+
     private void sendNotification(String restaurant, String address, String[] coworkers){
         String CHANNEL_ID = "eating_time_notif_channel";
         int NOTIF_ID = 44;
@@ -87,7 +110,7 @@ public class NotificationWorker extends Worker {
         String textTitle = mContext.getResources().getString(R.string.notif_title);
         String textContent = restaurant + address;
 
-        // Create an explicit intent for an Activity in your app
+        // Create an explicit intent
         Intent intent = new Intent(mContext, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         //putExtra
@@ -108,25 +131,4 @@ public class NotificationWorker extends Worker {
         notificationManager.notify(NOTIF_ID, builder.build());
     }
 
-    private void resetNotifWorkerForTomorrow(){
-        Calendar currentDate = Calendar.getInstance();
-        Calendar dueDate = Calendar.getInstance();
-
-        // Set Execution around 12:00:00 PM
-        dueDate.set(Calendar.HOUR_OF_DAY, 12);
-        dueDate.set(Calendar.MINUTE, 0);
-        dueDate.set(Calendar.SECOND, 0);
-
-        if (dueDate.before(currentDate)){
-            //It's 12PM past, set it for tomorrow then
-            dueDate.add(Calendar.HOUR_OF_DAY, 23);
-        }
-
-        long timeDiff = dueDate.getTimeInMillis() - currentDate.getTimeInMillis();
-
-        OneTimeWorkRequest notifRequest = new OneTimeWorkRequest.Builder(NotificationWorker.class)
-                .setInitialDelay(timeDiff, TimeUnit.MILLISECONDS).build();
-
-        WorkManager.getInstance(mContext).enqueue(notifRequest);
-    }
 }

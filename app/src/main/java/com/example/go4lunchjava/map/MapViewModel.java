@@ -12,7 +12,7 @@ import androidx.lifecycle.ViewModel;
 import com.example.go4lunchjava.R;
 import com.example.go4lunchjava.places_api.pojo.NearBySearchResponse;
 import com.example.go4lunchjava.places_api.pojo.NearBySearchResult;
-import com.example.go4lunchjava.repository.FireStoreRepository;
+import com.example.go4lunchjava.repository.UsersFireStoreRepository;
 import com.example.go4lunchjava.repository.LocationRepository;
 import com.example.go4lunchjava.repository.PlacesApiRepository;
 import com.example.go4lunchjava.places_api.pojo.details.RestaurantDetailsResponse;
@@ -31,7 +31,7 @@ public class MapViewModel extends ViewModel {
     //Repositories
     private LocationRepository mLocationRepository;
     private PlacesApiRepository mPlacesApiRepository;
-    private FireStoreRepository mFireStoreRepository;
+    private UsersFireStoreRepository mFireStoreRepository;
 
     //Location
     private MediatorLiveData<LatLng> mLocationMediatorLiveData = new MediatorLiveData<>();
@@ -56,7 +56,7 @@ public class MapViewModel extends ViewModel {
 
         mLocationRepository = LocationRepository.getInstance(application);
         mPlacesApiRepository = PlacesApiRepository.getInstance();
-        mFireStoreRepository = FireStoreRepository.getInstance();
+        mFireStoreRepository = UsersFireStoreRepository.getInstance();
 
         mLocationRepository.startLocationUpdates(true);
 

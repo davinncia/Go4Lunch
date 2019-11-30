@@ -14,6 +14,12 @@ public class Open {
     @Expose
     private String time;
 
+    //Constructor (for Testing)
+    public Open(int day, String time) {
+        this.day = day;
+        this.time = time;
+    }
+
     public int getDay() {
         return day;
     }

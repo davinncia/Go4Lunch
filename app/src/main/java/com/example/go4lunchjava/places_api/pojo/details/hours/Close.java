@@ -14,6 +14,12 @@ public class Close {
     @Expose
     private String timeOfDay;
 
+    //Constructor (for Testing)
+    public Close(int day, String timeOfDay) {
+        this.day = day;
+        this.timeOfDay = timeOfDay;
+    }
+
     public int getDay() {
         return day;
     }

@@ -15,17 +15,9 @@ public class LogInCheckActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        //Sign Out
-        //FirebaseAuth.getInstance().signOut();
-
         ViewModelFactory viewModelFactory = new ViewModelFactory(getApplication());
         LogInCheckViewModel logInVIewModel = ViewModelProviders.of(this, viewModelFactory).get(LogInCheckViewModel.class);
-        logInVIewModel.mIntentLiveData.observe(this, new Observer<Intent>() {
-            @Override
-            public void onChanged(Intent intent) {
-                startActivity(intent);
-            }
-        });
+        logInVIewModel.mIntentLiveData.observe(this, intent -> startActivity(intent));
 
         logInVIewModel.checkUserConnected();
 

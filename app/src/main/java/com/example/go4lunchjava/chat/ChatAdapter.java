@@ -5,15 +5,16 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.ListAdapter;
 
 import com.example.go4lunchjava.R;
 
-import java.util.List;
+public class ChatAdapter extends ListAdapter<ChatMessageModelUi, MessageViewHolder> {
 
-public class ChatAdapter extends RecyclerView.Adapter<MessageViewHolder> {
-
-    private List<ChatMessageModelUi> mChatMessages;
+    ChatAdapter() {
+        super(DIFF_CALLBACK);
+    }
 
     @NonNull
     @Override
@@ -26,28 +27,29 @@ public class ChatAdapter extends RecyclerView.Adapter<MessageViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull MessageViewHolder holder, int position) {
 
-        ChatMessageModelUi currentMessage = mChatMessages.get(position);
+        ChatMessageModelUi currentMessage = getItem(position);
 
         String previousSender = "";
         if (position > 0) {
-            previousSender = mChatMessages.get(position - 1).getSenderId();
+            previousSender = getItem(position - 1).getSenderId();
         }
 
         holder.updateWithMessage(currentMessage, previousSender);
     }
 
-    @Override
-    public int getItemCount() {
-        return mChatMessages != null ? mChatMessages.size() : 0;
-    }
+    /////////////////
+    //DIFF CALLBACK//
+    /////////////////
+    private static final DiffUtil.ItemCallback<ChatMessageModelUi> DIFF_CALLBACK =
+            new DiffUtil.ItemCallback<ChatMessageModelUi>() {
+                @Override
+                public boolean areItemsTheSame(@NonNull ChatMessageModelUi oldItem, @NonNull ChatMessageModelUi newItem) {
+                    return oldItem.getTime().equals(newItem.getTime());
+                }
 
-    public void setData(List<ChatMessageModelUi> messages){
-        this.mChatMessages = messages;
-        this.notifyDataSetChanged();
-    }
-
-    public void addMessage(ChatMessageModelUi message){
-        mChatMessages.add(message);
-        this.notifyItemInserted(mChatMessages.size());
-    }
+                @Override
+                public boolean areContentsTheSame(@NonNull ChatMessageModelUi oldItem, @NonNull ChatMessageModelUi newItem) {
+                    return oldItem.equals(newItem);
+                }
+            };
 }

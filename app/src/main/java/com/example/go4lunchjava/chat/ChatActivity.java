@@ -49,10 +49,10 @@ public class ChatActivity extends AppCompatActivity {
         initRecyclerView();
 
         mViewModel.messagesLiveData.observe(this,
-                chatMessageModelUis -> {
+                messages -> {
 
-                    Log.d("debuglog", "Observing some messages: " + chatMessageModelUis.size());
-                    mAdapter.setData(chatMessageModelUis);
+                    Log.d("debuglog", "Observing some messages: " + messages.size());
+                    mAdapter.submitList(messages);
                 });
 
 

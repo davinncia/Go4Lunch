@@ -29,7 +29,7 @@ public class RestaurantDataFormat {
 
         int result = Math.round(rate * 3 / 5);
 
-        if (result <= 0)
+        if (result <= 0) //Minimum is 1
             return 0; //No rating communicated
         else if (result < 1.5)
             return R.drawable.ic_star;
@@ -94,13 +94,13 @@ public class RestaurantDataFormat {
      * @return String
      */
     //TODO: we should use resource string...
-    public static String getHoursFromOpeningHours(OpeningHoursDetails openingHours) {
+    public static String getHoursFromOpeningHours(OpeningHoursDetails openingHours, Calendar calendar) {
         if (openingHours == null) {
             return "Opening hours not communicated";
         }
 
-        Calendar calendar = Calendar.getInstance(Locale.getDefault());
-        int dayInt = calendar.get(Calendar.DAY_OF_WEEK); //6
+        //Calendar calendar = Calendar.getInstance(Locale.getDefault());
+        int dayInt = calendar.get(Calendar.DAY_OF_WEEK) - 1; //Off by one with PlacesApi
 
         int hour = calendar.get(Calendar.HOUR_OF_DAY);
         int min = calendar.get(Calendar.MINUTE);
@@ -110,7 +110,7 @@ public class RestaurantDataFormat {
 
         for (OpeningPeriod period : openingHours.getPeriods()) {
 
-            if (period.getOpen() != null && period.getOpen().getDay() == dayInt) {
+            if (period.getOpen() != null && period.getOpen().getDay() == dayInt && !period.getOpen().getTime().isEmpty()) {
                 //Open today !
                 if (period.getClose() == null) {
                     return "24/7";

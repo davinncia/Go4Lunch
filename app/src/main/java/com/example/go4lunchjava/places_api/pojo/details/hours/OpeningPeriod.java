@@ -13,6 +13,12 @@ public class OpeningPeriod {
     @Expose
     private Close close;
 
+    //Constructor (for Testing)
+    public OpeningPeriod(Open open, Close close) {
+        this.open = open;
+        this.close = close;
+    }
+
     public Open getOpen() {
         return open;
     }

@@ -4,6 +4,7 @@ import android.net.Uri;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Objects;
 
 public class ChatMessageModelUi {
 
@@ -42,8 +43,23 @@ public class ChatMessageModelUi {
         return null;
     }
 
-
     public boolean currentUserIsSender() {
         return mCurrentUserIsSender;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ChatMessageModelUi that = (ChatMessageModelUi) o;
+        return mCurrentUserIsSender == that.mCurrentUserIsSender &&
+                mSenderId.equals(that.mSenderId) &&
+                Objects.equals(mContent, that.mContent) &&
+                Objects.equals(mSenderPictureUri, that.mSenderPictureUri);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(mSenderId, mContent, mTime, mSenderPictureUri, mCurrentUserIsSender);
     }
 }

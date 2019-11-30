@@ -8,7 +8,8 @@ import androidx.lifecycle.Transformations;
 import androidx.lifecycle.ViewModel;
 
 import com.example.go4lunchjava.chat.model.ChatMessage;
-import com.example.go4lunchjava.repository.FireStoreRepository;
+import com.example.go4lunchjava.repository.ChatFireStoreRepository;
+import com.example.go4lunchjava.repository.UsersFireStoreRepository;
 import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.ArrayList;
@@ -16,19 +17,17 @@ import java.util.List;
 
 public class ChatViewModel extends ViewModel {
 
-    private FireStoreRepository mFireStore;
+    private ChatFireStoreRepository mFireStore;
 
     private String mCurrentUid;
-    MutableLiveData<String> mChatId = new MutableLiveData<>();
+    private MutableLiveData<String> mChatId = new MutableLiveData<>();
 
     private MutableLiveData<List<ChatMessageModelUi>> messagesMutable = new MutableLiveData<>();
     LiveData<List<ChatMessageModelUi>> messagesLiveData = messagesMutable;
 
     public ChatViewModel(){
-
-        mFireStore = FireStoreRepository.getInstance();
+        mFireStore = ChatFireStoreRepository.getInstance();
         mCurrentUid = FirebaseAuth.getInstance().getUid();
-
     }
 
     void startListeningToChat(String chatId){
@@ -45,8 +44,6 @@ public class ChatViewModel extends ViewModel {
                         message.getSenderId().equals(mCurrentUid));
                 messageUiList.add(messageUi);
             }
-
-            Log.d("debuglog", "LiveData update");
 
             return messageUiList;
         });

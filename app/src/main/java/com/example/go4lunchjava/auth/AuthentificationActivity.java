@@ -12,7 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.go4lunchjava.MainActivity;
 import com.example.go4lunchjava.R;
-import com.example.go4lunchjava.repository.FireStoreRepository;
+import com.example.go4lunchjava.repository.UsersFireStoreRepository;
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
@@ -133,7 +133,7 @@ public class AuthentificationActivity extends AppCompatActivity {
 
                     FirebaseUser user = mAuth.getCurrentUser();
                     //Add if not already, add user to FireStore
-                    FireStoreRepository.getInstance().createUserIfNotRegistered(
+                    UsersFireStoreRepository.getInstance().createUserIfNotRegistered(
                             user.getUid(), user.getDisplayName(), String.valueOf(user.getPhotoUrl()));
                     // Sign in success, update UI with the signed-in user's information
                     updateUI(user);

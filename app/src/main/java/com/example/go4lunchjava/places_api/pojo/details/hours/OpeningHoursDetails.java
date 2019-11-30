@@ -9,6 +9,11 @@ public class OpeningHoursDetails {
     @Expose
     private OpeningPeriod[] periods;
 
+    //Constructor (for Testing)
+    public OpeningHoursDetails(OpeningPeriod[] periods) {
+        this.periods = periods;
+    }
+
     public OpeningPeriod[] getPeriods() {
         return periods;
     }
