@@ -69,13 +69,6 @@ public class WorkmatesFragment extends Fragment implements WorkmateAdapter.Workm
         String currentUid = FirebaseAuth.getInstance().getUid();
         if (workmateId == null || currentUid == null) return;
 
-        String chatId;
-        if (currentUid.compareToIgnoreCase(workmateId) < 0){
-            chatId = currentUid + workmateId;
-        } else {
-            chatId = workmateId + currentUid;
-        }
-
-        startActivity(ChatActivity.navigate(getContext(), chatId));
+        startActivity(ChatActivity.navigate(getContext(), currentUid, workmateId));
     }
 }

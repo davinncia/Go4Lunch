@@ -29,12 +29,7 @@ public class ChatAdapter extends ListAdapter<ChatMessageModelUi, MessageViewHold
 
         ChatMessageModelUi currentMessage = getItem(position);
 
-        String previousSender = "";
-        if (position > 0) {
-            previousSender = getItem(position - 1).getSenderId();
-        }
-
-        holder.updateWithMessage(currentMessage, previousSender);
+        holder.updateWithMessage(currentMessage);
     }
 
     /////////////////

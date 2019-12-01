@@ -9,6 +9,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.go4lunchjava.R;
 
 public class MessageViewHolder extends RecyclerView.ViewHolder {
@@ -23,7 +24,7 @@ public class MessageViewHolder extends RecyclerView.ViewHolder {
     private TextView contentView;
     private TextView hourView;
 
-    public MessageViewHolder(@NonNull View itemView) {
+    MessageViewHolder(@NonNull View itemView) {
         super(itemView);
 
         profileContainer = itemView.findViewById(R.id.chat_item_profile_container);
@@ -37,15 +38,14 @@ public class MessageViewHolder extends RecyclerView.ViewHolder {
 
     }
 
-    public void updateWithMessage(ChatMessageModelUi message, String previousSenderId){
+    void updateWithMessage(ChatMessageModelUi message){
 
-        if (previousSenderId.equals(message.getSenderId())) {
+        if (message.isFirstOfSerie()) {
+            Glide.with(profilePicture.getContext()).load(message.getPictureUri()).into(profilePicture);
+            hourView.setText(message.getTime());
+        } else {
             profilePicture.setVisibility(View.INVISIBLE);
             hourView.setVisibility(View.GONE);
-        } else {
-            //Glide.with(profilePicture.getContext()).load(message.getSenderPictureUri()).into(profilePicture);
-            profilePicture.setImageResource(R.drawable.ic_favorite);
-            hourView.setText(message.getTime());
         }
 
         contentView.setText(message.getContent());

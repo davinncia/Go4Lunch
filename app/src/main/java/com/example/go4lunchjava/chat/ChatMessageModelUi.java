@@ -11,14 +11,17 @@ public class ChatMessageModelUi {
     private String mSenderId;
     private String mContent;
     private String mTime;
-    private URL mSenderPictureUri;
-    private boolean mCurrentUserIsSender;
+    private Uri mPictureUri;
+    private boolean mCurrentUserIsSender; //Use to set orientation of text on screen
+    private boolean mIsFirstOfSerie; //Use to display profile picture & time or not
 
-    public ChatMessageModelUi(String senderId, String content, String time, boolean currentUserIsSender) {
+    public ChatMessageModelUi(String senderId, String content, String time, Uri pictureUri, boolean currentUserIsSender, boolean isFirstOfSerie) {
         this.mSenderId = senderId;
         this.mContent = content;
         this.mTime = time;
+        this.mPictureUri = pictureUri;
         this.mCurrentUserIsSender = currentUserIsSender;
+        this.mIsFirstOfSerie = isFirstOfSerie;
     }
 
     public String getSenderId() {
@@ -33,18 +36,16 @@ public class ChatMessageModelUi {
         return mTime;
     }
 
-    public URL getSenderPictureUri() {
-        //return mSenderPictureUri;
-        try {
-            return new URL("http://i43.servimg.com/u/f43/11/73/45/92/ane-110.jpg");
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
-        return null;
+    public Uri getPictureUri() {
+        return mPictureUri;
     }
 
     public boolean currentUserIsSender() {
         return mCurrentUserIsSender;
+    }
+
+    public boolean isFirstOfSerie() {
+        return mIsFirstOfSerie;
     }
 
     @Override
@@ -55,11 +56,11 @@ public class ChatMessageModelUi {
         return mCurrentUserIsSender == that.mCurrentUserIsSender &&
                 mSenderId.equals(that.mSenderId) &&
                 Objects.equals(mContent, that.mContent) &&
-                Objects.equals(mSenderPictureUri, that.mSenderPictureUri);
+                Objects.equals(mPictureUri, that.mPictureUri);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(mSenderId, mContent, mTime, mSenderPictureUri, mCurrentUserIsSender);
+        return Objects.hash(mSenderId, mContent, mTime, mPictureUri, mCurrentUserIsSender);
     }
 }
