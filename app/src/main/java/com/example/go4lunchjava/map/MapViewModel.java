@@ -43,7 +43,7 @@ public class MapViewModel extends ViewModel {
 
     //List of Points of interest
     private MediatorLiveData<List<Poi>> mPoiListMediatorLiveData = new MediatorLiveData<>();
-    LiveData<List<Poi>> mPoiListLiveData = mPoiListMediatorLiveData;
+    public LiveData<List<Poi>> mPoiListLiveData = mPoiListMediatorLiveData;
 
     //Internal LiveData to react to map ready & location permission
     private MutableLiveData<Boolean> mapAvailable = new MutableLiveData<>();
@@ -156,7 +156,7 @@ public class MapViewModel extends ViewModel {
     }
 
 
-    void hasMapAvailability(boolean available) {
+    public void hasMapAvailability(boolean available) {
         mapAvailable.setValue(available);
         //Start location updates
         Boolean permission = locationPermission.getValue();
@@ -168,7 +168,7 @@ public class MapViewModel extends ViewModel {
         }
     }
 
-    void hasLocationPermission(boolean granted) {
+    public void hasLocationPermission(boolean granted) {
         locationPermission.setValue(granted);
     }
 

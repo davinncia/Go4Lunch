@@ -41,7 +41,9 @@ public class MessageViewHolder extends RecyclerView.ViewHolder {
     void updateWithMessage(ChatMessageModelUi message){
 
         if (message.isFirstOfSerie()) {
-            Glide.with(profilePicture.getContext()).load(message.getPictureUri()).into(profilePicture);
+            profilePicture.setVisibility(View.VISIBLE);
+            hourView.setVisibility(View.VISIBLE);
+            Glide.with(profilePicture.getContext()).load(message.getPictureUri()).circleCrop().into(profilePicture);
             hourView.setText(message.getTime());
         } else {
             profilePicture.setVisibility(View.INVISIBLE);

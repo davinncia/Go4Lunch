@@ -8,6 +8,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -44,7 +45,6 @@ public class MainActivity extends AppCompatActivity {
     //Drawer layout
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
-    private ActionBarDrawerToggle toggle;
 
     //FireBase
     private FirebaseAuth mAuth = FirebaseAuth.getInstance();
@@ -115,29 +115,26 @@ public class MainActivity extends AppCompatActivity {
         populateDrawerHeader();
 
         setSupportActionBar(toolbar);
-        toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
 
-        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-                switch (menuItem.getItemId()){
-                    case R.id.main_drawer_your_lunch:
-                        Toast.makeText(MainActivity.this, "Your lunch", Toast.LENGTH_SHORT).show();
-                        break;
-                    case R.id.main_drawer_settings:
-                        Toast.makeText(MainActivity.this, "Settings", Toast.LENGTH_SHORT).show();
-                        break;
-                    case R.id.main_drawer_logout:
-                        logOutUser();
-                        break;
-                    default:
-                        break;
-                }
-                drawerLayout.closeDrawer(GravityCompat.START);
-                return true;
+        navigationView.setNavigationItemSelectedListener(menuItem -> {
+            switch (menuItem.getItemId()){
+                case R.id.main_drawer_your_lunch:
+                    Toast.makeText(MainActivity.this, "Your lunch", Toast.LENGTH_SHORT).show();
+                    break;
+                case R.id.main_drawer_settings:
+                    Toast.makeText(MainActivity.this, "Settings", Toast.LENGTH_SHORT).show();
+                    break;
+                case R.id.main_drawer_logout:
+                    logOutUser();
+                    break;
+                default:
+                    break;
             }
+            drawerLayout.closeDrawer(GravityCompat.START);
+            return true;
         });
 
     }
@@ -155,15 +152,19 @@ public class MainActivity extends AppCompatActivity {
 
         View headerView = navigationView.getHeaderView(0);
         ImageView avatarView = headerView.findViewById(R.id.iv_avatar_nav_drawer_header);
+        TextView nameView = headerView.findViewById(R.id.tv_name_nav_drawer_header);
+        TextView mailView = headerView.findViewById(R.id.tv_mail_nav_drawer_header);
 
         Uri userPhotoUri = mUser.getPhotoUrl();
-
         if (userPhotoUri != null){
             Glide.with(this)
                     .load(userPhotoUri)
-                    .centerCrop()
+                    //.centerCrop()
+                    .circleCrop()
                     .into(avatarView);
         }
+        nameView.setText(mUser.getDisplayName());
+        mailView.setText(mUser.getEmail());
     }
 
     //////////////////

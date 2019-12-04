@@ -6,8 +6,6 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.example.go4lunchjava.chat.model.ChatMessage;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -23,8 +21,8 @@ public class ChatFireStoreRepository {
     private static ChatFireStoreRepository sInstance;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
+    //Data for ViewModel
     private MutableLiveData<List<ChatMessage>> messagesMutable = new MutableLiveData<>();
-    public LiveData<List<ChatMessage>> messagesLiveData = messagesMutable;
 
 
     //SINGLETON PATTERN
@@ -41,6 +39,9 @@ public class ChatFireStoreRepository {
         return sInstance;
     }
 
+    //--------------------------------------------------------------------------------------------//
+    //                                          C R U D
+    //--------------------------------------------------------------------------------------------//
     //GET
     public void listenToMessages(String chatId){
         db.collection(CHAT_COLLECTION_NAME).document(chatId).collection(MESSAGES_COLLECTION_NAME)
@@ -65,5 +66,12 @@ public class ChatFireStoreRepository {
     public void addMessage(ChatMessage message, String chatId){
         db.collection(CHAT_COLLECTION_NAME).document(chatId).collection(MESSAGES_COLLECTION_NAME)
                 .document().set(message);
+    }
+
+    //--------------------------------------------------------------------------------------------//
+    //                                       G E T T E R S
+    //--------------------------------------------------------------------------------------------//
+    public LiveData<List<ChatMessage>> getMessagesLiveData(){
+        return messagesMutable;
     }
 }

@@ -36,6 +36,9 @@
     <string name="no_website">No website communicated.</string>
     <string name="notif_title">Ton repas de ce midi t\'attends!</string>
     <string name="send">Send</string>
+    <string name="your_lunch">Your lunch</string>
+    <string name="settings">Settings</string>
+    <string name="logout">Logout</string>
 
 
 </resources>

@@ -1,5 +1,6 @@
 package com.example.go4lunchjava.workmates_list;
 
+//TODO: this class should be entirely replaced with User
 public class Workmate {
 
     //TODO: do an Enum in fire store repository

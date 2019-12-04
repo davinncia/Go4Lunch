@@ -5,10 +5,11 @@ import com.example.go4lunchjava.places_api.pojo.details.hours.Open;
 import com.example.go4lunchjava.places_api.pojo.details.hours.OpeningHoursDetails;
 import com.example.go4lunchjava.places_api.pojo.details.hours.OpeningPeriod;
 import com.example.go4lunchjava.utils.RestaurantDataFormat;
-import com.google.android.gms.maps.model.LatLng;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.Mockito;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -17,17 +18,9 @@ import java.util.List;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
-/**
- * Example local unit test, which will execute on the development machine (host).
- *
- * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
- */
 
-public class RestaurantItemFormatUnitTest {
-    @Test
-    public void addition_isCorrect() {
-        assertEquals(4, 2 + 2);
-    }
+@RunWith(MockitoJUnitRunner.class)
+public class RestaurantDataFormatTest {
 
     @Test
     public void convertPlacesApiRatingToStarImages(){
@@ -46,22 +39,37 @@ public class RestaurantItemFormatUnitTest {
     }
 
     @Test
-    public void calculateDistanceBetweenTwoLatLng(){
+    public void formatDistanceBetweenPlacesWhenMoreThan100Km(){
         //GIVEN
-        LatLng[] pair1 = {new LatLng(22, 22), new LatLng(22, 22)};
-
+        float distance = 2389980f;
         //WHEN
-        //TODO NINO: "Location not mocked". Testable ? unitTests.returnDefaultValues = true ?
-        String[] results = {RestaurantDataFormat.getDistanceFromRestaurant(pair1[0], pair1[1])};
-        String[] expected = {"0m"};
-
+        String result = RestaurantDataFormat.formatDistanceAsString(distance);
         //THEN
-        assertArrayEquals(expected, results);
+        assertEquals(">100km", result);
+    }
+
+    @Test
+    public void formatDistanceBetweenPlacesWhenMoreBetween1KmAnd100Km(){
+        //GIVEN
+        float distance = 2389f;
+        //WHEN
+        String result = RestaurantDataFormat.formatDistanceAsString(distance);
+        //THEN
+        assertEquals("2.4km", result);
+    }
+
+    @Test
+    public void formatDistanceBetweenPlacesWhenLessThan1Km(){
+        //GIVEN
+        float distance = 298f;
+        //WHEN
+        String result = RestaurantDataFormat.formatDistanceAsString(distance);
+        //THEN
+        assertEquals("298m", result);
     }
 
     @Test
     public void returnFormattedHourStringFromPlacesAPiResponse(){
-        //TODO NINO: had to implement constructors, good practice ? & inject calendar to mock it
         //GIVEN
         int day = 2; //Monday
 

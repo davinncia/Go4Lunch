@@ -6,11 +6,9 @@ import android.util.Log;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import com.example.go4lunchjava.chat.model.ChatMessage;
+import com.example.go4lunchjava.auth.User;
 import com.example.go4lunchjava.workmates_list.Workmate;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -23,22 +21,23 @@ import java.util.Map;
 import java.util.Objects;
 
 public class UsersFireStoreRepository {
-    //TODO: Create interface
 
     private static final String USER_COLLECTION_NAME = "users";
-
 
     private static UsersFireStoreRepository sInstance;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-    private UsersFireStoreRepository(){
+    //Data for ViewModels to observe
+    private MutableLiveData<List<User>> allUsersDocumentsMutable = new MutableLiveData<>();
+
+    private UsersFireStoreRepository() {
         //No constructor allowed
     }
 
-    public static UsersFireStoreRepository getInstance(){
+    public static UsersFireStoreRepository getInstance() {
         if (sInstance == null) {
-            synchronized (UsersFireStoreRepository.class){
-                if (sInstance == null){
+            synchronized (UsersFireStoreRepository.class) {
+                if (sInstance == null) {
                     sInstance = new UsersFireStoreRepository();
                 }
             }
@@ -49,20 +48,19 @@ public class UsersFireStoreRepository {
     //--------------------------------------------------------------------------------------------//
     //                                          C R U D
     //--------------------------------------------------------------------------------------------//
-
     //CREATE
-    public void createUserIfNotRegistered(String uid, String userName, String avatarUri){
+    public void createUserIfNotRegistered(String uid, String userName, String avatarUri) {
         db.collection(USER_COLLECTION_NAME).document(uid).get()
                 .addOnCompleteListener(task -> {
-            if (!Objects.requireNonNull(task.getResult()).exists()){
-                createUser(uid, userName, avatarUri);
-            } else {
-                Log.d("debuglog", "Workmate already registered.");
-            }
-        });
+                    if (!Objects.requireNonNull(task.getResult()).exists()) {
+                        createUser(uid, userName, avatarUri);
+                    } else {
+                        Log.d("debuglog", "Workmate already registered.");
+                    }
+                });
     }
 
-    private void createUser(String uid, String userName, String avatarUri){
+    private void createUser(String uid, String userName, String avatarUri) {
         Map<String, Object> user = new HashMap<>();
         user.put(Workmate.FIELD_NAME, userName);
         user.put(Workmate.FIELD_AVATAR, avatarUri);
@@ -77,12 +75,36 @@ public class UsersFireStoreRepository {
     }
 
     //READ
-    public Task<QuerySnapshot> getAllUserDocuments(){
+    //TODO: delete
+    public Task<QuerySnapshot> getAllUserDocuments() {
         return db.collection(USER_COLLECTION_NAME).get();
     }
 
+    //TODO NINO: Can't be of LiveData type as it runs in background, can it ?
+    public void fetchAllUsersDocuments() {
+        db.collection(USER_COLLECTION_NAME).get().addOnSuccessListener(queryDocumentSnapshots -> {
+
+            if (queryDocumentSnapshots == null) {
+                Log.w(UsersFireStoreRepository.class.getSimpleName(), "No users found in FireStore.");
+                return;
+            }
+
+            List<User> users = new ArrayList<>();
+            //DEBUG
+            int i = 0;
+            for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                users.add(document.toObject(User.class));
+
+                users.get(i).setId(document.getId()); //TODO: directly in constructor
+                i++;
+            }
+
+            allUsersDocumentsMutable.setValue(users);
+        });
+    }
+
     //UPDATE
-    public void updateRestaurantSelection(String uid, String placeId, String placeName){
+    public void updateRestaurantSelection(String uid, String placeId, String placeName) {
         Map<String, Object> restaurant = new HashMap<>();
         restaurant.put(Workmate.FIELD_RESTAURANT_ID, placeId);
         restaurant.put(Workmate.FIELD_RESTAURANT_NAME, placeName);
@@ -92,23 +114,29 @@ public class UsersFireStoreRepository {
                 .update(restaurant)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) Log.d("debuglog", "Restaurant updated in FireStore.");
-                    else Log.d("debuglog", "Error updating restaurant in ForeStore." + task.getException());
+                    else
+                        Log.d("debuglog", "Error updating restaurant in ForeStore." + task.getException());
                 });
     }
 
-    public void addFavoriteRestaurants(String uid, String placeId){
+    public void addFavoriteRestaurants(String uid, String placeId) {
         db.collection(USER_COLLECTION_NAME)
                 .document(uid)
                 .update(Workmate.FIELD_FAVORITE_RESTAURANTS, FieldValue.arrayUnion(placeId));
     }
 
     //DELETE
-    public void deleteFavoriteRestaurant(String uid, String placeId){
+    public void deleteFavoriteRestaurant(String uid, String placeId) {
         db.collection(USER_COLLECTION_NAME)
                 .document(uid)
                 .update(Workmate.FIELD_FAVORITE_RESTAURANTS, FieldValue.arrayRemove(placeId));
     }
 
-
+    //--------------------------------------------------------------------------------------------//
+    //                                       G E T T E R S
+    //--------------------------------------------------------------------------------------------//
+    public LiveData<List<User>> getAllUserLiveData(){
+        return allUsersDocumentsMutable;
+    }
 
 }

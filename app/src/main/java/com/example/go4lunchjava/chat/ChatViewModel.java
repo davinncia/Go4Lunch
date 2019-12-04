@@ -4,19 +4,16 @@ import android.net.Uri;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
-import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import com.example.go4lunchjava.auth.User;
 import com.example.go4lunchjava.chat.model.ChatMessage;
 import com.example.go4lunchjava.repository.ChatFireStoreRepository;
 import com.example.go4lunchjava.repository.UsersFireStoreRepository;
-import com.example.go4lunchjava.workmates_list.Workmate;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -27,23 +24,25 @@ public class ChatViewModel extends ViewModel {
 
     private String mChatId;
     private String mCurrentUid;
-    private Uri mUserAvatar;
-    private Uri mWorkmateAvatar;
+    private String mUserAvatarUri;
+    private String mWorkmateAvatarUri;
 
     //Raw messages
     private LiveData<List<ChatMessage>> rawMessagesLiveData;
     //Ui messages
     private MediatorLiveData<List<ChatMessageModelUi>> uiMessagesMediator = new MediatorLiveData<>();
-    LiveData<List<ChatMessageModelUi>> uiMessagesLiveData = uiMessagesMediator;
+    public LiveData<List<ChatMessageModelUi>> uiMessagesLiveData = uiMessagesMediator;
     //Pictures
-    private MutableLiveData<Boolean> picturesProvided = new MutableLiveData<>(false);
+    private LiveData<List<User>> mAllUserDocumentsLiveData;
 
-    public ChatViewModel() {
-        mChatFireStore = ChatFireStoreRepository.getInstance();
-        mUsersFireStore = UsersFireStoreRepository.getInstance();
+
+    public ChatViewModel(ChatFireStoreRepository chatRepo, UsersFireStoreRepository userRepo) {
+        mChatFireStore = chatRepo;
+        mUsersFireStore = userRepo;
+
     }
 
-    void init(String currentUid, String workmateUid){
+    public void init(String currentUid, String workmateUid) {
         mCurrentUid = currentUid;
 
         //Assembling our chat id from the users' one
@@ -55,24 +54,24 @@ public class ChatViewModel extends ViewModel {
         }
         mChatId = chatId;
 
-        fetchPictureUris(currentUid, workmateUid);
-        mChatFireStore.listenToMessages(chatId);
-        rawMessagesLiveData = mChatFireStore.messagesLiveData;
 
         //Messages database as source
+        mChatFireStore.listenToMessages(chatId);
+        rawMessagesLiveData = mChatFireStore.getMessagesLiveData();
+
         uiMessagesMediator.addSource(rawMessagesLiveData, this::craftMessagesForView);
 
         //Profile pictures as source
-        uiMessagesMediator.addSource(picturesProvided, stringUriMap -> {
-            if (rawMessagesLiveData.getValue() != null){
-                //Update ui list now that pictures have been provided
-                craftMessagesForView(rawMessagesLiveData.getValue());
-            }
-        });
+        mUsersFireStore.fetchAllUsersDocuments();
+        mAllUserDocumentsLiveData = mUsersFireStore.getAllUserLiveData();
+
+        uiMessagesMediator.addSource(mAllUserDocumentsLiveData, users ->
+                fetchPictureUris(currentUid, workmateUid, users));
 
     }
 
-    private void craftMessagesForView(List<ChatMessage> rawMessages){
+
+    private void craftMessagesForView(List<ChatMessage> rawMessages) {
         List<ChatMessageModelUi> messageUiList = new ArrayList<>();
 
         for (ChatMessage message : rawMessages) {
@@ -80,20 +79,20 @@ public class ChatViewModel extends ViewModel {
             //FIRST OF SERIE
             boolean isFirst = true;
             int i = rawMessages.indexOf(message);
-            if (i > 0){
-                if (rawMessages.get(i - 1).getSenderId().equals(rawMessages.get(i).getSenderId())){
+            if (i > 0) {
+                if (rawMessages.get(i - 1).getSenderId().equals(rawMessages.get(i).getSenderId())) {
                     isFirst = false;
                 }
             }
 
             //PICTURE
-            Uri pictureUri = Uri.parse("");
+            String pictureUri = "";
 
-            if (mUserAvatar != null && mWorkmateAvatar != null) {
+            if (mUserAvatarUri != null && mWorkmateAvatarUri != null) {
                 if (message.getSenderId().equals(mCurrentUid))
-                    pictureUri = mUserAvatar;
+                    pictureUri = mUserAvatarUri;
                 else
-                    pictureUri = mWorkmateAvatar;
+                    pictureUri = mWorkmateAvatarUri;
             }
 
             //TIME
@@ -109,118 +108,25 @@ public class ChatViewModel extends ViewModel {
         uiMessagesMediator.setValue(messageUiList);
     }
 
-    private void fetchPictureUris(String currentUid, String workmateUid) {
 
-        mUsersFireStore.getAllUserDocuments().addOnSuccessListener(queryDocumentSnapshots -> {
+    private void fetchPictureUris(String currentUid, String workmateUid, List<User> users) {
 
-            for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+        for (User user : users) {
 
-                if (document.getId().equals(currentUid)) {
-                    mUserAvatar = Uri.parse(String.valueOf(document.get(Workmate.FIELD_AVATAR)));
-                } else if (document.getId().equals(workmateUid)) {
-                    mWorkmateAvatar = Uri.parse(String.valueOf(document.get(Workmate.FIELD_AVATAR)));
-                }
+            if (user.getId().equals(currentUid)) {
+                mUserAvatarUri = user.getAvatar_uri();
+            } else if (user.getId().equals(workmateUid)) {
+                mWorkmateAvatarUri = user.getAvatar_uri();
             }
-            picturesProvided.setValue(true);
-
-        });
-
-    }
-
-    /*
-    void init(String currentUid, String workmateUid) {
-        mCurrentUid = currentUid;
-
-        //Assembling our chat id from the users' one
-        String chatId;
-        if (currentUid.compareToIgnoreCase(workmateUid) < 0) {
-            chatId = currentUid + workmateUid;
-        } else {
-            chatId = workmateUid + currentUid;
-        }
-        mChatId = chatId;
-
-        fetchPictureUris(currentUid, workmateUid);
-    }
-
-
-    private void startListeningToChat(String chatId){
-        //Start listening to FireBase real time database
-        mChatFireStore.listenToMessages(chatId);
-        messagesLiveData = Transformations.map(mChatFireStore.messagesLiveData, messages -> {
-            List<ChatMessageModelUi> messageUiList = new ArrayList<>();
-
-            for (ChatMessage message : messages) {
-
-                //PICTURE
-                Uri pictureUri = Uri.parse("");
-
-                if (mUserAvatar != null && mWorkmateAvatar != null) {
-                    if (message.getSenderId().equals(mCurrentUid))
-                        pictureUri = mUserAvatar;
-                    else
-                        pictureUri = mWorkmateAvatar;
-                }
-
-                ChatMessageModelUi messageUi = new ChatMessageModelUi(
-                        message.getSenderId(), message.getContent(), "10h00",
-                        pictureUri, message.getSenderId().equals(mCurrentUid));
-                messageUiList.add(messageUi);
-            }
-
-            return messageUiList;
-        });
-    }
-
-    private void fetchPictureUris(String currentUid, String workmateUid) {
-
-        mUsersFireStore.getAllUserDocuments().addOnSuccessListener(queryDocumentSnapshots -> {
-
-            for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
-
-                if (document.getId().equals(currentUid)) {
-                    mUserAvatar = Uri.parse(String.valueOf(document.get(Workmate.FIELD_AVATAR)));
-                } else if (document.getId().equals(workmateUid)) {
-                    mWorkmateAvatar = Uri.parse(String.valueOf(document.get(Workmate.FIELD_AVATAR)));
-                }
-            }
-
-            //TODO: Better to use a Mediator live data instead of sequencing ?
-            //TODO: rawMessageLive = repository; liveMessageLive = Mediator.
-
-            if (messagesLiveData.getValue() != null && messagesLiveData.getValue().size() > 0) {
-                //List has already been populated, let's update it with the pictures then
-                updateListWithPictures();
-            }
-
-
-        });
-        startListeningToChat(mChatId);
-    }
-
-    private void updateListWithPictures() {
-
-        List<ChatMessageModelUi> newList = new ArrayList<>();
-        List<ChatMessageModelUi> oldList = messagesLiveData.getValue();
-        if (oldList == null) return;
-
-        for (ChatMessageModelUi message : oldList) {
-            //PICTURE
-            Uri pictureUri;
-
-            if (message.getSenderId().equals(mCurrentUid))
-                pictureUri = mUserAvatar;
-            else
-                pictureUri = mWorkmateAvatar;
-
-            ChatMessageModelUi newMessage = new ChatMessageModelUi(message.getSenderId(), message.getContent(),
-                    message.getTime(), pictureUri, message.currentUserIsSender());
-            newList.add(newMessage);
         }
 
-        messagesMutable.setValue(newList);
+        if (rawMessagesLiveData.getValue() != null) {
+            //Update uiMessages with pictures
+            craftMessagesForView(rawMessagesLiveData.getValue());
+        }
+
     }
-    */
+
 
     void addMessage(String input) {
         ChatMessage message = new ChatMessage(mCurrentUid, System.currentTimeMillis(), input);

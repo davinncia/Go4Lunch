@@ -3,6 +3,8 @@ package com.example.go4lunchjava.utils;
 
 import android.location.Location;
 
+import androidx.annotation.VisibleForTesting;
+
 import com.example.go4lunchjava.R;
 import com.example.go4lunchjava.places_api.pojo.details.hours.OpeningHoursDetails;
 import com.example.go4lunchjava.places_api.pojo.details.hours.OpeningPeriod;
@@ -68,22 +70,31 @@ public class RestaurantDataFormat {
         float[] distanceResult = new float[1];
         String distanceString = "";
 
-
         if (latLng1 != null) {
             Location.distanceBetween(
                     latLng2.latitude, latLng2.longitude,
                     latLng1.latitude, latLng1.longitude,
                     distanceResult);
 
-            if (distanceResult[0] < 1000) {
-                distanceString = Math.round(distanceResult[0]) + "m";
-            } else if (distanceResult[0] >= 1000 && distanceResult[0] < 100000) {
-                distanceResult[0] /= 1000;
-                distanceString = String.format(Locale.ENGLISH, "%.1f", distanceResult[0]) + "km";
-            } else if (distanceResult[0] >= 100000) {
-                distanceString = ">100km";
-            }
+            distanceString = formatDistanceAsString(distanceResult[0]);
         }
+        return distanceString;
+    }
+
+    @VisibleForTesting
+    public static String formatDistanceAsString(float distanceResult) {
+
+        String distanceString;
+
+        if (distanceResult < 1000) {
+            distanceString = Math.round(distanceResult) + "m";
+        } else if (distanceResult >= 1000 && distanceResult < 100000) {
+            distanceResult /= 1000;
+            distanceString = String.format(Locale.ENGLISH, "%.1f", distanceResult) + "km";
+        } else if (distanceResult >= 100000) {
+            distanceString = ">100km";
+        } else distanceString = "";
+
         return distanceString;
     }
 
