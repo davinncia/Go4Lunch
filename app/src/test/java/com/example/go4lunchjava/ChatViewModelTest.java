@@ -1,7 +1,5 @@
 package com.example.go4lunchjava;
 
-import android.net.Uri;
-
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
 import androidx.lifecycle.MutableLiveData;
 
@@ -23,12 +21,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.logging.Handler;
-import java.util.logging.LogRecord;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -84,6 +80,46 @@ public class ChatViewModelTest {
         assertEquals(messages.get(1).getContent(), mUiMessages.get(1).getContent());
         assertEquals(messages.get(2).getContent(), mUiMessages.get(2).getContent());
 
+    }
+
+    @Test
+    public void firstMessageOfSerieIsMarked() throws InterruptedException {
+        //GIVEN
+        List<ChatMessage> messages = new ArrayList<>();
+        messages.add(new ChatMessage(userId1, 1575533317248L, "Salut")); //First
+        messages.add(new ChatMessage(userId1, 1575533317258L, "Ca va?"));
+        messages.add(new ChatMessage(userId2, 1575533317348L, "Bien")); //First
+        messages.add(new ChatMessage(userId2, 1575533317548L, "Et toi?"));
+
+        //WHEN
+        when(mChatRepo.getMessagesLiveData()).thenReturn(new MutableLiveData<>(messages));
+        when(mUsersRepo.getAllUserLiveData()).thenReturn(new MutableLiveData<>());
+        mViewModel.init(userId1, userId2);
+        mUiMessages = LiveDataTestUtil.getOrAwaitValue(mViewModel.uiMessagesLiveData);
+
+        //THEN
+        assertTrue(mUiMessages.get(0).isFirstOfSerie());
+        assertTrue(mUiMessages.get(2).isFirstOfSerie());
+        assertFalse(mUiMessages.get(1).isFirstOfSerie());
+        assertFalse(mUiMessages.get(3).isFirstOfSerie());
+    }
+
+    @Test
+    public void timeInMillisTransformedInHumanReadableStringForUi() throws InterruptedException {
+        //GIVEN
+        List<ChatMessage> messages = new ArrayList<>();
+        messages.add(new ChatMessage(userId1, 1575533317248L, "Salut"));
+        messages.add(new ChatMessage(userId1, 1575543717248L, "Hey"));
+
+        //WHEN
+        when(mChatRepo.getMessagesLiveData()).thenReturn(new MutableLiveData<>(messages));
+        when(mUsersRepo.getAllUserLiveData()).thenReturn(new MutableLiveData<>());
+        mViewModel.init(userId1, userId2);
+        mUiMessages = LiveDataTestUtil.getOrAwaitValue(mViewModel.uiMessagesLiveData);
+
+        //THEN
+        assertEquals("09:08", mUiMessages.get(0).getTime());
+        assertEquals("12:01", mUiMessages.get(1).getTime());
     }
 
     @Test

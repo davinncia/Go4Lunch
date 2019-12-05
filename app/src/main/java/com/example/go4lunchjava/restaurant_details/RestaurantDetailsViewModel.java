@@ -32,10 +32,10 @@ import java.util.concurrent.TimeUnit;
 public class RestaurantDetailsViewModel extends ViewModel {
 
     //https://maps.googleapis.com/maps/api/place/details/json?place_id=ChIJJ4y_XahZwokRgO8olYwA7Cg&fields=name,photo,rating,vicinity,international_phone_number,website&key=AIzaSyDSpFo8O861EgPYmsRlICS0sRs0zGEsrS4
-    public static final String NOTIF_TAG = "notification";
+    private static final String NOTIF_TAG = "notification";
 
-    private PlacesApiRepository mPlacesApiRepository;
-    private UsersFireStoreRepository mFireStoreRepository;
+    private PlacesApiRepository mPlacesApiRepo;
+    private UsersFireStoreRepository mFireStoreUserRepo;
     private Application mApplication;
     private FirebaseAuth mAuth;
 
@@ -55,19 +55,20 @@ public class RestaurantDetailsViewModel extends ViewModel {
     private MutableLiveData<Boolean> mIsUserFavMutable = new MutableLiveData<>();
     public LiveData<Boolean> mIsUserFavLiveData = mIsUserFavMutable;
 
-    public RestaurantDetailsViewModel(Application application){
+    public RestaurantDetailsViewModel(Application application, PlacesApiRepository placesRepo,
+                                      UsersFireStoreRepository usersRepo, FirebaseAuth auth){
 
-        this.mPlacesApiRepository = PlacesApiRepository.getInstance();
-        this.mFireStoreRepository = UsersFireStoreRepository.getInstance();
+        this.mPlacesApiRepo = placesRepo;
+        this.mFireStoreUserRepo = usersRepo;
         this.mApplication = application;
-        this.mAuth = FirebaseAuth.getInstance();
+        this.mAuth = auth;
 
     }
 
-    void launchDetailsRequest(String placeId){
+    public void launchDetailsRequest(String placeId){
 
         GetRestaurantDetailsAsyncTask asyncTask = new GetRestaurantDetailsAsyncTask(
-                RestaurantDetailsViewModel.this, mPlacesApiRepository, placeId);
+                RestaurantDetailsViewModel.this, mPlacesApiRepo, placeId);
         asyncTask.execute();
     }
 
@@ -107,7 +108,7 @@ public class RestaurantDetailsViewModel extends ViewModel {
 
     void fetchFireStoreData(String placeId){
 
-        mFireStoreRepository.getAllUserDocuments().addOnSuccessListener(queryDocumentSnapshots -> {
+        mFireStoreUserRepo.getAllUserDocuments().addOnSuccessListener(queryDocumentSnapshots -> {
 
             List<Workmate> workmates = new ArrayList<>();
 
@@ -152,7 +153,7 @@ public class RestaurantDetailsViewModel extends ViewModel {
         }
 
         //Update FireStore
-        mFireStoreRepository.updateRestaurantSelection(mAuth.getUid(), placeId, placeName);
+        mFireStoreUserRepo.updateRestaurantSelection(mAuth.getUid(), placeId, placeName);
 
     }
 
@@ -161,10 +162,44 @@ public class RestaurantDetailsViewModel extends ViewModel {
 
         if (!favorite){
             //Remove from FireStore
-            mFireStoreRepository.deleteFavoriteRestaurant(mAuth.getUid(), placeId);
+            mFireStoreUserRepo.deleteFavoriteRestaurant(mAuth.getUid(), placeId);
         } else {
             //Add to FireStore
-            mFireStoreRepository.addFavoriteRestaurants(mAuth.getUid(), placeId);
+            mFireStoreUserRepo.addFavoriteRestaurants(mAuth.getUid(), placeId);
+        }
+    }
+
+    //--------------------------------------------------------------------------------------------//
+    //                                     Places API AsyncTask
+    //--------------------------------------------------------------------------------------------//
+
+    private static class GetRestaurantDetailsAsyncTask extends AsyncTask<Void, Void, RestaurantDetailsResponse>{
+
+        private WeakReference<RestaurantDetailsViewModel> mDetailsViewModelReference; //In case we loose ViewModel instance
+        private PlacesApiRepository mPlacesApiRepository;
+        private String mPlaceId;
+
+        GetRestaurantDetailsAsyncTask(RestaurantDetailsViewModel detailsViewModel,
+                                              PlacesApiRepository placesApiRepository, String placeId){
+
+            mDetailsViewModelReference = new WeakReference<>(detailsViewModel);
+            mPlacesApiRepository = placesApiRepository;
+            mPlaceId = placeId;
+
+        }
+
+        @Override
+        protected RestaurantDetailsResponse doInBackground(Void... voids) {
+            return mPlacesApiRepository.getRestaurantDetailsResponse(mPlaceId);
+        }
+
+        @Override
+        protected void onPostExecute(RestaurantDetailsResponse response) {
+            super.onPostExecute(response);
+
+            if (mDetailsViewModelReference.get() != null){
+                mDetailsViewModelReference.get().getDetails(response);
+            }
         }
     }
 
@@ -218,40 +253,6 @@ public class RestaurantDetailsViewModel extends ViewModel {
     private void disableNotification(){
         WorkManager.getInstance(mApplication.getApplicationContext()).cancelAllWorkByTag(NOTIF_TAG);
 
-    }
-
-    //--------------------------------------------------------------------------------------------//
-    //                                        AsyncTask
-    //--------------------------------------------------------------------------------------------//
-
-    private static class GetRestaurantDetailsAsyncTask extends AsyncTask<Void, Void, RestaurantDetailsResponse>{
-
-        private WeakReference<RestaurantDetailsViewModel> mDetailsViewModelReference; //In case we loose ViewModel instance
-        private PlacesApiRepository mPlacesApiRepository;
-        private String mPlaceId;
-
-        GetRestaurantDetailsAsyncTask(RestaurantDetailsViewModel detailsViewModel,
-                                              PlacesApiRepository placesApiRepository, String placeId){
-
-            mDetailsViewModelReference = new WeakReference<>(detailsViewModel);
-            mPlacesApiRepository = placesApiRepository;
-            mPlaceId = placeId;
-
-        }
-
-        @Override
-        protected RestaurantDetailsResponse doInBackground(Void... voids) {
-            return mPlacesApiRepository.getRestaurantDetailsResponse(mPlaceId);
-        }
-
-        @Override
-        protected void onPostExecute(RestaurantDetailsResponse response) {
-            super.onPostExecute(response);
-
-            if (mDetailsViewModelReference.get() != null){
-                mDetailsViewModelReference.get().getDetails(response);
-            }
-        }
     }
 
 }

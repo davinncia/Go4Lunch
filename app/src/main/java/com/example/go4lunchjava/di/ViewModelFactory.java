@@ -10,6 +10,7 @@ import com.example.go4lunchjava.auth.LogInCheckViewModel;
 import com.example.go4lunchjava.chat.ChatViewModel;
 import com.example.go4lunchjava.map.MapViewModel;
 import com.example.go4lunchjava.repository.ChatFireStoreRepository;
+import com.example.go4lunchjava.repository.PlacesApiRepository;
 import com.example.go4lunchjava.repository.UsersFireStoreRepository;
 import com.example.go4lunchjava.restaurant_details.RestaurantDetailsViewModel;
 import com.example.go4lunchjava.restaurant_list.RestaurantViewModel;
@@ -36,7 +37,8 @@ public class ViewModelFactory extends ViewModelProvider.NewInstanceFactory {
         } else if (modelClass.isAssignableFrom(RestaurantViewModel.class)){
             return (T) new RestaurantViewModel(mApplication);
         } else if (modelClass.isAssignableFrom(RestaurantDetailsViewModel.class)){
-            return (T) new RestaurantDetailsViewModel(mApplication);
+            return (T) new RestaurantDetailsViewModel(mApplication, PlacesApiRepository.getInstance(),
+                    UsersFireStoreRepository.getInstance(), FirebaseAuth.getInstance());
         } else if (modelClass.isAssignableFrom(WorkmateViewModel.class)){
             return (T) new WorkmateViewModel(UsersFireStoreRepository.getInstance(), FirebaseAuth.getInstance());
         } else if (modelClass.isAssignableFrom(ChatViewModel.class)){

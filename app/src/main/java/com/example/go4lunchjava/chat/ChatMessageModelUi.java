@@ -30,7 +30,7 @@ public class ChatMessageModelUi {
         return mContent;
     }
 
-    String getTime() {
+    public String getTime() {
         return mTime;
     }
 
@@ -42,7 +42,7 @@ public class ChatMessageModelUi {
         return mCurrentUserIsSender;
     }
 
-    boolean isFirstOfSerie() {
+    public boolean isFirstOfSerie() {
         return mIsFirstOfSerie;
     }
 

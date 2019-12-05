@@ -1,7 +1,5 @@
 package com.example.go4lunchjava.chat;
 
-import android.net.Uri;
-
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.ViewModel;
