@@ -3,6 +3,7 @@ package com.example.go4lunchjava.restaurant_details;
 import android.app.Application;
 import android.os.AsyncTask;
 
+import androidx.annotation.VisibleForTesting;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
@@ -172,8 +173,8 @@ public class RestaurantDetailsViewModel extends ViewModel {
     //--------------------------------------------------------------------------------------------//
     //                                     Places API AsyncTask
     //--------------------------------------------------------------------------------------------//
-
-    private static class GetRestaurantDetailsAsyncTask extends AsyncTask<Void, Void, RestaurantDetailsResponse>{
+    @VisibleForTesting
+    public static class GetRestaurantDetailsAsyncTask extends AsyncTask<Void, Void, RestaurantDetailsResponse>{
 
         private WeakReference<RestaurantDetailsViewModel> mDetailsViewModelReference; //In case we loose ViewModel instance
         private PlacesApiRepository mPlacesApiRepository;

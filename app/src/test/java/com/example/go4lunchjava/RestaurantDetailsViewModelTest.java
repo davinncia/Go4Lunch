@@ -16,6 +16,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import static org.mockito.Mockito.when;
+
 @RunWith(MockitoJUnitRunner.class)
 public class RestaurantDetailsViewModelTest {
 
@@ -30,6 +32,8 @@ public class RestaurantDetailsViewModelTest {
     UsersFireStoreRepository mUsersRepo;
     @Mock
     FirebaseAuth mAuth;
+    @Mock
+    RestaurantDetailsViewModel.GetRestaurantDetailsAsyncTask mDetailsAsyncTask;
 
     private RestaurantDetailsViewModel mDetailsViewModel;
     private String mPlaceID = "1";
@@ -45,6 +49,7 @@ public class RestaurantDetailsViewModelTest {
         //GIVEN
 
         //WHEN
+        when(mDetailsAsyncTask.execute()).thenReturn(null);
         mDetailsViewModel.launchDetailsRequest(mPlaceID);
 
         //THEN
