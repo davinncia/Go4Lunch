@@ -49,7 +49,8 @@ public class RestaurantDetailsViewModelTest {
         //GIVEN
 
         //WHEN
-        when(mDetailsAsyncTask.execute()).thenReturn(null);
+        //java.lang.RuntimeException: Method execute in android.os.AsyncTask not mocked.
+        when(mDetailsAsyncTask.execute()).thenReturn(null); 
         mDetailsViewModel.launchDetailsRequest(mPlaceID);
 
         //THEN
