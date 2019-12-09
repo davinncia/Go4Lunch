@@ -15,6 +15,7 @@ import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.example.go4lunchjava.R;
@@ -143,6 +144,7 @@ public class MapFragment extends Fragment {
             else addPoiMarkers(poiList);
         });
 
+
         return rootView;
     }
 
@@ -185,6 +187,9 @@ public class MapFragment extends Fragment {
                 public void onCancel() {
                 }
             });
+
+            //Or just "refresh" ? (check internet)
+
 
         } else {
             Snackbar.make(view, getResources().getString(R.string.location_null_message), Snackbar.LENGTH_SHORT).show();
