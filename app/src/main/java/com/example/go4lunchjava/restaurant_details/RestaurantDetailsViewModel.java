@@ -2,10 +2,13 @@ package com.example.go4lunchjava.restaurant_details;
 
 import android.app.Application;
 import android.os.AsyncTask;
+import android.util.Log;
 
 import androidx.annotation.VisibleForTesting;
+import androidx.arch.core.util.Function;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Transformations;
 import androidx.lifecycle.ViewModel;
 import androidx.work.Constraints;
 import androidx.work.Data;
@@ -14,6 +17,7 @@ import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 
 import com.example.go4lunchjava.NotificationWorker;
+import com.example.go4lunchjava.auth.User;
 import com.example.go4lunchjava.places_api.pojo.details.RestaurantDetailsResponse;
 import com.example.go4lunchjava.places_api.pojo.details.RestaurantDetailsResult;
 import com.example.go4lunchjava.repository.UsersFireStoreRepository;
@@ -41,12 +45,10 @@ public class RestaurantDetailsViewModel extends ViewModel {
     private FirebaseAuth mAuth;
 
     //DETAILS
-    private MutableLiveData<RestaurantDetails> mDetailsMutableLiveData = new MutableLiveData<>();
-    LiveData<RestaurantDetails> mDetailsLiveData = mDetailsMutableLiveData;
+    public LiveData<RestaurantDetails> mDetailsLiveData;
 
     //WORKMATES
-    private MutableLiveData<List<Workmate>> mWorkmatesMutable = new MutableLiveData<>();
-    public LiveData<List<Workmate>> mWorkmatesLiveData = mWorkmatesMutable;
+    public LiveData<List<Workmate>> mWorkmatesLiveData;
 
     //USER'S CHOICE
     private MutableLiveData<Boolean> mIsUserSelectionMutable = new MutableLiveData<>();
@@ -56,6 +58,8 @@ public class RestaurantDetailsViewModel extends ViewModel {
     private MutableLiveData<Boolean> mIsUserFavMutable = new MutableLiveData<>();
     public LiveData<Boolean> mIsUserFavLiveData = mIsUserFavMutable;
 
+    private String mPlaceId;
+
     public RestaurantDetailsViewModel(Application application, PlacesApiRepository placesRepo,
                                       UsersFireStoreRepository usersRepo, FirebaseAuth auth){
 
@@ -64,83 +68,85 @@ public class RestaurantDetailsViewModel extends ViewModel {
         this.mApplication = application;
         this.mAuth = auth;
 
-    }
+        //Mapping UiModel given api response
+        mDetailsLiveData = Transformations.map(mPlacesApiRepo.getDetailsResponseLiveData(), detailsResponse -> {
 
-    public void launchDetailsRequest(String placeId){
+            if (detailsResponse == null) return null; //TODO: Show an error message ?
 
-        GetRestaurantDetailsAsyncTask asyncTask = new GetRestaurantDetailsAsyncTask(
-                RestaurantDetailsViewModel.this, mPlacesApiRepo, placeId);
-        asyncTask.execute();
-    }
+            RestaurantDetailsResult result = detailsResponse.getResult();
 
-    private void getDetails(RestaurantDetailsResponse response){
+            //NAME
+            String name = result.getName();
+            //RATING
+            int ratingImageResource = RestaurantDataFormat.getRatingResource(result.getRating());
+            //ADDRESS
+            String address = result.getVicinity();
+            //PICTURE
+            String pictureUri = "";
+            if(result.getPhotos() != null && result.getPhotos().length > 0) {
+                pictureUri = RestaurantDataFormat.getPictureUri(result.getPhotos()[0].getPhoto_reference());
+            }
+            //PHONE
+            String phoneNumber = result.getInternational_phone_number();
+            //WEB
+            String webSite = result.getWebsite();
 
-        if (response == null) return; //TODO: Show an error message ?
+            RestaurantDetails restaurantDetails = new RestaurantDetails(
+                    name,
+                    ratingImageResource,
+                    address,
+                    pictureUri,
+                    phoneNumber,
+                    webSite
+            );
 
-        RestaurantDetailsResult result = response.getResult();
+            return restaurantDetails;
+        });
 
-        //NAME
-        String name = result.getName();
-        //RATING
-        int ratingImageResource = RestaurantDataFormat.getRatingResource(result.getRating());
-        //ADDRESS
-        String address = result.getVicinity();
-        //PICTURE
-        String pictureUri = "";
-        if(result.getPhotos() != null && result.getPhotos().length > 0) {
-            pictureUri = RestaurantDataFormat.getPictureUri(result.getPhotos()[0].getPhoto_reference());
-        }
-        //PHONE
-        String phoneNumber = result.getInternational_phone_number();
-        //WEB
-        String webSite = result.getWebsite();
-
-        RestaurantDetails restaurantDetails = new RestaurantDetails(
-                name,
-                ratingImageResource,
-                address,
-                pictureUri,
-                phoneNumber,
-                webSite
-        );
-
-        mDetailsMutableLiveData.setValue(restaurantDetails);
-    }
-
-    void fetchFireStoreData(String placeId){
-
-        mFireStoreUserRepo.getAllUserDocuments().addOnSuccessListener(queryDocumentSnapshots -> {
+        //Mapping workmates given FireStore response
+        mWorkmatesLiveData = Transformations.map(mFireStoreUserRepo.getAllUserLiveData(), users -> {
 
             List<Workmate> workmates = new ArrayList<>();
 
-            for (QueryDocumentSnapshot document: queryDocumentSnapshots){
+            for (User user: users){
 
                 //Checking if restaurant selected by current user
-                if (document.getId().equals(mAuth.getUid())) {
+                if (user.getId().equals(mAuth.getUid())) {
                     //Current user
-                    if (Objects.equals(document.get(Workmate.FIELD_RESTAURANT_ID), placeId)) {
+                    if (Objects.equals(user.getRestaurant_id(), mPlaceId)) {
                         mIsUserSelectionMutable.setValue(true);
                     } else {
                         mIsUserSelectionMutable.setValue(false);
                     }
 
-                    List<String> favorites = (List<String>) document.get(Workmate.FIELD_FAVORITE_RESTAURANTS);
+                    List<String> favorites = user.getFavorites();
 
-                    if (favorites != null && favorites.contains(placeId)) mIsUserFavMutable.setValue(true);
+                    if (favorites != null && favorites.contains(mPlaceId)) mIsUserFavMutable.setValue(true);
                     else mIsUserFavMutable.setValue(false);
 
-                } else if (Objects.equals(document.get(Workmate.FIELD_RESTAURANT_ID), placeId)) {
+                } else if (Objects.equals(user.getRestaurant_id(), mPlaceId)) {
                     //Every other users
-                    workmates.add(new Workmate(String.valueOf(document.get(Workmate.FIELD_NAME)),
-                            null,
-                            String.valueOf(document.get(Workmate.FIELD_AVATAR)), null, null));
-                    }
+                    workmates.add(new Workmate(String.valueOf(user.getUser_name()), null,
+                            String.valueOf(user.getAvatar_uri()), null, null));
                 }
+            }
 
-            mWorkmatesMutable.setValue(workmates);
+            return workmates;
         });
+    }
+
+    public void launchDetailsRequest(String placeId){
+
+        mPlaceId = placeId;
+        mPlacesApiRepo.fetchDetailsResponseFromApi(placeId);
 
     }
+
+    public void fetchFireStoreData(){
+
+        mFireStoreUserRepo.fetchAllUsersDocuments();
+    }
+
 
     void updateUserSelection(boolean selected, String placeId, String placeName){
         mIsUserSelectionMutable.setValue(selected);
@@ -167,40 +173,6 @@ public class RestaurantDetailsViewModel extends ViewModel {
         } else {
             //Add to FireStore
             mFireStoreUserRepo.addFavoriteRestaurants(mAuth.getUid(), placeId);
-        }
-    }
-
-    //--------------------------------------------------------------------------------------------//
-    //                                     Places API AsyncTask
-    //--------------------------------------------------------------------------------------------//
-    @VisibleForTesting
-    public static class GetRestaurantDetailsAsyncTask extends AsyncTask<Void, Void, RestaurantDetailsResponse>{
-
-        private WeakReference<RestaurantDetailsViewModel> mDetailsViewModelReference; //In case we loose ViewModel instance
-        private PlacesApiRepository mPlacesApiRepository;
-        private String mPlaceId;
-
-        GetRestaurantDetailsAsyncTask(RestaurantDetailsViewModel detailsViewModel,
-                                              PlacesApiRepository placesApiRepository, String placeId){
-
-            mDetailsViewModelReference = new WeakReference<>(detailsViewModel);
-            mPlacesApiRepository = placesApiRepository;
-            mPlaceId = placeId;
-
-        }
-
-        @Override
-        protected RestaurantDetailsResponse doInBackground(Void... voids) {
-            return mPlacesApiRepository.getRestaurantDetailsResponse(mPlaceId);
-        }
-
-        @Override
-        protected void onPostExecute(RestaurantDetailsResponse response) {
-            super.onPostExecute(response);
-
-            if (mDetailsViewModelReference.get() != null){
-                mDetailsViewModelReference.get().getDetails(response);
-            }
         }
     }
 
@@ -233,6 +205,7 @@ public class RestaurantDetailsViewModel extends ViewModel {
         if (dueDate.before(currentDate)){
             //It's 12PM past, set it for tomorrow then
             dueDate.add(Calendar.HOUR_OF_DAY, 24);
+            Log.d("debuglog", "setNotification: " + dueDate.toString());
         }
 
         long timeDiff = dueDate.getTimeInMillis() - currentDate.getTimeInMillis();
@@ -240,11 +213,11 @@ public class RestaurantDetailsViewModel extends ViewModel {
         Constraints constraints = new Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build();
 
         PeriodicWorkRequest notifRequest =
-                new PeriodicWorkRequest.Builder(NotificationWorker.class, 24, TimeUnit.HOURS)
+                new PeriodicWorkRequest.Builder(NotificationWorker.class, 20, TimeUnit.MINUTES)
                         .setInputData(data)
                         .setConstraints(constraints)
-                        //.setInitialDelay(0, TimeUnit.MINUTES)
-                        .setInitialDelay(timeDiff, TimeUnit.MILLISECONDS)
+                        .setInitialDelay(0, TimeUnit.MINUTES)
+                        //.setInitialDelay(timeDiff, TimeUnit.MILLISECONDS)
                         .addTag(NOTIF_TAG)
                         .build();
 

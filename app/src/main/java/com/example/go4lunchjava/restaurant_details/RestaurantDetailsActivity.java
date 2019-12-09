@@ -91,7 +91,7 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
 
         if (mPlaceId != null) {
             detailsViewModel.launchDetailsRequest(mPlaceId); //Provide the id to our ViewModel
-            detailsViewModel.fetchFireStoreData(mPlaceId);
+            detailsViewModel.fetchFireStoreData();
         }
 
         //DETAILS

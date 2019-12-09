@@ -1,5 +1,7 @@
 package com.example.go4lunchjava.places_api.pojo.details;
 
+import androidx.annotation.VisibleForTesting;
+
 import com.example.go4lunchjava.places_api.pojo.Geometry;
 import com.example.go4lunchjava.places_api.pojo.details.hours.OpeningHoursDetails;
 import com.google.gson.annotations.Expose;
@@ -42,6 +44,16 @@ public class RestaurantDetailsResult {
     @SerializedName("opening_hours")
     @Expose
     private OpeningHoursDetails openingHours;
+
+    @VisibleForTesting
+    public RestaurantDetailsResult(String website, String name, String placeId, float rating, String vicinity, String phoneNumber) {
+        this.website = website;
+        this.name = name;
+        this.placeId = placeId;
+        this.rating = rating;
+        this.vicinity = vicinity;
+        this.international_phone_number = phoneNumber;
+    }
 
     public String getWebsite() {
         return website;

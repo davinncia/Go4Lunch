@@ -1,14 +1,20 @@
 package com.example.go4lunchjava.repository;
 
+import android.os.AsyncTask;
 import android.util.Log;
+
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 
 import com.example.go4lunchjava.places_api.PlacesApiService;
 import com.example.go4lunchjava.places_api.pojo.NearBySearchResponse;
 import com.example.go4lunchjava.places_api.pojo.details.RestaurantDetailsResponse;
 import com.example.go4lunchjava.restaurant_details.RestaurantDetails;
+import com.example.go4lunchjava.restaurant_details.RestaurantDetailsViewModel;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.HashMap;
 
 import retrofit2.Retrofit;
@@ -25,6 +31,10 @@ public class PlacesApiRepository {
     //Caches
     private HashMap<String, NearBySearchResponse> mNearByCache = new HashMap<>();
     private HashMap<String, RestaurantDetailsResponse> mDetailsCache = new HashMap<>();
+
+    //Data for ViewModels
+    private MutableLiveData<RestaurantDetailsResponse> mDetailsResponseLiveData = new MutableLiveData<>();
+
 
     private PlacesApiRepository(){
         retrofit = getRetrofitInstance();
@@ -56,10 +66,15 @@ public class PlacesApiRepository {
         return retrofit;
     }
 
-    ////////////////////
-    ///////NEAR BY//////
-    ////////////////////
-    public NearBySearchResponse getNearBySearchResponse(LatLng latLng){
+    public LiveData<RestaurantDetailsResponse> getDetailsResponseLiveData(){
+        return mDetailsResponseLiveData;
+    }
+
+
+    //--------------------------------------------------------------------------------------------//
+    //                                      NEAR BY PLACES
+    //--------------------------------------------------------------------------------------------//
+    public NearBySearchResponse getNearBySearchResponse(LatLng latLng, int radius){
 
         double latitude = Math.floor(latLng.latitude * 10_000) / 10_000;
         double longitude = Math.floor(latLng.longitude * 10_000) / 10_000;
@@ -70,7 +85,7 @@ public class PlacesApiRepository {
         if (nearBySearchResponse == null){
             try {
                 Log.d("debuglog", "Places Api request...");
-                nearBySearchResponse = service.nearbySearch(location).execute().body();
+                nearBySearchResponse = service.nearbySearch(location, radius).execute().body();
                 mNearByCache.put(location, nearBySearchResponse); //Used for map to prevent identical requests in the future
 
             } catch (IOException e) {
@@ -84,29 +99,67 @@ public class PlacesApiRepository {
         return nearBySearchResponse;
     }
 
-    ////////////////////
-    ///////DETAILS//////
-    ////////////////////
-    public RestaurantDetailsResponse getRestaurantDetailsResponse(String placeId){
+    //--------------------------------------------------------------------------------------------//
+    //                                       PLACE DETAILS
+    //--------------------------------------------------------------------------------------------//
 
-        RestaurantDetailsResponse response = mDetailsCache.get(placeId);
+    public void fetchDetailsResponseFromApi(String placeId){
 
-        if (response == null) {
-            //Not in cache : make a request
-            try {
-                Log.d("debuglog", "Details Api request...");
-                response = service.detailsSearch(placeId).execute().body();
-                mDetailsCache.put(placeId, response);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        GetRestaurantDetailsAsyncTask asyncTask = new GetRestaurantDetailsAsyncTask(
+                PlacesApiRepository.this, placeId);
+        asyncTask.execute();
+    }
+
+    ////////////////////
+    /////ASYNC TASK/////
+    ////////////////////
+    private static class GetRestaurantDetailsAsyncTask extends AsyncTask<Void, Void, RestaurantDetailsResponse> {
+
+        //TODO NINO: Weak reference useful ?
+        private WeakReference<PlacesApiRepository> mPlacesApiRepositoryReference; //In case instance in garbage collected
+        private String mPlaceId;
+
+        GetRestaurantDetailsAsyncTask(PlacesApiRepository placesApiRepository, String placeId){
+
+            mPlacesApiRepositoryReference = new WeakReference<>(placesApiRepository);
+            mPlaceId = placeId;
 
         }
-        return response;
+
+        @Override
+        protected RestaurantDetailsResponse doInBackground(Void... voids) {
+
+            PlacesApiRepository placesRepo = mPlacesApiRepositoryReference.get();
+
+            RestaurantDetailsResponse response = placesRepo.mDetailsCache.get(mPlaceId);
+
+            //Cache logic
+            if (response == null) {
+                //Not in cache : make a request
+                try {
+                    Log.d("debuglog", "Details Api request...");
+                    response = placesRepo.service.detailsSearch(mPlaceId).execute().body();
+                    placesRepo.mDetailsCache.put(mPlaceId, response);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            }
+            return response;
+        }
+
+        @Override
+        protected void onPostExecute(RestaurantDetailsResponse response) {
+            super.onPostExecute(response);
+
+            if (mPlacesApiRepositoryReference.get() != null){
+                mPlacesApiRepositoryReference.get().mDetailsResponseLiveData.setValue(response);
+            }
+        }
     }
 
     //HOURS
-    //TODO NINO: Demande horaire specifique. (Perd l'utilité du cache mais réduit le poids des nombreuses demandes) ?
+    //TODO Cache
     public RestaurantDetailsResponse getHoursDetails(String placeId){
 
         RestaurantDetailsResponse response = null;

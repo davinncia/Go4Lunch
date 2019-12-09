@@ -131,7 +131,7 @@ public class ChatViewModelTest {
         messages.add(new ChatMessage(userId1, 56780, "Salut"));
 
         List<User> users = new ArrayList<>();
-        users.add(new User(userId1, "Phil", uri, "1", "Burger"));
+        users.add(new User(userId1, "Phil", uri, "1", "Burger", null));
 
         //WHEN
         when(mChatRepo.getMessagesLiveData()).thenReturn(new MutableLiveData<>(messages));
@@ -157,8 +157,8 @@ public class ChatViewModelTest {
         String uri2 = "anne_picture";
 
         List<User> users = new ArrayList<>();
-        users.add(new User(userId1, "Phil", uri1, "1", "Burger"));
-        users.add(new User(userId2, "Anne", uri2, "1", "Burger"));
+        users.add(new User(userId1, "Phil", uri1, "1", "Burger", null));
+        users.add(new User(userId2, "Anne", uri2, "1", "Burger", null));
 
         List<ChatMessage> messages = new ArrayList<>();
         messages.add(new ChatMessage(userId1, 56780, "Salut"));

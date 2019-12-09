@@ -50,6 +50,7 @@ public class MapViewModel extends ViewModel {
     private MutableLiveData<Boolean> locationPermission = new MutableLiveData<>();
 
     private boolean cameraMoved = false;
+    private int mRadius = 3000;
 
 
     public MapViewModel(Application application) {
@@ -60,12 +61,14 @@ public class MapViewModel extends ViewModel {
 
         mLocationRepository.startLocationUpdates(true);
 
+        //LOCATION
         mLocationMediatorLiveData.addSource(mLocationRepository.getLatLngLiveData(), this::updateDeviceLocation);
         // Return to last known location on resume
         mLocationMediatorLiveData.addSource(mapAvailable, available -> {
             if (available) updateDeviceLocation(mLocationRepository.getLatLngLiveData().getValue());
         });
 
+        //POI
         mPoiListMediatorLiveData.addSource(mapAvailable, available -> {
             if (available && mLocationLiveData.getValue() != null) { //Location not yet found on opening...
                 MapViewModel.this.fetchNearByPlaces(mLocationLiveData.getValue());
@@ -76,8 +79,8 @@ public class MapViewModel extends ViewModel {
         mPoiListMediatorLiveData.addSource(mLocationMediatorLiveData, latLng -> {
             if (latLng != null){
                 fetchNearByPlaces(latLng);
-                //Removing the source for performance, prioritizing long clicks demands
-                mPoiListMediatorLiveData.removeSource(mLocationLiveData);
+
+                //mPoiListMediatorLiveData.removeSource(mLocationLiveData); //Removing the source for performance, prioritizing long clicks demands
             }
         });
 
@@ -121,7 +124,7 @@ public class MapViewModel extends ViewModel {
         mPoiListMediatorLiveData.setValue(poiList); //Sending data to view before making the request to FireStore
         checkWorkmateInterest(poiList);
     }
-//endregion
+    //endregion
 
     private void setSearchedPoi(RestaurantDetailsResponse response){
 
@@ -182,14 +185,16 @@ public class MapViewModel extends ViewModel {
     }
 
     private void fetchNearByPlaces(LatLng latLng){
-        GetNearByPlacesAsyncTask asyncTask = new GetNearByPlacesAsyncTask(MapViewModel.this, mPlacesApiRepository, latLng);
+        GetNearByPlacesAsyncTask asyncTask = new GetNearByPlacesAsyncTask(MapViewModel.this, mPlacesApiRepository, latLng, mRadius);
         asyncTask.execute();
     }
 
-    void fetchSpecificPlace(String placeId){
+    void fetchSpecificPlace(String placeId, LatLng latLng){
         if (placeId != null){
             GetRestaurantDetailsAsyncTask asyncTask = new GetRestaurantDetailsAsyncTask(MapViewModel.this, mPlacesApiRepository, placeId);
             asyncTask.execute();
+            //GetNearByPlacesAsyncTask asyncTask = new GetNearByPlacesAsyncTask(MapViewModel.this, mPlacesApiRepository, latLng, 10);
+            //asyncTask.execute();
         }
     }
 
@@ -201,19 +206,20 @@ public class MapViewModel extends ViewModel {
         private final WeakReference<MapViewModel> mMapViewModelReference; //WeakReference in case ViewModel instance is gone while async task -> garbage collector
         private PlacesApiRepository mPlacesApiRepository;
         private LatLng mLatLng;
+        private int mRadius;
 
-        GetNearByPlacesAsyncTask(MapViewModel mapViewModel, PlacesApiRepository placesApiRepository, LatLng latLng) {
+        GetNearByPlacesAsyncTask(MapViewModel mapViewModel, PlacesApiRepository placesApiRepository, LatLng latLng, int radius) {
 
             this.mMapViewModelReference = new WeakReference<>(mapViewModel);
             this.mPlacesApiRepository = placesApiRepository;
             this.mLatLng = latLng;
-
+            this.mRadius = radius;
         }
 
         @Override
         protected NearBySearchResponse doInBackground(Void... voids) {
             if (mLatLng == null) return null;
-            return mPlacesApiRepository.getNearBySearchResponse(mLatLng);
+            return mPlacesApiRepository.getNearBySearchResponse(mLatLng, mRadius);
         }
 
         @Override
@@ -224,6 +230,7 @@ public class MapViewModel extends ViewModel {
             }
         }
     }
+
 
     ///////////////////
     //////SPECIFIC/////
@@ -244,7 +251,8 @@ public class MapViewModel extends ViewModel {
 
         @Override
         protected RestaurantDetailsResponse doInBackground(Void... voids) {
-            return mPlacesApiRepository.getRestaurantDetailsResponse(mPlaceId);
+            //return mPlacesApiRepository.getRestaurantDetailsResponse(mPlaceId);
+            return null; //TODO: update
         }
 
         @Override

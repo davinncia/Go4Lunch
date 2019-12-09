@@ -45,7 +45,7 @@ public class MapViewModelUnitTest {
         //GIVEN
 
         //Mock places service
-        Mockito.when(mPlacesApiService.nearbySearch("location")).thenReturn(null);
+        Mockito.when(mPlacesApiService.nearbySearch("location", 0)).thenReturn(null);
 
         //WHEN
         viewModel.hasLocationPermission(true);

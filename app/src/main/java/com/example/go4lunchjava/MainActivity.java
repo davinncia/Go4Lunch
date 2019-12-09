@@ -35,6 +35,8 @@ import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -197,7 +199,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void searchPlaceOnMap(){
-        List<Place.Field> fields = Collections.singletonList(Place.Field.ID);
+        //List<Place.Field> fields = Collections.singletonList(Place.Field.ID);
+        List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.LAT_LNG);
         //Places auto complete intent
         Intent intent = new Autocomplete.IntentBuilder(
                 AutocompleteActivityMode.OVERLAY, fields)
@@ -217,7 +220,7 @@ public class MainActivity extends AppCompatActivity {
                 mSearchPlaceId = place.getId();
                 Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.frame_layout_container_main);
                 if (fragment instanceof MapFragment){
-                    ((MapFragment) fragment).searchSpecificPlace(mSearchPlaceId);
+                    ((MapFragment) fragment).searchSpecificPlace(mSearchPlaceId, place.getLatLng());
                 }
             }
         }

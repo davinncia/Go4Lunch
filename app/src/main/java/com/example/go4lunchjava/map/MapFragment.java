@@ -224,9 +224,9 @@ public class MapFragment extends Fragment {
     ////////////////
     /////SEARCH/////
     ////////////////
-    public void searchSpecificPlace(String placeId){
+    public void searchSpecificPlace(String placeId, LatLng latLng){
         Log.d("debuglog", "searchSpecificPlace: ");
-        mMapViewModel.fetchSpecificPlace(placeId);
+        mMapViewModel.fetchSpecificPlace(placeId, latLng);
     }
 
     ////////////////

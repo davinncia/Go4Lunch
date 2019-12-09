@@ -46,9 +46,9 @@ public class WorkmateViewModelTest {
     public void usersAreMappedCorrectly() throws InterruptedException {
         //GIVEN
         List<User> users = new ArrayList<>();
-        users.add(new User(id1, "Phil", "", "1", "Burger"));
-        users.add(new User(id2, "Anne", "", "2", "Pizza"));
-        users.add(new User(currentUid, "Marie", "", "3", "Salad"));
+        users.add(new User(id1, "Phil", "", "1", "Burger", null));
+        users.add(new User(id2, "Anne", "", "2", "Pizza", null));
+        users.add(new User(currentUid, "Marie", "", "3", "Salad", null));
 
         //WHEN
         when(mUsersRepo.getAllUserLiveData()).thenReturn(new MutableLiveData<>(users));
@@ -70,9 +70,9 @@ public class WorkmateViewModelTest {
     public void currentUserIsNotInWorkmatesList() throws InterruptedException {
         //GIVEN
         List<User> users = new ArrayList<>();
-        users.add(new User(id1, "Phil", "", "1", "Burger"));
-        users.add(new User(id2, "Anne", "", "2", "Pizza"));
-        users.add(new User(currentUid, "Marie", "", "3", "Salad"));
+        users.add(new User(id1, "Phil", "", "1", "Burger", null));
+        users.add(new User(id2, "Anne", "", "2", "Pizza", null));
+        users.add(new User(currentUid, "Marie", "", "3", "Salad", null));
 
         //WHEN
         when(mFireBaseAuth.getUid()).thenReturn(currentUid);

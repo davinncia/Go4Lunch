@@ -17,6 +17,7 @@ import com.example.go4lunchjava.di.ViewModelFactory;
 
 public class ChatActivity extends AppCompatActivity {
 
+    //TODO: hide keyboard on send
     //DATA
     public static final String KEY_USER_ID = "key_user_id";
     public static final String KEY_WORKMATE_ID = "key_workmate_id";

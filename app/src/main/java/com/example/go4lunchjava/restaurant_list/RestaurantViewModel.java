@@ -44,6 +44,7 @@ public class RestaurantViewModel extends ViewModel {
     //LatLng
     private MutableLiveData<LatLng> mLatLngLiveData = new MutableLiveData<>();
 
+    private int mRadius = 3000;
 
     public RestaurantViewModel(Application application) {
 
@@ -65,12 +66,11 @@ public class RestaurantViewModel extends ViewModel {
             //Getting the restaurants as soon as we've got a location
             mRestaurantsMediatorLiveData.addSource(mLatLngLiveData, latLng -> {
                 GetNearByPlacesAsyncTask asyncTask = new GetNearByPlacesAsyncTask(
-                        RestaurantViewModel.this, mPlacesApiRepository, latLng);
+                        RestaurantViewModel.this, mPlacesApiRepository, latLng, mRadius);
                 asyncTask.execute();
                 mRestaurantsMediatorLiveData.removeSource(mLatLngLiveData); //We don't want anymore updates
             });
 
-            //TODO: Get hour details
 
         }
     }
@@ -224,19 +224,20 @@ public class RestaurantViewModel extends ViewModel {
         private final WeakReference<RestaurantViewModel> mRestaurantViewModelReference; //WeakReference in case ViewModel instance is gone while async task -> garbage collector
         private PlacesApiRepository mPlacesApiRepository;
         private LatLng mLatLng;
+        private int mRadius;
 
-        GetNearByPlacesAsyncTask(RestaurantViewModel restaurantViewModel, PlacesApiRepository placesApiRepository, LatLng latLng) {
+        GetNearByPlacesAsyncTask(RestaurantViewModel restaurantViewModel, PlacesApiRepository placesApiRepository, LatLng latLng, int radius) {
 
             this.mRestaurantViewModelReference = new WeakReference<>(restaurantViewModel);
             this.mPlacesApiRepository = placesApiRepository;
             this.mLatLng = latLng;
-
+            this.mRadius = radius;
         }
 
         @Override
         protected NearBySearchResponse doInBackground(Void... voids) {
             if (mLatLng == null) return null;
-            return mPlacesApiRepository.getNearBySearchResponse(mLatLng);
+            return mPlacesApiRepository.getNearBySearchResponse(mLatLng, mRadius);
         }
 
         @Override
@@ -265,7 +266,8 @@ public class RestaurantViewModel extends ViewModel {
 
         @Override
         protected RestaurantDetailsResponse doInBackground(Void... voids) {
-            return mPlacesApiRepository.getRestaurantDetailsResponse(mPlaceId);
+            //return mPlacesApiRepository.getRestaurantDetailsResponse(mPlaceId);
+            return null; //TODO : Update
         }
 
         @Override
