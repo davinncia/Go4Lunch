@@ -9,13 +9,14 @@ import androidx.lifecycle.MutableLiveData;
 import com.example.go4lunchjava.places_api.PlacesApiService;
 import com.example.go4lunchjava.places_api.pojo.NearBySearchResponse;
 import com.example.go4lunchjava.places_api.pojo.details.RestaurantDetailsResponse;
-import com.example.go4lunchjava.restaurant_details.RestaurantDetails;
-import com.example.go4lunchjava.restaurant_details.RestaurantDetailsViewModel;
+import com.example.go4lunchjava.places_api.pojo.details.hours.OpeningHoursDetails;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -34,6 +35,8 @@ public class PlacesApiRepository {
 
     //Data for ViewModels
     private MutableLiveData<RestaurantDetailsResponse> mDetailsResponseLiveData = new MutableLiveData<>();
+    private MutableLiveData<NearBySearchResponse> mNearByResponseLiveData = new MutableLiveData<>();
+    private MutableLiveData<List<OpeningHoursDetails>> mHoursDetailLiveData = new MutableLiveData<>();
 
 
     private PlacesApiRepository(){
@@ -66,37 +69,78 @@ public class PlacesApiRepository {
         return retrofit;
     }
 
+    //GETTERS
     public LiveData<RestaurantDetailsResponse> getDetailsResponseLiveData(){
         return mDetailsResponseLiveData;
     }
 
+    public LiveData<NearBySearchResponse> getNearByResponseLiveData() {
+        return mNearByResponseLiveData;
+    }
+
+    public LiveData<List<OpeningHoursDetails>> getHoursDetailLiveData() {
+        return mHoursDetailLiveData;
+    }
 
     //--------------------------------------------------------------------------------------------//
     //                                      NEAR BY PLACES
     //--------------------------------------------------------------------------------------------//
-    public NearBySearchResponse getNearBySearchResponse(LatLng latLng, int radius){
+    public void fetchNearByPlacesFromApi(LatLng latLng, int radius){
 
-        double latitude = Math.floor(latLng.latitude * 10_000) / 10_000;
-        double longitude = Math.floor(latLng.longitude * 10_000) / 10_000;
+        GetNearByPlacesAsyncTask asyncTask = new GetNearByPlacesAsyncTask(
+                PlacesApiRepository.this, latLng, radius);
+        asyncTask.execute();
+    }
 
-        String location = latitude + "," + longitude;
-        NearBySearchResponse nearBySearchResponse = mNearByCache.get(location);
+    //ASYNC TASK
+    private static class GetNearByPlacesAsyncTask extends AsyncTask<Void, Void, NearBySearchResponse> {
 
-        if (nearBySearchResponse == null){
-            try {
-                Log.d("debuglog", "Places Api request...");
-                nearBySearchResponse = service.nearbySearch(location, radius).execute().body();
-                mNearByCache.put(location, nearBySearchResponse); //Used for map to prevent identical requests in the future
+        private final WeakReference<PlacesApiRepository> mPlacesApiRepoReference; //WeakReference in case instance is garbage collected
+        private LatLng mLatLng;
+        private int mRadius;
 
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        GetNearByPlacesAsyncTask(PlacesApiRepository placesApiRepo, LatLng latLng, int radius) {
 
-        } else {
-            Log.d("debuglog", "Places cache used");
+            this.mPlacesApiRepoReference = new WeakReference<>(placesApiRepo);
+            this.mLatLng = latLng;
+            this.mRadius = radius;
         }
 
-        return nearBySearchResponse;
+        @Override
+        protected NearBySearchResponse doInBackground(Void... voids) {
+            if (mLatLng == null) return null;
+            PlacesApiRepository placesRepo = mPlacesApiRepoReference.get();
+
+            double latitude = Math.floor(mLatLng.latitude * 10_000) / 10_000;
+            double longitude = Math.floor(mLatLng.longitude * 10_000) / 10_000;
+
+            String location = latitude + "," + longitude;
+            NearBySearchResponse nearBySearchResponse = placesRepo.mNearByCache.get(location);
+
+            if (nearBySearchResponse == null){
+                try {
+                    Log.d("debuglog", "Places Api request...");
+                    nearBySearchResponse = placesRepo.service.nearbySearch(location, mRadius).execute().body();
+                    placesRepo.mNearByCache.put(location, nearBySearchResponse); //Used for map to prevent identical requests in the future
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            } else {
+                Log.d("debuglog", "Places cache used");
+            }
+
+            return nearBySearchResponse;
+        }
+
+        @Override
+        protected void onPostExecute(NearBySearchResponse nearBySearchResponse) {
+
+            if (mPlacesApiRepoReference.get() != null) {
+                mPlacesApiRepoReference.get().mNearByResponseLiveData.setValue(nearBySearchResponse);
+            }
+        }
     }
 
     //--------------------------------------------------------------------------------------------//
@@ -158,18 +202,59 @@ public class PlacesApiRepository {
         }
     }
 
-    //HOURS
-    //TODO Cache
-    public RestaurantDetailsResponse getHoursDetails(String placeId){
+    //--------------------------------------------------------------------------------------------//
+    //                                        H O U R S
+    //--------------------------------------------------------------------------------------------//
+    //HOURS DETAILS
+    public void fetchHoursDetails(List<String> restaurantIds){
+        GetRestaurantHoursAsyncTask asyncTask = new GetRestaurantHoursAsyncTask(
+                PlacesApiRepository.this, restaurantIds);
+        asyncTask.execute();
+    }
 
-        RestaurantDetailsResponse response = null;
+    private static class GetRestaurantHoursAsyncTask extends AsyncTask<Void, Void, List<OpeningHoursDetails>> {
 
-        try {
-            response = service.hoursDetailsSearch(placeId).execute().body();
-        } catch (IOException e) {
-            e.printStackTrace();
+        private WeakReference<PlacesApiRepository> mPlacesApiRepoReference;
+        private List<String> mRestaurants;
+
+        GetRestaurantHoursAsyncTask(PlacesApiRepository placesApiRepository, List<String> restaurantIds) {
+
+            this.mPlacesApiRepoReference = new WeakReference<>(placesApiRepository);
+            this.mRestaurants = restaurantIds;
         }
 
-        return response;
+        @Override
+        protected List<OpeningHoursDetails> doInBackground(Void... voids) {
+
+            List<OpeningHoursDetails> hours = new ArrayList<>();
+
+            for (String id : mRestaurants){
+
+                RestaurantDetailsResponse response = null;
+
+                try {
+                    //TODO Cache
+                    response = mPlacesApiRepoReference.get().service.hoursDetailsSearch(id).execute().body();
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                assert response != null;
+                hours.add(response.getResult().getOpeningHours());
+            }
+            return hours;
+        }
+
+        @Override
+        protected void onPostExecute(List<OpeningHoursDetails> hours) {
+            super.onPostExecute(hours);
+
+            if (mPlacesApiRepoReference.get() != null) {
+                mPlacesApiRepoReference.get().mHoursDetailLiveData.setValue(hours);
+            }
+        }
     }
+
+
 }

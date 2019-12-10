@@ -9,7 +9,7 @@ import android.net.NetworkInfo;
 
 import androidx.lifecycle.LiveData;
 
-//TODO NINO: My implementation of network check live data
+//TODO NINO: Make a repo
 public class NetworkConnectionLiveData extends LiveData<Boolean> {
 
     private Context mContext;

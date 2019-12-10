@@ -7,6 +7,7 @@ import android.util.Log;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModel;
 
 import com.example.go4lunchjava.R;
@@ -75,24 +76,29 @@ public class MapViewModel extends ViewModel {
         });
 
         //POI
-        mPoiListMediatorLiveData.addSource(mapAvailable, available -> {
-            if (available && mLocationLiveData.getValue() != null) { //Location not yet found on opening...
-                MapViewModel.this.fetchNearByPlaces(mLocationLiveData.getValue());
-            }
-        });
+        //mPoiListMediatorLiveData.addSource(mapAvailable, available -> {
+        //    if (available && mLocationLiveData.getValue() != null) { //Location not yet found on opening...
+        //        MapViewModel.this.fetchNearByPlaces(mLocationLiveData.getValue());
+        //    }
+        //});
 
         mPoiListMediatorLiveData.addSource(mActiveNetwork, isConnected -> {
-                if(isConnected) fetchNearByPlaces(mLocationLiveData.getValue());
+                if(isConnected && mLocationLiveData.getValue() != null)
+                    mPlacesApiRepository.fetchNearByPlacesFromApi(mLocationLiveData.getValue(), mRadius);
         });
 
         //When first location has been found (not every update though).
         mPoiListMediatorLiveData.addSource(mLocationMediatorLiveData, latLng -> {
             if (latLng != null) {
-                fetchNearByPlaces(latLng);
+
+                mPlacesApiRepository.fetchNearByPlacesFromApi(latLng, mRadius);
 
                 //mPoiListMediatorLiveData.removeSource(mLocationLiveData); //Removing the source for performance, prioritizing long clicks demands
             }
         });
+
+        //Map Poi given NearByResponse
+        mPoiListMediatorLiveData.addSource(mPlacesApiRepository.getNearByResponseLiveData(), this::mapPoiList);
 
     }
 
@@ -121,7 +127,7 @@ public class MapViewModel extends ViewModel {
     }
 
     //region get poi
-    private void getPoi(NearBySearchResponse nearBySearchResponse) {
+    private void mapPoiList(NearBySearchResponse nearBySearchResponse) {
 
         if (nearBySearchResponse == null) return;
         List<Poi> poiList = new ArrayList<>();
@@ -131,6 +137,7 @@ public class MapViewModel extends ViewModel {
             poiList.add(new Poi(result.getName(), result.getPlaceId(),
                     result.getGeometry().getLocation().getLat(), result.getGeometry().getLocation().getLng()));
         }
+
         mPoiListMediatorLiveData.setValue(poiList); //Sending data to view before making the request to FireStore
         checkWorkmateInterest(poiList);
     }
@@ -191,87 +198,17 @@ public class MapViewModel extends ViewModel {
 
     void setCustomLocation(LatLng latLng) {
         mLocationRepository.setCustomLatLng(latLng);
-        fetchNearByPlaces(latLng);
-    }
-
-    private void fetchNearByPlaces(LatLng latLng) {
-        GetNearByPlacesAsyncTask asyncTask = new GetNearByPlacesAsyncTask(MapViewModel.this, mPlacesApiRepository, latLng, mRadius);
-        asyncTask.execute();
+        mPlacesApiRepository.fetchNearByPlacesFromApi(latLng, mRadius);
     }
 
     void fetchSpecificPlace(String placeId, LatLng latLng) {
         if (placeId != null) {
-            GetRestaurantDetailsAsyncTask asyncTask = new GetRestaurantDetailsAsyncTask(MapViewModel.this, mPlacesApiRepository, placeId);
-            asyncTask.execute();
             //GetNearByPlacesAsyncTask asyncTask = new GetNearByPlacesAsyncTask(MapViewModel.this, mPlacesApiRepository, latLng, 10);
             //asyncTask.execute();
-        }
-    }
 
-    ///////////////////
-    //////NEAR BY//////
-    ///////////////////
-    private static class GetNearByPlacesAsyncTask extends AsyncTask<Void, Void, NearBySearchResponse> {
-
-        private final WeakReference<MapViewModel> mMapViewModelReference; //WeakReference in case ViewModel instance is gone while async task -> garbage collector
-        private PlacesApiRepository mPlacesApiRepository;
-        private LatLng mLatLng;
-        private int mRadius;
-
-        GetNearByPlacesAsyncTask(MapViewModel mapViewModel, PlacesApiRepository placesApiRepository, LatLng latLng, int radius) {
-
-            this.mMapViewModelReference = new WeakReference<>(mapViewModel);
-            this.mPlacesApiRepository = placesApiRepository;
-            this.mLatLng = latLng;
-            this.mRadius = radius;
-        }
-
-        @Override
-        protected NearBySearchResponse doInBackground(Void... voids) {
-            if (mLatLng == null) return null;
-            return mPlacesApiRepository.getNearBySearchResponse(mLatLng, mRadius);
-        }
-
-        @Override
-        protected void onPostExecute(NearBySearchResponse nearBySearchResponse) {
-
-            if (mMapViewModelReference.get() != null) {
-                mMapViewModelReference.get().getPoi(nearBySearchResponse);
-            }
-        }
-    }
-
-
-    ///////////////////
-    //////SPECIFIC/////
-    ///////////////////
-    private static class GetRestaurantDetailsAsyncTask extends AsyncTask<Void, Void, RestaurantDetailsResponse> {
-
-        private final WeakReference<MapViewModel> mMapViewModelReference;
-        private PlacesApiRepository mPlacesApiRepository;
-        private String mPlaceId;
-
-        GetRestaurantDetailsAsyncTask(MapViewModel mapViewModel, PlacesApiRepository placesApiRepository, String placeId) {
-
-            this.mMapViewModelReference = new WeakReference<>(mapViewModel);
-            this.mPlacesApiRepository = placesApiRepository;
-            mPlaceId = placeId;
-
-        }
-
-        @Override
-        protected RestaurantDetailsResponse doInBackground(Void... voids) {
-            //return mPlacesApiRepository.getRestaurantDetailsResponse(mPlaceId);
-            return null; //TODO: update
-        }
-
-        @Override
-        protected void onPostExecute(RestaurantDetailsResponse response) {
-            super.onPostExecute(response);
-
-            if (mMapViewModelReference.get() != null && response != null) {
-                mMapViewModelReference.get().setSearchedPoi(response);
-            }
+            mPlacesApiRepository.fetchDetailsResponseFromApi(placeId);
+            mPoiListMediatorLiveData.addSource(mPlacesApiRepository.getDetailsResponseLiveData(),
+                    this::setSearchedPoi);
         }
     }
 }

@@ -33,8 +33,6 @@ public class MapViewModelUnitTest {
     @Before
     public void setUp(){
 
-        //MockitoAnnotations.initMocks(this);
-        //TODO NINO: can we mock application like that ?
         mApplication = Mockito.mock(Application.class);
         viewModel = new MapViewModel(mApplication);
 

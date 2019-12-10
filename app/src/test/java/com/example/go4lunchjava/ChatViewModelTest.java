@@ -69,9 +69,10 @@ public class ChatViewModelTest {
         messages.add(new ChatMessage(userId1, 56780, "Hey"));
         messages.add(new ChatMessage(userId2, 56780, "Hola !"));
 
-        //WHEN
         when(mChatRepo.getMessagesLiveData()).thenReturn(new MutableLiveData<>(messages));
         when(mUsersRepo.getAllUserLiveData()).thenReturn(new MutableLiveData<>());
+
+        //WHEN
         mViewModel.init("1234", "5678");
         mUiMessages = LiveDataTestUtil.getOrAwaitValue(mViewModel.uiMessagesLiveData);
 
@@ -91,9 +92,10 @@ public class ChatViewModelTest {
         messages.add(new ChatMessage(userId2, 1575533317348L, "Bien")); //First
         messages.add(new ChatMessage(userId2, 1575533317548L, "Et toi?"));
 
-        //WHEN
         when(mChatRepo.getMessagesLiveData()).thenReturn(new MutableLiveData<>(messages));
         when(mUsersRepo.getAllUserLiveData()).thenReturn(new MutableLiveData<>());
+
+        //WHEN
         mViewModel.init(userId1, userId2);
         mUiMessages = LiveDataTestUtil.getOrAwaitValue(mViewModel.uiMessagesLiveData);
 
@@ -111,9 +113,10 @@ public class ChatViewModelTest {
         messages.add(new ChatMessage(userId1, 1575533317248L, "Salut"));
         messages.add(new ChatMessage(userId1, 1575543717248L, "Hey"));
 
-        //WHEN
         when(mChatRepo.getMessagesLiveData()).thenReturn(new MutableLiveData<>(messages));
         when(mUsersRepo.getAllUserLiveData()).thenReturn(new MutableLiveData<>());
+
+        //WHEN
         mViewModel.init(userId1, userId2);
         mUiMessages = LiveDataTestUtil.getOrAwaitValue(mViewModel.uiMessagesLiveData);
 
@@ -133,14 +136,15 @@ public class ChatViewModelTest {
         List<User> users = new ArrayList<>();
         users.add(new User(userId1, "Phil", uri, "1", "Burger", null));
 
-        //WHEN
         when(mChatRepo.getMessagesLiveData()).thenReturn(new MutableLiveData<>(messages));
-        when(mUsersRepo.getAllUserLiveData()).thenReturn(new MutableLiveData<>(users));
+        when(mUsersRepo.getAllUserLiveData()).thenReturn(new MutableLiveData<>(users)); //TODO: deplacer tous les when
+
+        //WHEN
         mViewModel.init(userId1, userId2);
         mUiMessages = LiveDataTestUtil.getOrAwaitValue(mViewModel.uiMessagesLiveData);
 
+        //TODO: 1 soluce Or remove messages
         //THEN
-        //TODO NINO: waiting for 2nd source to trigger... (?)
         new Timer().schedule(new TimerTask() {
             @Override
             public void run() {
@@ -164,9 +168,10 @@ public class ChatViewModelTest {
         messages.add(new ChatMessage(userId1, 56780, "Salut"));
         messages.add(new ChatMessage(userId2, 56780, "Hola !"));
 
-        //WHEN
         when(mChatRepo.getMessagesLiveData()).thenReturn(new MutableLiveData<>(messages));
         when(mUsersRepo.getAllUserLiveData()).thenReturn(new MutableLiveData<>(users));
+
+        //WHEN
         mViewModel.init(userId1, userId2);
         mUiMessages = LiveDataTestUtil.getOrAwaitValue(mViewModel.uiMessagesLiveData);
 

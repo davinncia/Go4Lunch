@@ -1,19 +1,15 @@
 package com.example.go4lunchjava.restaurant_list;
 
 
-import android.content.Intent;
 import android.os.Bundle;
 
-import androidx.annotation.Nullable;
 import androidx.core.widget.ContentLoadingProgressBar;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,17 +19,11 @@ import android.widget.Toast;
 import com.example.go4lunchjava.R;
 import com.example.go4lunchjava.utils.SearchEditText;
 import com.example.go4lunchjava.di.ViewModelFactory;
-import com.example.go4lunchjava.map.MapViewModel;
 import com.example.go4lunchjava.restaurant_details.RestaurantDetailsActivity;
-import com.google.android.libraries.places.api.model.Place;
-import com.google.android.libraries.places.widget.Autocomplete;
-import com.google.android.libraries.places.widget.AutocompleteActivity;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-
-import static com.example.go4lunchjava.MainActivity.AUTO_COMPLETE_REQUEST_CODE;
 
 
 public class RestaurantListFragment extends Fragment implements RestaurantAdapter.OnRestaurantClickListener {
@@ -55,6 +45,7 @@ public class RestaurantListFragment extends Fragment implements RestaurantAdapte
     public static RestaurantListFragment newInstance(String placeId) {
         RestaurantListFragment fragment = new RestaurantListFragment();
         Bundle args = new Bundle();
+        if (placeId == null) placeId = RestaurantListViewModel.NEARBY_SEARCH;
         args.putString(RESTAURANT_LIST_FRAGMENT_ID_KEY, placeId);
         fragment.setArguments(args);
         return fragment;
@@ -71,7 +62,7 @@ public class RestaurantListFragment extends Fragment implements RestaurantAdapte
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_restaurant_list, container, false);
 
-        mSearchEditText = getActivity().findViewById(R.id.edit_text_search);
+        mSearchEditText = requireActivity().findViewById(R.id.edit_text_search);
         ContentLoadingProgressBar progressBar = rootView.findViewById(R.id.progress_bar_restaurant_list);
         LinearLayout emptyView = rootView.findViewById(R.id.linearLayout_empty_list_restaurant);
         mRecyclerView = rootView.findViewById(R.id.recycler_view_restaurants);
@@ -80,15 +71,16 @@ public class RestaurantListFragment extends Fragment implements RestaurantAdapte
 
         //Get our view model
         ViewModelFactory viewModelFactory = new ViewModelFactory(Objects.requireNonNull(getActivity()).getApplication());
-        RestaurantViewModel restaurantViewModel = ViewModelProviders.of(this, viewModelFactory).get(RestaurantViewModel.class);
+        RestaurantListViewModel restaurantViewModel = ViewModelProviders.of(this, viewModelFactory).get(RestaurantListViewModel.class);
 
         //INIT
+        assert getArguments() != null;
         restaurantViewModel.init(getArguments().getString(RESTAURANT_LIST_FRAGMENT_ID_KEY));
 
         //UPDATING DATA
         restaurantViewModel.mRestaurantsLiveData.observe(this, restaurantItems -> {
 
-            mRestaurantItems = restaurantItems; //SEARCH
+            mRestaurantItems = restaurantItems; //For search function
             progressBar.setVisibility(View.GONE);
 
             if (restaurantItems == null || restaurantItems.size() < 1)
@@ -112,9 +104,6 @@ public class RestaurantListFragment extends Fragment implements RestaurantAdapte
     }
 
     private void initRecyclerView(){
-
-        // Improve performance if layout size fixed
-        //mRecyclerView.setHasFixedSize(true);
 
         //Divider deco
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(Objects.requireNonNull(this.getContext()), LinearLayoutManager.VERTICAL);

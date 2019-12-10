@@ -13,6 +13,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
+        android:src="@drawable/ic_add"
         app:layout_anchor="@id/constraint_layout_details"
         app:layout_anchorGravity="right|end"
         app:layout_behavior="com.example.go4lunchjava.restaurant_details.ScrollFabBehavior" />
@@ -42,14 +43,7 @@
 
         </com.google.android.material.appbar.CollapsingToolbarLayout>
 
-        <!--
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/constraint_layout_details"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
--->
         <include
             android:id="@+id/constraint_layout_details"
             layout="@layout/constraint_layout_details" />
@@ -67,22 +61,6 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:layout_behavior="@string/appbar_scrolling_view_behavior" />
-
-        <!--
-     <LinearLayout
-         android:layout_width="match_parent"
-         android:layout_height="match_parent"
-         android:orientation="vertical">
-
-         <TextView
-             android:layout_width="match_parent"
-             android:layout_height="200dp"
-             android:text="YOYO"
-             android:textSize="40sp" />
-
-
-     </LinearLayout>
-    -->
 
     </androidx.core.widget.NestedScrollView>
 

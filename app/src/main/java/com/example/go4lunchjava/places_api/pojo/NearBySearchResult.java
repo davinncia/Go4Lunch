@@ -1,5 +1,7 @@
 package com.example.go4lunchjava.places_api.pojo;
 
+import androidx.annotation.VisibleForTesting;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
@@ -49,6 +51,15 @@ public class NearBySearchResult {
     @SerializedName("plus_code")
     @Expose
     private PlusCode plusCode;
+
+    @VisibleForTesting
+    public NearBySearchResult(String name, OpeningHours openingHours, String placeId, @Nullable Float rating, String vicinity) {
+        this.name = name;
+        this.openingHours = openingHours;
+        this.placeId = placeId;
+        this.rating = rating;
+        this.vicinity = vicinity;
+    }
 
     public Geometry getGeometry() {
         return geometry;
