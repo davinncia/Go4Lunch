@@ -1,7 +1,6 @@
 package com.example.go4lunchjava.map;
 
 import android.app.Application;
-import android.os.AsyncTask;
 import android.util.Log;
 
 import androidx.lifecycle.LiveData;
@@ -11,8 +10,10 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModel;
 
 import com.example.go4lunchjava.R;
+import com.example.go4lunchjava.auth.User;
 import com.example.go4lunchjava.places_api.pojo.NearBySearchResponse;
 import com.example.go4lunchjava.places_api.pojo.NearBySearchResult;
+import com.example.go4lunchjava.repository.NetworkRepository;
 import com.example.go4lunchjava.repository.UsersFireStoreRepository;
 import com.example.go4lunchjava.repository.LocationRepository;
 import com.example.go4lunchjava.repository.PlacesApiRepository;
@@ -24,23 +25,20 @@ import com.example.go4lunchjava.workmates_list.Workmate;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
 public class MapViewModel extends ViewModel {
 
     //Repositories
-    private LocationRepository mLocationRepository;
-    private PlacesApiRepository mPlacesApiRepository;
-    private UsersFireStoreRepository mFireStoreRepository;
-
-    //Network
-    private LiveData<Boolean> mActiveNetwork;
+    private LocationRepository mLocationRepo;
+    private PlacesApiRepository mPlacesApiRepo;
+    private UsersFireStoreRepository mUsersRepo;
+    private NetworkRepository mNetworkRepo;
 
     //Location
     private MediatorLiveData<LatLng> mLocationMediatorLiveData = new MediatorLiveData<>();
-    LiveData<LatLng> mLocationLiveData = mLocationMediatorLiveData;
+    public LiveData<LatLng> mLocationLiveData = mLocationMediatorLiveData;
 
     //SingleLiveEvent triggered when no location found
     private SingleLiveEvent mNoLocationEvent = new SingleLiveEvent();
@@ -58,47 +56,60 @@ public class MapViewModel extends ViewModel {
     private int mRadius = 3000;
 
 
-    public MapViewModel(Application application) {
+    public MapViewModel(Application application, LocationRepository locationRepo, PlacesApiRepository placesApiRepo,
+                        UsersFireStoreRepository usersRepo, NetworkRepository networkRepo) {
 
-        mLocationRepository = LocationRepository.getInstance(application);
-        mPlacesApiRepository = PlacesApiRepository.getInstance();
-        mFireStoreRepository = UsersFireStoreRepository.getInstance();
+        mLocationRepo = locationRepo;
+        mPlacesApiRepo = placesApiRepo;
+        mUsersRepo = usersRepo;
+        mNetworkRepo = networkRepo;
 
-        mActiveNetwork = new NetworkConnectionLiveData(application.getApplicationContext());
-
-        mLocationRepository.startLocationUpdates(true);
+        mLocationRepo.startLocationUpdates(true);
 
         //LOCATION
-        mLocationMediatorLiveData.addSource(mLocationRepository.getLatLngLiveData(), this::updateDeviceLocation);
+        mLocationMediatorLiveData.addSource(mLocationRepo.getLatLngLiveData(), this::updateDeviceLocation);
         // Return to last known location on resume
         mLocationMediatorLiveData.addSource(mapAvailable, available -> {
-            if (available) updateDeviceLocation(mLocationRepository.getLatLngLiveData().getValue());
+            if (available) updateDeviceLocation(mLocationRepo.getLatLngLiveData().getValue());
         });
 
         //POI
-        //mPoiListMediatorLiveData.addSource(mapAvailable, available -> {
-        //    if (available && mLocationLiveData.getValue() != null) { //Location not yet found on opening...
-        //        MapViewModel.this.fetchNearByPlaces(mLocationLiveData.getValue());
-        //    }
-        //});
-
-        mPoiListMediatorLiveData.addSource(mActiveNetwork, isConnected -> {
-                if(isConnected && mLocationLiveData.getValue() != null)
-                    mPlacesApiRepository.fetchNearByPlacesFromApi(mLocationLiveData.getValue(), mRadius);
+        //Given network
+        mPoiListMediatorLiveData.addSource(mNetworkRepo.getNetworkStatusLiveData(), isConnected -> {
+                if(isConnected && mLocationLiveData.getValue() != null && mPoiListLiveData.getValue() == null)
+                    mPlacesApiRepo.fetchNearByPlacesFromApi(mLocationLiveData.getValue(), mRadius);
         });
 
-        //When first location has been found (not every update though).
+        //Given location changes
         mPoiListMediatorLiveData.addSource(mLocationMediatorLiveData, latLng -> {
             if (latLng != null) {
-
-                mPlacesApiRepository.fetchNearByPlacesFromApi(latLng, mRadius);
-
-                //mPoiListMediatorLiveData.removeSource(mLocationLiveData); //Removing the source for performance, prioritizing long clicks demands
+                mPlacesApiRepo.fetchNearByPlacesFromApi(latLng, mRadius);
             }
         });
 
         //Map Poi given NearByResponse
-        mPoiListMediatorLiveData.addSource(mPlacesApiRepository.getNearByResponseLiveData(), this::mapPoiList);
+        mPoiListMediatorLiveData.addSource(mPlacesApiRepo.getNearByResponseLiveData(), this::mapPoiList);
+
+        //Workmates
+        mPoiListMediatorLiveData.addSource(mUsersRepo.getAllUserLiveData(), new Observer<List<User>>() {
+            @Override
+            public void onChanged(List<User> userList) {
+                List<Poi> poiList = mPoiListLiveData.getValue();
+                if (poiList == null) return;
+
+                for (User user : userList){
+
+                    for (Poi poi : poiList) {
+
+                        if (poi.getId().equals(user.getRestaurant_id())) {
+                            //Someone is going there !
+                            poi.setPointerRes(R.drawable.ic_pointer_blue);
+                        }
+                    }
+                }
+                mPoiListMediatorLiveData.setValue(poiList); //Updating view
+            }
+        });
 
     }
 
@@ -114,7 +125,6 @@ public class MapViewModel extends ViewModel {
 
                 if (!cameraMoved) {
                     mLocationMediatorLiveData.setValue(latLng); //Update location only if camera is not moving
-                    Log.d("debuglog", "Update Device Location");
                 }
 
             } else {
@@ -122,7 +132,7 @@ public class MapViewModel extends ViewModel {
             }
 
         } else {
-            mLocationRepository.startLocationUpdates(false); //Map not available -> Stopping updates
+            mLocationRepo.startLocationUpdates(false); //Map not available -> Stopping updates
         }
     }
 
@@ -139,7 +149,7 @@ public class MapViewModel extends ViewModel {
         }
 
         mPoiListMediatorLiveData.setValue(poiList); //Sending data to view before making the request to FireStore
-        checkWorkmateInterest(poiList);
+        mUsersRepo.fetchAllUsersDocuments(); //update color if workmate joining
     }
     //endregion
 
@@ -153,26 +163,7 @@ public class MapViewModel extends ViewModel {
         poiList.add(new Poi(result.getName(), result.getPlaceId(), result.getGeometry().getLocation().getLat(),
                 result.getGeometry().getLocation().getLng()));
         mPoiListMediatorLiveData.setValue(poiList); //Mark on map
-        checkWorkmateInterest(poiList); //update color if workmate joining
-    }
-
-    private void checkWorkmateInterest(List<Poi> poiList) {
-
-        mFireStoreRepository.getAllUserDocuments().addOnSuccessListener(queryDocumentSnapshots -> {
-
-            for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
-                String restaurantId = String.valueOf(document.get(Workmate.FIELD_RESTAURANT_ID));
-
-                for (Poi poi : poiList) {
-                    //Checking if workmate choice is on the map
-                    if (poi.getId().equals(restaurantId)) {
-                        poi.setPointerRes(R.drawable.ic_pointer_blue);
-                    }
-                }
-
-            }
-            mPoiListMediatorLiveData.setValue(poiList); //Updating view
-        });
+        mUsersRepo.fetchAllUsersDocuments(); //update color if workmate joining
     }
 
 
@@ -182,9 +173,9 @@ public class MapViewModel extends ViewModel {
         Boolean permission = locationPermission.getValue();
         if (permission == null) return;
         if (available && permission) {
-            mLocationRepository.startLocationUpdates(true);
+            mLocationRepo.startLocationUpdates(true);
         } else {
-            mLocationRepository.startLocationUpdates(false);
+            mLocationRepo.startLocationUpdates(false);
         }
     }
 
@@ -192,22 +183,22 @@ public class MapViewModel extends ViewModel {
         locationPermission.setValue(granted);
     }
 
-    void setCameraMoved(boolean moved) {
+    public void setCameraMoved(boolean moved) {
         this.cameraMoved = moved;
     }
 
     void setCustomLocation(LatLng latLng) {
-        mLocationRepository.setCustomLatLng(latLng);
-        mPlacesApiRepository.fetchNearByPlacesFromApi(latLng, mRadius);
+        mLocationRepo.setCustomLatLng(latLng);
+        mPlacesApiRepo.fetchNearByPlacesFromApi(latLng, mRadius);
     }
 
     void fetchSpecificPlace(String placeId, LatLng latLng) {
         if (placeId != null) {
-            //GetNearByPlacesAsyncTask asyncTask = new GetNearByPlacesAsyncTask(MapViewModel.this, mPlacesApiRepository, latLng, 10);
+            //GetNearByPlacesAsyncTask asyncTask = new GetNearByPlacesAsyncTask(MapViewModel.this, mPlacesApiRepo, latLng, 10);
             //asyncTask.execute();
 
-            mPlacesApiRepository.fetchDetailsResponseFromApi(placeId);
-            mPoiListMediatorLiveData.addSource(mPlacesApiRepository.getDetailsResponseLiveData(),
+            mPlacesApiRepo.fetchDetailsResponseFromApi(placeId);
+            mPoiListMediatorLiveData.addSource(mPlacesApiRepo.getDetailsResponseLiveData(),
                     this::setSearchedPoi);
         }
     }

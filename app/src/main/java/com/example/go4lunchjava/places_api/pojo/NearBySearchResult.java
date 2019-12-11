@@ -53,12 +53,13 @@ public class NearBySearchResult {
     private PlusCode plusCode;
 
     @VisibleForTesting
-    public NearBySearchResult(String name, OpeningHours openingHours, String placeId, @Nullable Float rating, String vicinity) {
+    public NearBySearchResult(Geometry geometry, String name, OpeningHours openingHours, String placeId, @Nullable Float rating, String vicinity) {
         this.name = name;
         this.openingHours = openingHours;
         this.placeId = placeId;
         this.rating = rating;
         this.vicinity = vicinity;
+        this.geometry = geometry;
     }
 
     public Geometry getGeometry() {

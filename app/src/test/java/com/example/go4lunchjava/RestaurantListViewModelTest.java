@@ -27,16 +27,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
@@ -61,9 +56,10 @@ public class RestaurantListViewModelTest {
     private RestaurantListViewModel mViewModel;
     private List<RestaurantItem> mRestaurants;
     private String mCurrentUid = "66";
+    private String mRestoId = "Resto";
 
     @Before
-    public void setUp(){
+    public void setUp() {
 
         when(mLocationRepo.getLatLngLiveData()).thenReturn(new MutableLiveData<>(new LatLng(12, 12)));
         when(mAuth.getUid()).thenReturn(mCurrentUid);
@@ -73,9 +69,9 @@ public class RestaurantListViewModelTest {
     public void listOfRestaurantsCorrectlyMappedGivenApiResponse() throws InterruptedException {
         //GIVEN
         List<NearBySearchResult> nearByRestaurants = new ArrayList<>();
-        NearBySearchResult apiResult1 = new NearBySearchResult("name1", null, "1", 5f, "Rue resto");
-        NearBySearchResult apiResult2 = new NearBySearchResult("name2", null, "2", 3f, "Avenue resto");
-        NearBySearchResult apiResult3 = new NearBySearchResult("name3", null, "3", 1f, "Boulevard resto");
+        NearBySearchResult apiResult1 = new NearBySearchResult(null, "name1", null, "1", 5f, "Rue resto");
+        NearBySearchResult apiResult2 = new NearBySearchResult(null, "name2", null, "2", 3f, "Avenue resto");
+        NearBySearchResult apiResult3 = new NearBySearchResult(null, "name3", null, "3", 1f, "Boulevard resto");
 
         nearByRestaurants.add(apiResult1);
         nearByRestaurants.add(apiResult2);
@@ -84,7 +80,6 @@ public class RestaurantListViewModelTest {
         NearBySearchResponse apiResponse = new NearBySearchResponse(nearByRestaurants);
 
         when(mPlacesRepo.getNearByResponseLiveData()).thenReturn(new MutableLiveData<>(apiResponse));
-        when(mPlacesRepo.getDetailsResponseLiveData()).thenReturn(new MutableLiveData<>());
         when(mPlacesRepo.getHoursDetailLiveData()).thenReturn(new MutableLiveData<>());
         when(mUsersRepo.getAllUserLiveData()).thenReturn(new MutableLiveData<>());
 
@@ -124,9 +119,7 @@ public class RestaurantListViewModelTest {
                 "www.website.com", "name", "1", 5f, "Rue resto", "0606060606");
         RestaurantDetailsResponse apiResponse = new RestaurantDetailsResponse(apiResult);
 
-        when(mPlacesRepo.getNearByResponseLiveData()).thenReturn(new MutableLiveData<>());
         when(mPlacesRepo.getDetailsResponseLiveData()).thenReturn(new MutableLiveData<>(apiResponse));
-        when(mUsersRepo.getAllUserLiveData()).thenReturn(new MutableLiveData<>());
 
         //WHEN
         mViewModel = new RestaurantListViewModel(mApplication, mUsersRepo, mPlacesRepo, mAuth, mLocationRepo);
@@ -145,11 +138,11 @@ public class RestaurantListViewModelTest {
     public void numberOfWorkmatesUpdatedGivenFireStoreResponse() throws InterruptedException {
         //GIVEN
         List<User> users = new ArrayList<>();
-        users.add(new User(mCurrentUid, "Anne", "", "1", "Burger", Arrays.asList("Burger", "Pizza")));
+        users.add(new User("workmate", "Anne", "", mRestoId, null, null));
 
         List<NearBySearchResult> nearByRestaurants = new ArrayList<>();
-        NearBySearchResult apiResult1 = new NearBySearchResult("name1", null, "1", 5f, "Rue resto");
-        NearBySearchResult apiResult2 = new NearBySearchResult("name2", null, "2", 3f, "Avenue resto");
+        NearBySearchResult apiResult1 = new NearBySearchResult(null, "name1", null, "1", 5f, null);
+        NearBySearchResult apiResult2 = new NearBySearchResult(null, "name2", null, mRestoId, 3f, null);
 
         nearByRestaurants.add(apiResult1);
         nearByRestaurants.add(apiResult2);
@@ -157,7 +150,6 @@ public class RestaurantListViewModelTest {
         NearBySearchResponse apiResponse = new NearBySearchResponse(nearByRestaurants);
 
         when(mPlacesRepo.getNearByResponseLiveData()).thenReturn(new MutableLiveData<>(apiResponse));
-        when(mPlacesRepo.getDetailsResponseLiveData()).thenReturn(new MutableLiveData<>());
         when(mPlacesRepo.getHoursDetailLiveData()).thenReturn(new MutableLiveData<>());
         when(mUsersRepo.getAllUserLiveData()).thenReturn(new MutableLiveData<>(users));
 
@@ -165,17 +157,12 @@ public class RestaurantListViewModelTest {
         mViewModel = new RestaurantListViewModel(mApplication, mUsersRepo, mPlacesRepo, mAuth, mLocationRepo);
         mViewModel.init(RestaurantListViewModel.NEARBY_SEARCH);
 
-        mRestaurants = LiveDataTestUtil.getOrAwaitValue(mViewModel.mRestaurantsLiveData);
-
+        mRestaurants = LiveDataTestUtil.awaitValue(mViewModel.mRestaurantsLiveData);
 
         //THEN
-        new Timer().schedule(new TimerTask() {
-            @Override
-            public void run() {
-                assertEquals(0, mRestaurants.get(0).getWorkmatesNbr());
-                assertEquals(1, mRestaurants.get(1).getWorkmatesNbr());
-            }
-        }, 100);
+        assertEquals(0, mRestaurants.get(0).getWorkmatesNbr());
+        assertEquals(1, mRestaurants.get(1).getWorkmatesNbr());
+
     }
 
     @Test
@@ -183,15 +170,11 @@ public class RestaurantListViewModelTest {
         //GIVEN
         int day = 2; //Monday
 
-        Calendar calendar = Mockito.mock(Calendar.class);
-        when(calendar.get(Calendar.DAY_OF_WEEK)).thenReturn(day + 1); //Monday
-        when(calendar.get(Calendar.HOUR_OF_DAY)).thenReturn(12); //12 O'clock
-
         OpeningHoursDetails hourDetails = new OpeningHoursDetails(new OpeningPeriod[]
-                {new OpeningPeriod(new Open(day, "1100"), new Close(day, "2200"))});
+                {new OpeningPeriod(new Open(day, "0000"), new Close(day, "0000"))});
 
         List<NearBySearchResult> nearByRestaurants = new ArrayList<>();
-        NearBySearchResult apiResult1 = new NearBySearchResult("name1", null, "1", 5f, "Rue resto");
+        NearBySearchResult apiResult1 = new NearBySearchResult(null, "name1", null, "1", 5f, "Rue resto");
 
         nearByRestaurants.add(apiResult1);
 
@@ -199,22 +182,17 @@ public class RestaurantListViewModelTest {
 
         when(mPlacesRepo.getHoursDetailLiveData()).thenReturn(new MutableLiveData<>(Collections.singletonList(hourDetails)));
         when(mPlacesRepo.getNearByResponseLiveData()).thenReturn(new MutableLiveData<>(apiResponse));
-        when(mPlacesRepo.getDetailsResponseLiveData()).thenReturn(new MutableLiveData<>());
         when(mUsersRepo.getAllUserLiveData()).thenReturn(new MutableLiveData<>());
 
         //WHEN
         mViewModel = new RestaurantListViewModel(mApplication, mUsersRepo, mPlacesRepo, mAuth, mLocationRepo);
         mViewModel.init(RestaurantListViewModel.NEARBY_SEARCH);
 
-        mRestaurants = LiveDataTestUtil.getOrAwaitValue(mViewModel.mRestaurantsLiveData);
+        mRestaurants = LiveDataTestUtil.awaitValue(mViewModel.mRestaurantsLiveData);
 
         //THEN
-        new Timer().schedule(new TimerTask() {
-            @Override
-            public void run() {
-                assertEquals("Open until 10:00 PM", mRestaurants.get(0).getHours());
-            }
-        }, 100);
+        assertEquals("Closed today", mRestaurants.get(0).getHours());
+
     }
 
 

@@ -45,10 +45,10 @@ public class ChatViewModelTest {
     private String userId2 = "5678";
 
     @Before
-    public void setUp(){
+    public void setUp() {
         mViewModel = new ChatViewModel(mChatRepo, mUsersRepo);
 
-        }
+    }
 
     @Test(expected = RuntimeException.class)
     public void UiMessagesIsNotTriggeredWhenNoMessagesStored() throws InterruptedException {
@@ -135,22 +135,17 @@ public class ChatViewModelTest {
 
         List<User> users = new ArrayList<>();
         users.add(new User(userId1, "Phil", uri, "1", "Burger", null));
+        users.add(new User(userId2, "Jeane", uri, "1", "Burger", null));
 
+        when(mUsersRepo.getAllUserLiveData()).thenReturn(new MutableLiveData<>(users));
         when(mChatRepo.getMessagesLiveData()).thenReturn(new MutableLiveData<>(messages));
-        when(mUsersRepo.getAllUserLiveData()).thenReturn(new MutableLiveData<>(users)); //TODO: deplacer tous les when
 
         //WHEN
         mViewModel.init(userId1, userId2);
-        mUiMessages = LiveDataTestUtil.getOrAwaitValue(mViewModel.uiMessagesLiveData);
+        mUiMessages = LiveDataTestUtil.awaitValue(mViewModel.uiMessagesLiveData);
 
-        //TODO: 1 soluce Or remove messages
         //THEN
-        new Timer().schedule(new TimerTask() {
-            @Override
-            public void run() {
-                assertEquals(uri, mUiMessages.get(0).getPictureUri());
-            }
-        }, 200);
+        assertEquals(uri, mUiMessages.get(0).getPictureUri());
 
     }
 
@@ -173,21 +168,15 @@ public class ChatViewModelTest {
 
         //WHEN
         mViewModel.init(userId1, userId2);
-        mUiMessages = LiveDataTestUtil.getOrAwaitValue(mViewModel.uiMessagesLiveData);
+        mUiMessages = LiveDataTestUtil.awaitValue(mViewModel.uiMessagesLiveData);
 
         //THEN
-        new Timer().schedule(new TimerTask() {
-            @Override
-            public void run() {
-                for (ChatMessageModelUi uiMessage : mUiMessages) {
-                    if (uiMessage.getSenderId().equals(userId1))
-                        assertEquals(uri1, uiMessage.getPictureUri());
-                    else if (uiMessage.getSenderId().equals(userId2))
-                        assertEquals(uri2, uiMessage.getPictureUri());
-                }
-            }
-        }, 200);
-
+        for (ChatMessageModelUi uiMessage : mUiMessages) {
+            if (uiMessage.getSenderId().equals(userId1))
+                assertEquals(uri1, uiMessage.getPictureUri());
+            else if (uiMessage.getSenderId().equals(userId2))
+                assertEquals(uri2, uiMessage.getPictureUri());
+        }
     }
 
 }

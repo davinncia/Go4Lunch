@@ -75,12 +75,10 @@ public class UsersFireStoreRepository {
     }
 
     //READ
-    //TODO: delete
     public Task<QuerySnapshot> getAllUserDocuments() {
         return db.collection(USER_COLLECTION_NAME).get();
     }
 
-    //TODO NINO: Can't be of LiveData type as it runs in background, can it ?
     public void fetchAllUsersDocuments() {
         db.collection(USER_COLLECTION_NAME).get().addOnSuccessListener(queryDocumentSnapshots -> {
 
@@ -113,9 +111,9 @@ public class UsersFireStoreRepository {
                 .document(uid)
                 .update(restaurant)
                 .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) Log.d("debuglog", "Restaurant updated in FireStore.");
-                    else
-                        Log.d("debuglog", "Error updating restaurant in ForeStore." + task.getException());
+                    if (!task.isSuccessful())
+                        Log.w(UsersFireStoreRepository.class.getSimpleName(),
+                                "Error updating restaurant in ForeStore." + task.getException());
                 });
     }
 

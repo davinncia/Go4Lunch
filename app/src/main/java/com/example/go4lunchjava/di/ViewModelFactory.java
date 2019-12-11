@@ -11,6 +11,7 @@ import com.example.go4lunchjava.chat.ChatViewModel;
 import com.example.go4lunchjava.map.MapViewModel;
 import com.example.go4lunchjava.repository.ChatFireStoreRepository;
 import com.example.go4lunchjava.repository.LocationRepository;
+import com.example.go4lunchjava.repository.NetworkRepository;
 import com.example.go4lunchjava.repository.PlacesApiRepository;
 import com.example.go4lunchjava.repository.UsersFireStoreRepository;
 import com.example.go4lunchjava.restaurant_details.RestaurantDetailsViewModel;
@@ -33,7 +34,8 @@ public class ViewModelFactory extends ViewModelProvider.NewInstanceFactory {
         if (modelClass.isAssignableFrom(LogInCheckViewModel.class)) {
             return (T) new LogInCheckViewModel(mApplication);
         } else if (modelClass.isAssignableFrom(MapViewModel.class)){
-            return (T) new MapViewModel(mApplication);
+            return (T) new MapViewModel(mApplication, LocationRepository.getInstance(mApplication),
+                    PlacesApiRepository.getInstance(), UsersFireStoreRepository.getInstance(), NetworkRepository.getInstance(mApplication));
         } else if (modelClass.isAssignableFrom(RestaurantListViewModel.class)){
             return (T) new RestaurantListViewModel(mApplication, UsersFireStoreRepository.getInstance(),
                     PlacesApiRepository.getInstance(), FirebaseAuth.getInstance(), LocationRepository.getInstance(mApplication));
