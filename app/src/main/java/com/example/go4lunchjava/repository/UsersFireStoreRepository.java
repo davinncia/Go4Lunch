@@ -23,6 +23,7 @@ import java.util.Objects;
 public class UsersFireStoreRepository {
 
     private static final String USER_COLLECTION_NAME = "users";
+    private static final String TAG = UsersFireStoreRepository.class.getSimpleName();
 
     private static UsersFireStoreRepository sInstance;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -55,22 +56,20 @@ public class UsersFireStoreRepository {
                     if (!Objects.requireNonNull(task.getResult()).exists()) {
                         createUser(uid, userName, avatarUri);
                     } else {
-                        Log.d("debuglog", "Workmate already registered.");
+                        Log.i(TAG, "Workmate already registered.");
                     }
                 });
     }
 
     private void createUser(String uid, String userName, String avatarUri) {
-        Map<String, Object> user = new HashMap<>();
-        user.put(Workmate.FIELD_NAME, userName);
-        user.put(Workmate.FIELD_AVATAR, avatarUri);
+        User user = new User(uid, userName, avatarUri, "", "", null);
 
         db.collection(USER_COLLECTION_NAME)
                 .document(uid)
                 .set(user)
                 .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) Log.d("debuglog", "Workmate successfully registered.");
-                    else Log.d("debuglog", "Workmate not added: " + task.getException());
+                    if (task.isSuccessful()) Log.i(TAG, "Workmate successfully registered.");
+                    else Log.w(TAG, "Workmate not added: " + task.getException());
                 });
     }
 
@@ -88,13 +87,10 @@ public class UsersFireStoreRepository {
             }
 
             List<User> users = new ArrayList<>();
-            //DEBUG
-            int i = 0;
-            for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
-                users.add(document.toObject(User.class));
 
-                users.get(i).setId(document.getId()); //TODO: directly in constructor
-                i++;
+            for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+
+                users.add(document.toObject(User.class));
             }
 
             allUsersDocumentsMutable.setValue(users);

@@ -29,6 +29,7 @@ public class RestaurantListViewModel extends ViewModel {
 
     public static final String NEARBY_SEARCH = "nearby_search";
 
+    private Application mApplication;
     private UsersFireStoreRepository mUsersRepo;
     private PlacesApiRepository mPlacesApiRepo;
     private FirebaseAuth mAuth;
@@ -51,6 +52,7 @@ public class RestaurantListViewModel extends ViewModel {
     public RestaurantListViewModel(Application application, UsersFireStoreRepository usersRepo, PlacesApiRepository placesRepo,
                                    FirebaseAuth firebaseAuth, LocationRepository locationRepo) {
 
+        mApplication = application;
         mUsersRepo = usersRepo;
         mPlacesApiRepo = placesRepo;
         mAuth = firebaseAuth;
@@ -163,7 +165,7 @@ public class RestaurantListViewModel extends ViewModel {
         //ADDRESS
         String address = result.getVicinity();
         //OPENING HOURS
-        String hours = RestaurantDataFormat.getHoursFromOpeningHours(result.getOpeningHours(), Calendar.getInstance(Locale.getDefault()));
+        String hours = RestaurantDataFormat.getHoursFromOpeningHours(result.getOpeningHours(), Calendar.getInstance(Locale.getDefault()), mApplication);
         //PICTURE
         String pictureUri = "";
         if (result.getPhotos() != null && result.getPhotos().length > 0) {
@@ -244,7 +246,7 @@ public class RestaurantListViewModel extends ViewModel {
         int i = 0;
         for (RestaurantItem item : mRestaurantsLiveData.getValue()) {
 
-            String hours = RestaurantDataFormat.getHoursFromOpeningHours(hourList.get(i), Calendar.getInstance(Locale.getDefault()));
+            String hours = RestaurantDataFormat.getHoursFromOpeningHours(hourList.get(i), Calendar.getInstance(Locale.getDefault()), mApplication);
             result.add(new RestaurantItem(item.getName(), item.getPlaceId(), item.getAddress(), hours,
                     item.getPictureUrl(), item.getDistance(), item.getRatingResource(), item.getWorkmatesNbr()));
             i++;

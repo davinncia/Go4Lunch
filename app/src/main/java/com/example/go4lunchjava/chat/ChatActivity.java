@@ -9,6 +9,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 
@@ -17,7 +19,6 @@ import com.example.go4lunchjava.di.ViewModelFactory;
 
 public class ChatActivity extends AppCompatActivity {
 
-    //TODO: hide keyboard on send
     //DATA
     public static final String KEY_USER_ID = "key_user_id";
     public static final String KEY_WORKMATE_ID = "key_workmate_id";
@@ -44,7 +45,7 @@ public class ChatActivity extends AppCompatActivity {
         Button sendButton = findViewById(R.id.btn_chat_send);
         EditText inputEditText = findViewById(R.id.tv_input_chat_message);
 
-        ViewModelFactory factory = new ViewModelFactory(getApplication());
+        ViewModelFactory factory = ViewModelFactory.getInstance(getApplication());
         mViewModel = ViewModelProviders.of(this, factory).get(ChatViewModel.class);
 
         //Retrieving the chat ids
@@ -77,6 +78,8 @@ public class ChatActivity extends AppCompatActivity {
                 mViewModel.addMessage(text);
             }
 
+            hideSoftKeyboard();
+
         });
     }
 
@@ -88,5 +91,15 @@ public class ChatActivity extends AppCompatActivity {
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         mRecyclerView.setAdapter(mAdapter);
 
+    }
+
+    private void hideSoftKeyboard(){
+        View view = this.getCurrentFocus();
+
+        if (view!= null){
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            assert imm != null;
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
     }
 }

@@ -86,7 +86,7 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
 
         initRecyclerView();
 
-        ViewModelFactory factory = new ViewModelFactory(getApplication());
+        ViewModelFactory factory = ViewModelFactory.getInstance(getApplication());
         detailsViewModel = ViewModelProviders.of(this, factory).get(RestaurantDetailsViewModel.class);
 
         if (mPlaceId != null) {
@@ -130,6 +130,12 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
 
     //Updating ui with place info from PlacesAPA
     private void updateDetailsUi(RestaurantDetails restaurant){
+
+        if (restaurant == null){
+            Toast.makeText(this, getResources().getString(R.string.no_details_found_for_restaurant),
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
 
         if (!restaurant.getPictureUri().isEmpty()) {
             Glide.with(this)

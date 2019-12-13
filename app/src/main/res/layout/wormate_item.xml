@@ -11,7 +11,7 @@
         android:layout_width="80dp"
         android:layout_height="match_parent"
         android:padding="8dp"
-        tools:src="@drawable/background_sign_in"/>
+        tools:src="@drawable/ic_workmates"/>
 
     <TextView
         android:id="@+id/tv_workmates_list"

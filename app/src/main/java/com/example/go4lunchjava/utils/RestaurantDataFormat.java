@@ -1,6 +1,8 @@
 package com.example.go4lunchjava.utils;
 
 
+import android.content.Context;
+import android.content.res.Resources;
 import android.location.Location;
 
 import androidx.annotation.VisibleForTesting;
@@ -104,20 +106,18 @@ public class RestaurantDataFormat {
      * @param openingHours form Places API or SDK
      * @return String
      */
-    //TODO: we should use resource string...
-    public static String getHoursFromOpeningHours(OpeningHoursDetails openingHours, Calendar calendar) {
+    public static String getHoursFromOpeningHours(OpeningHoursDetails openingHours, Calendar calendar, Context context) {
         if (openingHours == null) {
-            return "Opening hours not communicated";
+            return context.getString(R.string.hours_not_communicated);
         }
 
-        //Calendar calendar = Calendar.getInstance(Locale.getDefault());
         int dayInt = calendar.get(Calendar.DAY_OF_WEEK) - 1; //Off by one with PlacesApi
 
         int hour = calendar.get(Calendar.HOUR_OF_DAY);
         int min = calendar.get(Calendar.MINUTE);
 
 
-        String hours = "Closed today";
+        String hours = context.getString(R.string.closed_today);
 
         for (OpeningPeriod period : openingHours.getPeriods()) {
 
@@ -140,15 +140,15 @@ public class RestaurantDataFormat {
                     int minutesStillOpen = 60 * (closingHour - hour) + closingMinutes - min;
 
                     if (minutesStillOpen > 30) {
-                        hours = "Open until " + convertTo12HoursFormat(closingHour, closingMinutes);
+                        hours = context.getString(R.string.open_until) + convertTo12HoursFormat(closingHour, closingMinutes);
 
                     } else if (minutesStillOpen > 0) {
-                        hours = "Closing soon";
+                        hours = context.getString(R.string.closing_soon);
                     }
 
                 } else if (hour < openingHour || hour == openingHour && min < openingMinutes){
                     //BEFORE OPENING
-                    hours = "Closed until " + convertTo12HoursFormat(openingHour, openingMinutes);
+                    hours = context.getString(R.string.closed_until) + convertTo12HoursFormat(openingHour, openingMinutes);
                 }
             }
 

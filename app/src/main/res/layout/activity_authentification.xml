@@ -11,33 +11,87 @@
     android:background="@drawable/background_sign_in"
     >
 
-    <ImageView
-        android:id="@+id/iv_logo_sign_in"
+    <ProgressBar
+        android:id="@+id/progress_circle_auth"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/ic_launcher_foreground"
-        app:layout_constraintBottom_toTopOf="@+id/btn_google_sign_in"
+        android:layout_marginTop="80dp"
+        android:visibility="invisible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+    <ImageView
+        android:id="@+id/iv_logo_sign_in"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_marginTop="80dp"
+        android:src="@drawable/ic_food_white"
+        app:layout_constraintBottom_toTopOf="@+id/tv_app_name_auth"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <com.google.android.gms.common.SignInButton
+    <TextView
+        android:id="@+id/tv_app_name_auth"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/app_name"
+        android:textColor="@android:color/white"
+        android:textSize="48sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/tv_app_description_auth"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/iv_logo_sign_in" />
+
+    <!--TODO: custom button UI-->
+
+    <TextView
+        android:id="@+id/tv_app_description_auth"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:gravity="top|center"
+        android:text="Find a nice restaurant and invite your co-workers for lunch !"
+        android:textColor="@android:color/white"
+        android:textSize="12sp"
+        android:textStyle="italic"
+        app:layout_constraintBottom_toTopOf="@+id/btn_google_sign_in"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_app_name_auth" />
+
+    <Button
         android:id="@+id/btn_google_sign_in"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="50dp"
-        app:layout_constraintBottom_toTopOf="@+id/facebook_login_button"
+        android:layout_height="72dp"
+        android:layout_marginStart="40dp"
+        android:layout_marginEnd="40dp"
+        android:layout_marginBottom="32dp"
+        android:background="@drawable/btn_google_background"
+        android:text="@string/sign_in_with_google"
+        android:textAllCaps="false"
+        android:textColor="@android:color/white"
+        app:layout_constraintBottom_toTopOf="@+id/btn_facebook_login"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <com.facebook.login.widget.LoginButton
-        android:id="@+id/facebook_login_button"
+
+    <Button
+        android:id="@+id/btn_facebook_login"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="50dp"
-        android:layout_marginBottom="100dp"
+        android:layout_height="72dp"
+        android:layout_marginStart="40dp"
+        android:layout_marginEnd="40dp"
+        android:layout_marginBottom="80dp"
+        android:text="@string/sign_in_with_facebook"
+        android:textAllCaps="false"
+        android:textColor="@android:color/white"
+        android:background="@drawable/btn_facebook_background"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

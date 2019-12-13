@@ -45,7 +45,7 @@ public class WorkmatesFragment extends Fragment implements WorkmateAdapter.Workm
         initRecyclerView();
 
         //ViewModel
-        ViewModelFactory factory = new ViewModelFactory(Objects.requireNonNull(getActivity()).getApplication());
+        ViewModelFactory factory = ViewModelFactory.getInstance(requireActivity().getApplication());
         WorkmateViewModel viewModel = ViewModelProviders.of(this, factory).get(WorkmateViewModel.class);
         viewModel.mUsersLiveData.observe(this, users -> mAdapter.updateData(users));
 

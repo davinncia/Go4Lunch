@@ -23,7 +23,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class PlacesApiRepository {
 
-    //TODO: IP: 93.23.199.77
+    //IP: 93.23.199.77
     private static final String BASE_URL = "https://maps.googleapis.com/";
     private static PlacesApiRepository sInstance;
     private Retrofit retrofit;
@@ -32,6 +32,7 @@ public class PlacesApiRepository {
     //Caches
     private HashMap<String, NearBySearchResponse> mNearByCache = new HashMap<>();
     private HashMap<String, RestaurantDetailsResponse> mDetailsCache = new HashMap<>();
+    private HashMap<String, RestaurantDetailsResponse> mHoursCache = new HashMap<>();
 
     //Data for ViewModels
     private MutableLiveData<RestaurantDetailsResponse> mDetailsResponseLiveData = new MutableLiveData<>();
@@ -227,17 +228,21 @@ public class PlacesApiRepository {
         protected List<OpeningHoursDetails> doInBackground(Void... voids) {
 
             List<OpeningHoursDetails> hours = new ArrayList<>();
+            PlacesApiRepository placesRepo = mPlacesApiRepoReference.get();
 
             for (String id : mRestaurants){
 
-                RestaurantDetailsResponse response = null;
+                RestaurantDetailsResponse response = placesRepo.mHoursCache.get(id);
 
-                try {
-                    //TODO Cache
-                    response = mPlacesApiRepoReference.get().service.hoursDetailsSearch(id).execute().body();
+                if (response == null) {
+                    try {
+                        //Not in cache, making a request
+                        response = mPlacesApiRepoReference.get().service.hoursDetailsSearch(id).execute().body();
+                        placesRepo.mHoursCache.put(id, response);
 
-                } catch (IOException e) {
-                    e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
 
                 assert response != null;

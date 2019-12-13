@@ -16,7 +16,6 @@ public class User {
     //Empty constructor required by FireStore
     public User(){}
 
-    //TODO: use all the fields from the beginning
     public User(String id, String userName, String avatarUri, String restaurantId, String restaurantName,
                 List<String> favorites) {
         this.id = id;
@@ -51,8 +50,4 @@ public class User {
         return favorites;
     }
 
-    //TODO: DEBUG
-    public void setId(String id) {
-        this.id = id;
-    }
 }

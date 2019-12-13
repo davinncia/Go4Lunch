@@ -187,6 +187,17 @@ public class MapViewModel extends ViewModel {
         this.cameraMoved = moved;
     }
 
+    String getPlaceIdFromName(String name){
+
+        if (mPoiListLiveData.getValue() == null) return null;
+
+        for (Poi poi : mPoiListLiveData.getValue()){
+            if (poi.getName().equals(name))
+                return poi.getId();
+        }
+        return null;
+    }
+
     void setCustomLocation(LatLng latLng) {
         mLocationRepo.setCustomLatLng(latLng);
         mPlacesApiRepo.fetchNearByPlacesFromApi(latLng, mRadius);

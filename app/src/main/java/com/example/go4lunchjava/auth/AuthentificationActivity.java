@@ -4,6 +4,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -17,6 +19,7 @@ import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
+import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -34,6 +37,11 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
 public class AuthentificationActivity extends AppCompatActivity {
 
     public static final int REQUEST_CODE_SIGN_IN = 1000;
@@ -44,12 +52,14 @@ public class AuthentificationActivity extends AppCompatActivity {
 
     private CallbackManager mCallbackManager; //Facebook
 
-    private SignInButton mGoogleSignInButton;
+    private ProgressBar mProgressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_authentification);
+
+        mProgressBar = findViewById(R.id.progress_circle_auth);
 
         mAuth = FirebaseAuth.getInstance();
 
@@ -59,7 +69,8 @@ public class AuthentificationActivity extends AppCompatActivity {
 
     private void setUpGoogleSignIn(){
 
-        mGoogleSignInButton = findViewById(R.id.btn_google_sign_in);
+        //SignInButton googleSignInButton = findViewById(R.id.btn_google_sign_in);
+        Button googleSignInButton = findViewById(R.id.btn_google_sign_in);
 
         // Configure Google Sign In
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -70,7 +81,7 @@ public class AuthentificationActivity extends AppCompatActivity {
 
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
 
-        mGoogleSignInButton.setOnClickListener(new View.OnClickListener() {
+        googleSignInButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
@@ -84,11 +95,9 @@ public class AuthentificationActivity extends AppCompatActivity {
     private void setUpFaceBookSignIn(){
 
         mCallbackManager = CallbackManager.Factory.create();
-        LoginButton mFacebookLogInButton = findViewById(R.id.facebook_login_button);
-        mFacebookLogInButton.setPermissions("email", "public_profile");
+        Button mFaceBokLoginButton = findViewById(R.id.btn_facebook_login);
 
-        // Callback registration
-        mFacebookLogInButton.registerCallback(mCallbackManager, new FacebookCallback<LoginResult>() {
+        LoginManager.getInstance().registerCallback(mCallbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
                 Log.i(TAG, "Facebook sign in success");
@@ -107,10 +116,17 @@ public class AuthentificationActivity extends AppCompatActivity {
             }
         });
 
+        mFaceBokLoginButton.setOnClickListener(v -> {
+            Collection<String> permissions = Arrays.asList("email", "public_profile");
+            LoginManager.getInstance().logInWithReadPermissions(AuthentificationActivity.this, permissions);
+        });
+
+
     }
 
     private void firebaseAuthWithGoogle(GoogleSignInAccount account){
         Log.d(AuthentificationActivity.class.getSimpleName(), "firebaseAuthWithGoogle:" + account.getId());
+        mProgressBar.setVisibility(View.VISIBLE);
 
         AuthCredential credential = GoogleAuthProvider.getCredential(account.getIdToken(), null);
         signInToFireBase(credential);
@@ -118,6 +134,7 @@ public class AuthentificationActivity extends AppCompatActivity {
 
     private void handleFacebookAccessToken(AccessToken token){
         Log.d(TAG, "handleFacebookAccessToken: " + token);
+        mProgressBar.setVisibility(View.VISIBLE);
 
         AuthCredential credential = FacebookAuthProvider.getCredential(token.getToken());
         signInToFireBase(credential);

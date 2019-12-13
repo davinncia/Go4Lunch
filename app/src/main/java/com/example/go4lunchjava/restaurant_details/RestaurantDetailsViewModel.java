@@ -71,7 +71,7 @@ public class RestaurantDetailsViewModel extends ViewModel {
         //Mapping UiModel given api response
         mDetailsLiveData = Transformations.map(mPlacesApiRepo.getDetailsResponseLiveData(), detailsResponse -> {
 
-            if (detailsResponse == null) return null; //TODO: Show an error message ?
+            if (detailsResponse == null) return null;
 
             RestaurantDetailsResult result = detailsResponse.getResult();
 

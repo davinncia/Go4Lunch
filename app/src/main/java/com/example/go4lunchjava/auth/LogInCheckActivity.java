@@ -15,7 +15,7 @@ public class LogInCheckActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        ViewModelFactory viewModelFactory = new ViewModelFactory(getApplication());
+        ViewModelFactory viewModelFactory = ViewModelFactory.getInstance(getApplication());
         LogInCheckViewModel logInVIewModel = ViewModelProviders.of(this, viewModelFactory).get(LogInCheckViewModel.class);
         logInVIewModel.mIntentLiveData.observe(this, intent -> startActivity(intent));
 

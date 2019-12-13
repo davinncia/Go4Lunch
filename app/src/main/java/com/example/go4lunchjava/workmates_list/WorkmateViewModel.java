@@ -22,7 +22,6 @@ public class WorkmateViewModel extends ViewModel {
 
         this.mFireStoreRepo = usersFireStoreRepository;
         this.mAuth = auth;
-        //getUsers();
 
         mFireStoreRepo.fetchAllUsersDocuments();
         mUsersLiveData = Transformations.map(mFireStoreRepo.getAllUserLiveData(), users -> {
@@ -43,8 +42,4 @@ public class WorkmateViewModel extends ViewModel {
             return workmates;
         });
     }
-
-    //TODO: Search algorithm
-
-
 }

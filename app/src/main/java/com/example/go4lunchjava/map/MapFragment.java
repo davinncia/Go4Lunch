@@ -2,6 +2,7 @@ package com.example.go4lunchjava.map;
 
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
@@ -19,6 +20,7 @@ import androidx.lifecycle.ViewModelProviders;
 
 import com.example.go4lunchjava.R;
 import com.example.go4lunchjava.di.ViewModelFactory;
+import com.example.go4lunchjava.restaurant_details.RestaurantDetailsActivity;
 import com.example.go4lunchjava.utils.BitmapConverter;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -62,8 +64,6 @@ public class MapFragment extends Fragment {
 
     }
 
-    //TODO: add on poi click listener sending to details activity
-
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -84,7 +84,7 @@ public class MapFragment extends Fragment {
 
         mFab.setOnClickListener(this::fabClick);
 
-        ViewModelFactory factory = new ViewModelFactory(requireActivity().getApplication());
+        ViewModelFactory factory = ViewModelFactory.getInstance(requireActivity().getApplication());
         mMapViewModel = ViewModelProviders.of(this, factory).get(MapViewModel.class);
 
         mMapViewModel.hasLocationPermission(checkLocationPermission());
@@ -95,7 +95,7 @@ public class MapFragment extends Fragment {
             mMap.getUiSettings().setMapToolbarEnabled(false);
 
             mMap.setOnMapLoadedCallback(() -> {
-                Log.d("debuglog", "Map loaded !");
+
                 if (mPoiList != null && mPoiList.size() > 0) { //A Poi list is waiting to be displayed
                     addPoiMarkers(mPoiList);
                     mPoiList.clear();
@@ -115,6 +115,15 @@ public class MapFragment extends Fragment {
                 mMapViewModel.setCustomLocation(latLng);
             });
 
+            mMap.setOnInfoWindowClickListener(marker -> {
+                String placeId = mMapViewModel.getPlaceIdFromName(marker.getTitle());
+
+                if (placeId != null) {
+                    Intent detailsIntent = RestaurantDetailsActivity.newIntent(getContext(), placeId, marker.getTitle());
+                    startActivity(detailsIntent);
+                }
+            });
+
             mMapViewModel.hasMapAvailability(true); //Triggers location updates
         });
 
@@ -122,10 +131,11 @@ public class MapFragment extends Fragment {
         mMapViewModel.mLocationLiveData.observe(this, latLng -> {
             mLatLng = latLng;
 
-            if (mMap == null) { //Still loading in background
+            if (mMap == null) //Still loading in background
                 mWaitingToZoom = true;
-            } else
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mLatLng, ZOOM));
+            else
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mLatLng, ZOOM));
+
             mFab.setImageResource(R.drawable.ic_location);
             hasLocation = true;
         });
@@ -166,7 +176,6 @@ public class MapFragment extends Fragment {
     private GoogleMap.OnCameraMoveListener mCameraMoveListener = new GoogleMap.OnCameraMoveListener() {
         @Override
         public void onCameraMove() {
-            Log.d("debuglog", "Moved !");
             mMapViewModel.setCameraMoved(true); //Stopping location updates
             mMap.setOnCameraMoveListener(null); //Saving performance
         }
@@ -187,9 +196,6 @@ public class MapFragment extends Fragment {
                 }
             });
 
-            //Or just "refresh" ? (check internet)
-
-
         } else {
             Snackbar.make(view, getResources().getString(R.string.location_null_message), Snackbar.LENGTH_SHORT).show();
             mMap.setOnCameraMoveListener(mCameraMoveListener);
@@ -209,7 +215,6 @@ public class MapFragment extends Fragment {
         super.onPause();
         mMapView.onPause();
         //mMapViewModel.hasMapAvailability(false); //Stops location updates
-        //Trouble: getMapAsync is not called between fragments.
     }
 
     @Override
@@ -229,7 +234,6 @@ public class MapFragment extends Fragment {
     /////SEARCH/////
     ////////////////
     public void searchSpecificPlace(String placeId, LatLng latLng){
-        Log.d("debuglog", "searchSpecificPlace: ");
         mMapViewModel.fetchSpecificPlace(placeId, latLng);
     }
 

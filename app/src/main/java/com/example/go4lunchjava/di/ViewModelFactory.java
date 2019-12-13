@@ -21,13 +21,24 @@ import com.google.firebase.auth.FirebaseAuth;
 
 public class ViewModelFactory extends ViewModelProvider.NewInstanceFactory {
 
+    private static ViewModelFactory sFactory;
+
     private Application mApplication;
 
-    //TODO: singleton pattern
-    public ViewModelFactory(Application application){
+
+
+    private ViewModelFactory(Application application){
         mApplication = application;
     }
 
+    public static ViewModelFactory getInstance(Application application){
+        if (sFactory == null){
+            sFactory = new ViewModelFactory(application);
+        }
+        return sFactory;
+    }
+
+    @SuppressWarnings("unchecked")
     @NonNull
     @Override
     public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {

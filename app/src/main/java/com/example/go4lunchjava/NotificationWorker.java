@@ -58,8 +58,7 @@ public class NotificationWorker extends Worker {
     }
 
     private void createNotificationChannel(){
-        //This should always be executed on app start.
-
+        //This should always be executed before sending notif
         // Create the NotificationChannel, but only on API 26+
         String CHANNEL_ID = "eating_time_notif_channel";
         String notifDescription = "Notification to alert on eating time";

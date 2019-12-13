@@ -70,7 +70,7 @@ public class RestaurantListFragment extends Fragment implements RestaurantAdapte
         initRecyclerView();
 
         //Get our view model
-        ViewModelFactory viewModelFactory = new ViewModelFactory(Objects.requireNonNull(getActivity()).getApplication());
+        ViewModelFactory viewModelFactory = ViewModelFactory.getInstance(requireActivity().getApplication());
         RestaurantListViewModel restaurantViewModel = ViewModelProviders.of(this, viewModelFactory).get(RestaurantListViewModel.class);
 
         //INIT
