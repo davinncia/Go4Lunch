@@ -14,6 +14,7 @@ import com.example.go4lunchjava.auth.User;
 import com.example.go4lunchjava.places_api.pojo.NearBySearchResponse;
 import com.example.go4lunchjava.places_api.pojo.NearBySearchResult;
 import com.example.go4lunchjava.repository.NetworkRepository;
+import com.example.go4lunchjava.repository.SharedPrefRepository;
 import com.example.go4lunchjava.repository.UsersFireStoreRepository;
 import com.example.go4lunchjava.repository.LocationRepository;
 import com.example.go4lunchjava.repository.PlacesApiRepository;
@@ -53,16 +54,19 @@ public class MapViewModel extends ViewModel {
     private MutableLiveData<Boolean> locationPermission = new MutableLiveData<>();
 
     private boolean cameraMoved = false;
-    private int mRadius = 3000;
+    private int mRadius;
 
 
-    public MapViewModel(Application application, LocationRepository locationRepo, PlacesApiRepository placesApiRepo,
-                        UsersFireStoreRepository usersRepo, NetworkRepository networkRepo) {
+    public MapViewModel(LocationRepository locationRepo, PlacesApiRepository placesApiRepo,
+                        UsersFireStoreRepository usersRepo, NetworkRepository networkRepo,
+                        SharedPrefRepository sharedPrefRepo) {
 
-        mLocationRepo = locationRepo;
-        mPlacesApiRepo = placesApiRepo;
-        mUsersRepo = usersRepo;
-        mNetworkRepo = networkRepo;
+        this.mLocationRepo = locationRepo;
+        this.mPlacesApiRepo = placesApiRepo;
+        this.mUsersRepo = usersRepo;
+        this.mNetworkRepo = networkRepo;
+
+        mRadius = sharedPrefRepo.getRadiusMetersPref();
 
         mLocationRepo.startLocationUpdates(true);
 
@@ -112,7 +116,6 @@ public class MapViewModel extends ViewModel {
         });
 
     }
-
 
     private void updateDeviceLocation(LatLng latLng) {
         Boolean map = mapAvailable.getValue();

@@ -1,11 +1,8 @@
 package com.example.go4lunchjava.restaurant_details;
 
 import android.app.Application;
-import android.os.AsyncTask;
 import android.util.Log;
 
-import androidx.annotation.VisibleForTesting;
-import androidx.arch.core.util.Function;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Transformations;
@@ -18,16 +15,14 @@ import androidx.work.WorkManager;
 
 import com.example.go4lunchjava.NotificationWorker;
 import com.example.go4lunchjava.auth.User;
-import com.example.go4lunchjava.places_api.pojo.details.RestaurantDetailsResponse;
 import com.example.go4lunchjava.places_api.pojo.details.RestaurantDetailsResult;
-import com.example.go4lunchjava.repository.UsersFireStoreRepository;
 import com.example.go4lunchjava.repository.PlacesApiRepository;
+import com.example.go4lunchjava.repository.SharedPrefRepository;
+import com.example.go4lunchjava.repository.UsersFireStoreRepository;
 import com.example.go4lunchjava.utils.RestaurantDataFormat;
 import com.example.go4lunchjava.workmates_list.Workmate;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -59,14 +54,17 @@ public class RestaurantDetailsViewModel extends ViewModel {
     public LiveData<Boolean> mIsUserFavLiveData = mIsUserFavMutable;
 
     private String mPlaceId;
+    private boolean mNotifEnabled;
 
     public RestaurantDetailsViewModel(Application application, PlacesApiRepository placesRepo,
-                                      UsersFireStoreRepository usersRepo, FirebaseAuth auth){
+                                      UsersFireStoreRepository usersRepo, FirebaseAuth auth,
+                                      SharedPrefRepository sharedPrefRepo){
 
         this.mPlacesApiRepo = placesRepo;
         this.mFireStoreUserRepo = usersRepo;
         this.mApplication = application;
         this.mAuth = auth;
+        this.mNotifEnabled = sharedPrefRepo.getNotifPref();
 
         //Mapping UiModel given api response
         mDetailsLiveData = Transformations.map(mPlacesApiRepo.getDetailsResponseLiveData(), detailsResponse -> {
@@ -180,6 +178,8 @@ public class RestaurantDetailsViewModel extends ViewModel {
     //                                      Notifications
     //--------------------------------------------------------------------------------------------//
     private void setNotification(String restaurantName, String restaurantId){
+
+        if (!mNotifEnabled) return;
 
         //DATA
         String address = "";

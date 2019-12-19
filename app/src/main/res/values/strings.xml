@@ -49,6 +49,11 @@
     <string name="closed_until">Closed until\u0020</string>
     <string name="sign_in_with_google">Sign in with Google</string>
     <string name="sign_in_with_facebook">Sign in with Facebook</string>
+    <string name="app_description">Find a nice restaurant and invite your co-workers for lunch !</string>
+    <string name="radius">Radius</string>
+    <string name="notifications">Notifications</string>
+    <string name="radius_settings_description">Radius in which to look for restaurants on the map.</string>
+    <string name="allow_notifications_for_lunch">Allow notifications for lunch</string>
 
 
 </resources>

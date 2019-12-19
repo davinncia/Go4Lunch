@@ -46,14 +46,13 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/iv_logo_sign_in" />
 
-    <!--TODO: custom button UI-->
 
     <TextView
         android:id="@+id/tv_app_description_auth"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:gravity="top|center"
-        android:text="Find a nice restaurant and invite your co-workers for lunch !"
+        android:text="@string/app_description"
         android:textColor="@android:color/white"
         android:textSize="12sp"
         android:textStyle="italic"

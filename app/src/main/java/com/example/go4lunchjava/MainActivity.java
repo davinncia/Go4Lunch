@@ -24,6 +24,7 @@ import com.bumptech.glide.Glide;
 import com.example.go4lunchjava.auth.AuthentificationActivity;
 import com.example.go4lunchjava.map.MapFragment;
 import com.example.go4lunchjava.restaurant_list.RestaurantListFragment;
+import com.example.go4lunchjava.settings.SettingsActivity;
 import com.example.go4lunchjava.workmates_list.WorkmatesFragment;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.api.model.TypeFilter;
@@ -35,9 +36,7 @@ import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -67,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
 
         configureNavigationDrawer();
 
-        getSupportFragmentManager().beginTransaction().replace(R.id.frame_layout_container_main, WorkmatesFragment.newInstance()).commit();
+        getSupportFragmentManager().beginTransaction().replace(R.id.frame_layout_container_main, MapFragment.newInstance()).commit();
 
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_nav_bar_main);
         bottomNavigationView.setOnNavigationItemReselectedListener(item -> { }); //Do nothing if already selected
@@ -127,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(MainActivity.this, "Your lunch", Toast.LENGTH_SHORT).show();
                     break;
                 case R.id.main_drawer_settings:
-                    Toast.makeText(MainActivity.this, "Settings", Toast.LENGTH_SHORT).show();
+                    startActivity(SettingsActivity.newInstance(this));
                     break;
                 case R.id.main_drawer_logout:
                     logOutUser();

@@ -9,6 +9,7 @@ import com.example.go4lunchjava.auth.User;
 import com.example.go4lunchjava.places_api.pojo.details.RestaurantDetailsResponse;
 import com.example.go4lunchjava.places_api.pojo.details.RestaurantDetailsResult;
 import com.example.go4lunchjava.repository.PlacesApiRepository;
+import com.example.go4lunchjava.repository.SharedPrefRepository;
 import com.example.go4lunchjava.repository.UsersFireStoreRepository;
 import com.example.go4lunchjava.restaurant_details.RestaurantDetails;
 import com.example.go4lunchjava.restaurant_details.RestaurantDetailsViewModel;
@@ -43,6 +44,8 @@ public class RestaurantDetailsViewModelTest {
     UsersFireStoreRepository mUsersRepo;
     @Mock
     FirebaseAuth mAuth;
+    @Mock
+    SharedPrefRepository mSharedPrefRepo;
 
     private RestaurantDetailsViewModel mDetailsViewModel;
     private List<Workmate> uiWorkmates;
@@ -53,6 +56,7 @@ public class RestaurantDetailsViewModelTest {
     public void setUp(){
 
         when(mAuth.getUid()).thenReturn(mCurrentUid);
+        when(mSharedPrefRepo.getNotifPref()).thenReturn(true);
     }
 
     @Test
@@ -68,7 +72,7 @@ public class RestaurantDetailsViewModelTest {
         //WHEN
         when(mPlacesRepo.getDetailsResponseLiveData()).thenReturn(new MutableLiveData<>(apiResponse));
         when(mUsersRepo.getAllUserLiveData()).thenReturn(new MutableLiveData<>(users));
-        mDetailsViewModel = new RestaurantDetailsViewModel(mApplication, mPlacesRepo, mUsersRepo, mAuth);
+        mDetailsViewModel = new RestaurantDetailsViewModel(mApplication, mPlacesRepo, mUsersRepo, mAuth, mSharedPrefRepo);
 
         mDetailsViewModel.launchDetailsRequest(mPlaceID);
         mDetailsViewModel.fetchFireStoreData();
@@ -97,7 +101,7 @@ public class RestaurantDetailsViewModelTest {
         //WHEN
         when(mPlacesRepo.getDetailsResponseLiveData()).thenReturn(new MutableLiveData<>());
         when(mUsersRepo.getAllUserLiveData()).thenReturn(new MutableLiveData<>(users));
-        mDetailsViewModel = new RestaurantDetailsViewModel(mApplication, mPlacesRepo, mUsersRepo, mAuth);
+        mDetailsViewModel = new RestaurantDetailsViewModel(mApplication, mPlacesRepo, mUsersRepo, mAuth, mSharedPrefRepo);
 
         mDetailsViewModel.launchDetailsRequest(mPlaceID);
         mDetailsViewModel.fetchFireStoreData();
@@ -120,7 +124,7 @@ public class RestaurantDetailsViewModelTest {
         //WHEN
         when(mPlacesRepo.getDetailsResponseLiveData()).thenReturn(new MutableLiveData<>());
         when(mUsersRepo.getAllUserLiveData()).thenReturn(new MutableLiveData<>(users));
-        mDetailsViewModel = new RestaurantDetailsViewModel(mApplication, mPlacesRepo, mUsersRepo, mAuth);
+        mDetailsViewModel = new RestaurantDetailsViewModel(mApplication, mPlacesRepo, mUsersRepo, mAuth, mSharedPrefRepo);
 
         mDetailsViewModel.launchDetailsRequest(mPlaceID);
         mDetailsViewModel.fetchFireStoreData();
@@ -143,7 +147,7 @@ public class RestaurantDetailsViewModelTest {
         //WHEN
         when(mPlacesRepo.getDetailsResponseLiveData()).thenReturn(new MutableLiveData<>());
         when(mUsersRepo.getAllUserLiveData()).thenReturn(new MutableLiveData<>(users));
-        mDetailsViewModel = new RestaurantDetailsViewModel(mApplication, mPlacesRepo, mUsersRepo, mAuth);
+        mDetailsViewModel = new RestaurantDetailsViewModel(mApplication, mPlacesRepo, mUsersRepo, mAuth, mSharedPrefRepo);
 
         mDetailsViewModel.launchDetailsRequest(mPlaceID);
         mDetailsViewModel.fetchFireStoreData();

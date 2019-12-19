@@ -15,6 +15,7 @@ import com.example.go4lunchjava.places_api.pojo.NearBySearchResult;
 import com.example.go4lunchjava.repository.LocationRepository;
 import com.example.go4lunchjava.repository.NetworkRepository;
 import com.example.go4lunchjava.repository.PlacesApiRepository;
+import com.example.go4lunchjava.repository.SharedPrefRepository;
 import com.example.go4lunchjava.repository.UsersFireStoreRepository;
 import com.google.android.gms.maps.model.LatLng;
 
@@ -47,6 +48,8 @@ public class MapViewModelUnitTest {
     LocationRepository mLocationRepo;
     @Mock
     NetworkRepository mNetworkRepo;
+    @Mock
+    SharedPrefRepository mSharedPrefRepo;
 
     private MapViewModel mViewModel;
     private List<Poi> mPoiList;
@@ -56,6 +59,7 @@ public class MapViewModelUnitTest {
 
         when(mLocationRepo.getLatLngLiveData()).thenReturn(new MutableLiveData<>(new LatLng(12, 12)));
         when(mNetworkRepo.getNetworkStatusLiveData()).thenReturn(new MutableLiveData<>(true));
+        when(mSharedPrefRepo.getRadiusMetersPref()).thenReturn(3000);
     }
 
     @Test
@@ -78,7 +82,7 @@ public class MapViewModelUnitTest {
         when(mUsersRepo.getAllUserLiveData()).thenReturn(new MutableLiveData<>());
 
         //WHEN
-        mViewModel = new MapViewModel(mApplication, mLocationRepo, mPlacesRepo, mUsersRepo, mNetworkRepo);
+        mViewModel = new MapViewModel(mLocationRepo, mPlacesRepo, mUsersRepo, mNetworkRepo, mSharedPrefRepo);
 
         mPoiList = LiveDataTestUtil.getOrAwaitValue(mViewModel.mPoiListLiveData);
 
@@ -101,7 +105,7 @@ public class MapViewModelUnitTest {
         when(mUsersRepo.getAllUserLiveData()).thenReturn(new MutableLiveData<>());
 
         //WHEN
-        mViewModel = new MapViewModel(mApplication, mLocationRepo, mPlacesRepo, mUsersRepo, mNetworkRepo);
+        mViewModel = new MapViewModel(mLocationRepo, mPlacesRepo, mUsersRepo, mNetworkRepo, mSharedPrefRepo);
         mViewModel.hasLocationPermission(true);
         mViewModel.hasMapAvailability(true);
         mViewModel.setCameraMoved(false);
@@ -122,7 +126,7 @@ public class MapViewModelUnitTest {
         when(mUsersRepo.getAllUserLiveData()).thenReturn(new MutableLiveData<>());
 
         //WHEN
-        mViewModel = new MapViewModel(mApplication, mLocationRepo, mPlacesRepo, mUsersRepo, mNetworkRepo);
+        mViewModel = new MapViewModel(mLocationRepo, mPlacesRepo, mUsersRepo, mNetworkRepo, mSharedPrefRepo);
         mViewModel.hasLocationPermission(true);
         mViewModel.hasMapAvailability(true);
         mViewModel.setCameraMoved(true);
@@ -142,7 +146,7 @@ public class MapViewModelUnitTest {
         when(mUsersRepo.getAllUserLiveData()).thenReturn(new MutableLiveData<>());
 
         //WHEN
-        mViewModel = new MapViewModel(mApplication, mLocationRepo, mPlacesRepo, mUsersRepo, mNetworkRepo);
+        mViewModel = new MapViewModel(mLocationRepo, mPlacesRepo, mUsersRepo, mNetworkRepo, mSharedPrefRepo);
         mViewModel.hasLocationPermission(true);
         mViewModel.hasMapAvailability(false);
         mViewModel.setCameraMoved(false);
@@ -162,7 +166,7 @@ public class MapViewModelUnitTest {
         when(mUsersRepo.getAllUserLiveData()).thenReturn(new MutableLiveData<>());
 
         //WHEN
-        mViewModel = new MapViewModel(mApplication, mLocationRepo, mPlacesRepo, mUsersRepo, mNetworkRepo);
+        mViewModel = new MapViewModel(mLocationRepo, mPlacesRepo, mUsersRepo, mNetworkRepo, mSharedPrefRepo);
         mViewModel.hasLocationPermission(false);
         mViewModel.hasMapAvailability(true);
         mViewModel.setCameraMoved(false);
@@ -194,7 +198,7 @@ public class MapViewModelUnitTest {
         when(mUsersRepo.getAllUserLiveData()).thenReturn(new MutableLiveData<>(workmates));
 
         //WHEN
-        mViewModel = new MapViewModel(mApplication, mLocationRepo, mPlacesRepo, mUsersRepo, mNetworkRepo);
+        mViewModel = new MapViewModel(mLocationRepo, mPlacesRepo, mUsersRepo, mNetworkRepo, mSharedPrefRepo);
         mPoiList = LiveDataTestUtil.awaitValue(mViewModel.mPoiListLiveData);
 
         //THEN
