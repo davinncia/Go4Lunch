@@ -12,7 +12,7 @@ import androidx.lifecycle.MutableLiveData;
 
 public class NetworkRepository {
 
-    private static NetworkRepository sIntance;
+    private static NetworkRepository sInstance;
 
     private MutableLiveData<Boolean> mIsConnected = new MutableLiveData<>();
 
@@ -22,14 +22,14 @@ public class NetworkRepository {
     }
 
     public static NetworkRepository getInstance(Context context) {
-        if (sIntance == null){
+        if (sInstance == null){
             synchronized (NetworkRepository.class){
-                if (sIntance == null){
-                    return new NetworkRepository(context);
+                if (sInstance == null){
+                    sInstance = new NetworkRepository(context);
                 }
             }
         }
-        return sIntance;
+        return sInstance;
     }
 
 

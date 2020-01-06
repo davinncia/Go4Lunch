@@ -7,6 +7,7 @@ import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import com.example.go4lunchjava.R;
 import com.example.go4lunchjava.auth.User;
 import com.example.go4lunchjava.places_api.pojo.NearBySearchResponse;
 import com.example.go4lunchjava.places_api.pojo.NearBySearchResult;
@@ -114,10 +115,10 @@ public class RestaurantListViewModel extends ViewModel {
             //ADDRESS
             String address = result.getVicinity();
             //OPENING HOURS
-            String hours = "Opening hours not communicated";
+            String hours = mApplication.getString(R.string.hours_not_communicated);
             if (result.getOpeningHours() != null) {
-                if (result.getOpeningHours().getOpenNow()) hours = "Open now";
-                else hours = "Closed";
+                if (result.getOpeningHours().getOpenNow()) hours = mApplication.getString(R.string.open_now);
+                else hours = mApplication.getString(R.string.closed);
             }
             //PICTURE
             String pictureUri = "";

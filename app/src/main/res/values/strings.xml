@@ -54,6 +54,8 @@
     <string name="notifications">Notifications</string>
     <string name="radius_settings_description">Radius in which to look for restaurants on the map.</string>
     <string name="allow_notifications_for_lunch">Allow notifications for lunch</string>
+    <string name="open_now">Open now</string>
+    <string name="closed">Closed</string>
 
 
 </resources>

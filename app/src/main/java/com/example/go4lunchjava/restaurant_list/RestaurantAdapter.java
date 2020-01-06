@@ -42,7 +42,7 @@ public class RestaurantAdapter extends ListAdapter<RestaurantItem, RestaurantAda
         holder.address.setText(restaurant.getAddress());
 
         holder.openingHoursView.setText(restaurant.getHours());
-        if (restaurant.getHours().contains("Close"))
+        if (restaurant.getHours().contains("Close") || restaurant.getHours().contains("Ferm"))
             holder.openingHoursView.setTextColor(Color.RED);
         else
             holder.openingHoursView.setTextColor(Color.DKGRAY);

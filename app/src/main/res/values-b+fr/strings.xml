@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Go4LunchJava</string>
+
+    <!-- BOTTOM NAVIGATION VIEW -->
+    <string name="bottom_navigation_menu_map">Carte</string>
+    <string name="bottom_navigation_menu_list">Liste</string>
+    <string name="bottom_navigation_menu_workmates">Collègues</string>
+
+    <!-- NAVIGATION DRAWER -->
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="location_null_message">Aucune location :/.\nData et GPS bien activés ?.</string>
+    <string name="restaurant_search">Recherche dans la région…</string>
+    <string name="call">APPEL</string>
+    <string name="like">FAVORIS</string>
+    <string name="website">SITE WEB</string>
+    <string name="empty_restaurant_list">Rend toi à la carte pour trouver ou déjeuner !</string>
+    <string name="search">Rechercher</string>
+    <string name="search_hint_restaurant">Rechercher dans la liste</string>
+    <string name="is_eating_at">\u0020mange à\u0020</string>
+    <string name="has_not_decided_yet">\u0020n\'a pas encore décidé.</string>
+    <string name="is_joining">\u0020s\'y joint!</string>
+    <string name="no_phone">Téléphone non communiqué.</string>
+    <string name="no_website">Site web non communiqué.</string>
+    <string name="notif_title">Ton repas de ce midi t\'attends!</string>
+    <string name="send">Envoyer</string>
+    <string name="your_lunch">Ton repas</string>
+    <string name="settings">Paramètres</string>
+    <string name="logout">Déconnexion</string>
+    <string name="no_details_found_for_restaurant">Aucun détail trouvé pour ce restaurant :/</string>
+
+    <!-- HOUR DETAILS-->
+    <string name="closed_today">Fermé aujourd\'hui</string>
+    <string name="hours_not_communicated">Horaires non communiqués</string>
+    <string name="open_until">Ouvverts jusqu\'à\u0020</string>
+    <string name="closing_soon">Ferme bientôt</string>
+    <string name="closed_until">Fermé jusqu\à\u0020</string>
+    <string name="sign_in_with_google">Connexion avec Google</string>
+    <string name="sign_in_with_facebook">Connexion avec Facebook</string>
+    <string name="app_description">Trouve un restaurant sympa et invite tes collègues à déjeuner !</string>
+    <string name="radius">Rayon</string>
+    <string name="notifications">Notifications</string>
+    <string name="radius_settings_description">Rayon de recherche sur la carte</string>
+    <string name="allow_notifications_for_lunch">Autoriser les notifications pour le déjeuner</string>
+    <string name="open_now">Ouvert</string>
+    <string name="closed">Fermé</string>
+</resources>
