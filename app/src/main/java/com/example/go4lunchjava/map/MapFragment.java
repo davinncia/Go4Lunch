@@ -207,14 +207,13 @@ public class MapFragment extends Fragment {
     public void onResume() {
         super.onResume();
         mMapView.onResume();
-        //Careful, do not pretend map is available here
     }
 
     @Override
     public void onPause() {
         super.onPause();
         mMapView.onPause();
-        //mMapViewModel.hasMapAvailability(false); //Stops location updates
+
     }
 
     @Override
@@ -233,8 +232,8 @@ public class MapFragment extends Fragment {
     ////////////////
     /////SEARCH/////
     ////////////////
-    public void searchSpecificPlace(String placeId, LatLng latLng){
-        mMapViewModel.fetchSpecificPlace(placeId, latLng);
+    public void searchSpecificPlace(String placeId){
+        mMapViewModel.fetchSpecificPlace(placeId);
     }
 
     ////////////////

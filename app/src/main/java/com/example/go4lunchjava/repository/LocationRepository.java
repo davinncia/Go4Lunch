@@ -55,8 +55,8 @@ public class LocationRepository {
             LocationRequest locationRequest = new LocationRequest();
             locationRequest
                     .setSmallestDisplacement(10) //meters
-                    .setInterval(100000) //Updates every 10 seconds
-                    .setFastestInterval(100000)
+                    .setInterval(10000) //Updates every seconds
+                    .setFastestInterval(10000)
                     .setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
             fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, null); // ?
         } else {
@@ -72,19 +72,6 @@ public class LocationRepository {
         this.userSelectedLatLng = latLng;
         latLngMutableLiveData.setValue(userSelectedLatLng);
     }
-
-    /*
-    USING GET FUSED LOCATION PROVIDER
-
-    private void getLocation(){
-
-        FusedLocationProviderClient fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(mApplication);
-        fusedLocationProviderClient.getLastLocation().addOnSuccessListener(location -> {
-            //Careful, it can return null
-            if (location != null) latLngMutableLiveData.setValue(new LatLng(location.getLatitude(), location.getLongitude()));
-        });
-    }
-     */
 
 
 }

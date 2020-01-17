@@ -160,7 +160,6 @@ public class PlacesApiRepository {
     ////////////////////
     private static class GetRestaurantDetailsAsyncTask extends AsyncTask<Void, Void, RestaurantDetailsResponse> {
 
-        //TODO NINO: Weak reference useful ?
         private WeakReference<PlacesApiRepository> mPlacesApiRepositoryReference; //In case instance in garbage collected
         private String mPlaceId;
 

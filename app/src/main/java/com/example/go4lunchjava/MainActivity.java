@@ -219,7 +219,7 @@ public class MainActivity extends AppCompatActivity {
                 mSearchPlaceId = place.getId();
                 Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.frame_layout_container_main);
                 if (fragment instanceof MapFragment){
-                    ((MapFragment) fragment).searchSpecificPlace(mSearchPlaceId, place.getLatLng());
+                    ((MapFragment) fragment).searchSpecificPlace(mSearchPlaceId);
                 }
             }
         }

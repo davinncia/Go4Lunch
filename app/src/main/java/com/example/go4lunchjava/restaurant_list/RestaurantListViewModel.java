@@ -70,6 +70,9 @@ public class RestaurantListViewModel extends ViewModel {
 
     }
 
+    //--------------------------------------------------------------------------------------------//
+    //                                      T R I G G E R S
+    //--------------------------------------------------------------------------------------------//
     private void addDataSourcesOncePlaceIdIsSpecified(){
 
         if (!mPlaceId.equals(NEARBY_SEARCH)) {

@@ -67,12 +67,11 @@ public class MapViewModel extends ViewModel {
         this.mNetworkRepo = networkRepo;
 
         mRadius = sharedPrefRepo.getRadiusMetersPref();
-
         mLocationRepo.startLocationUpdates(true);
 
         //LOCATION
         mLocationMediatorLiveData.addSource(mLocationRepo.getLatLngLiveData(), this::updateDeviceLocation);
-        // Return to last known location on resume
+
         mLocationMediatorLiveData.addSource(mapAvailable, available -> {
             if (available) updateDeviceLocation(mLocationRepo.getLatLngLiveData().getValue());
         });
@@ -95,24 +94,21 @@ public class MapViewModel extends ViewModel {
         mPoiListMediatorLiveData.addSource(mPlacesApiRepo.getNearByResponseLiveData(), this::mapPoiList);
 
         //Workmates
-        mPoiListMediatorLiveData.addSource(mUsersRepo.getAllUserLiveData(), new Observer<List<User>>() {
-            @Override
-            public void onChanged(List<User> userList) {
-                List<Poi> poiList = mPoiListLiveData.getValue();
-                if (poiList == null) return;
+        mPoiListMediatorLiveData.addSource(mUsersRepo.getAllUserLiveData(), userList -> {
+            List<Poi> poiList = mPoiListLiveData.getValue();
+            if (poiList == null) return;
 
-                for (User user : userList){
+            for (User user : userList){
 
-                    for (Poi poi : poiList) {
+                for (Poi poi : poiList) {
 
-                        if (poi.getId().equals(user.getRestaurant_id())) {
-                            //Someone is going there !
-                            poi.setPointerRes(R.drawable.ic_pointer_blue);
-                        }
+                    if (poi.getId().equals(user.getRestaurant_id())) {
+                        //Someone is going there !
+                        poi.setPointerRes(R.drawable.ic_pointer_blue);
                     }
                 }
-                mPoiListMediatorLiveData.setValue(poiList); //Updating view
             }
+            mPoiListMediatorLiveData.setValue(poiList); //Updating view
         });
 
     }
@@ -206,10 +202,8 @@ public class MapViewModel extends ViewModel {
         mPlacesApiRepo.fetchNearByPlacesFromApi(latLng, mRadius);
     }
 
-    void fetchSpecificPlace(String placeId, LatLng latLng) {
+    void fetchSpecificPlace(String placeId) {
         if (placeId != null) {
-            //GetNearByPlacesAsyncTask asyncTask = new GetNearByPlacesAsyncTask(MapViewModel.this, mPlacesApiRepo, latLng, 10);
-            //asyncTask.execute();
 
             mPlacesApiRepo.fetchDetailsResponseFromApi(placeId);
             mPoiListMediatorLiveData.addSource(mPlacesApiRepo.getDetailsResponseLiveData(),

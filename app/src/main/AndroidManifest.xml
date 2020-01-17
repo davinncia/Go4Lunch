@@ -12,12 +12,16 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".settings.SettingsActivity"></activity>
-        <activity android:name=".chat.ChatActivity" />
-        <activity android:name=".restaurant_details.RestaurantDetailsActivity" />
+        <activity android:name=".settings.SettingsActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".chat.ChatActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".restaurant_details.RestaurantDetailsActivity"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".auth.LogInCheckActivity"
-            android:theme="@style/SignInTheme">
+            android:theme="@style/SignInTheme"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -26,8 +30,10 @@
         </activity>
         <activity
             android:name=".auth.AuthentificationActivity"
+            android:screenOrientation="portrait"
             android:theme="@style/SignInTheme" />
-        <activity android:name=".MainActivity" />
+        <activity android:name=".MainActivity"
+            android:screenOrientation="portrait"/>
         <activity
             android:name="com.facebook.FacebookActivity"
             android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"

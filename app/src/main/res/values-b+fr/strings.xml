@@ -34,7 +34,7 @@
     <!-- HOUR DETAILS-->
     <string name="closed_today">Fermé aujourd\'hui</string>
     <string name="hours_not_communicated">Horaires non communiqués</string>
-    <string name="open_until">Ouvverts jusqu\'à\u0020</string>
+    <string name="open_until">Ouvert jusqu\'à\u0020</string>
     <string name="closing_soon">Ferme bientôt</string>
     <string name="closed_until">Fermé jusqu\à\u0020</string>
     <string name="sign_in_with_google">Connexion avec Google</string>

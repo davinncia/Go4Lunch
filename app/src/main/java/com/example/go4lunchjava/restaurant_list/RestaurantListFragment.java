@@ -96,9 +96,8 @@ public class RestaurantListFragment extends Fragment implements RestaurantAdapte
             mAdapter.submitList(restaurantItems); //Display data on screen
         });
 
-        mSearchEditText.setSearchTextChangedListener(charSequence -> {
-            restaurantViewModel.searchInRestaurantList(mRestaurantItems, charSequence);
-        });
+        mSearchEditText.setSearchTextChangedListener(charSequence ->
+                restaurantViewModel.searchInRestaurantList(mRestaurantItems, charSequence));
 
         return rootView;
     }
@@ -126,7 +125,6 @@ public class RestaurantListFragment extends Fragment implements RestaurantAdapte
 
     @Override
     public void onRestaurantClick(RestaurantItem restaurant) {
-
         startActivity(RestaurantDetailsActivity.newIntent(this.getContext(), restaurant.getPlaceId(), restaurant.getName()));
         Toast.makeText(getContext(), restaurant.getName(), Toast.LENGTH_SHORT).show();
     }
